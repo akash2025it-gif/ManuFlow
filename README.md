@@ -1,7 +1,11 @@
-# NIT Trichy Order-to-Audit Management System
-**Enterprise Foundation, Manufacturing Execution & Auditing Platform**
+# ManuFlow
+**Manufacturing & Order Management System**
 
-This repository contains the complete industrial-grade **Order-to-Audit Management System** for the **NIT Trichy Order-to-Audit Problem Statement**. Engineered using **Django 6.x**, **PostgreSQL** (with zero-setup SQLite fallback), pure-Python audit PDF generation, and a modern, responsive **Bootstrap 5** user interface.
+ManuFlow is an enterprise manufacturing execution, inventory ledger, and order-to-audit management system engineered using **Django 6.x**, **PostgreSQL** (with zero-setup SQLite fallback), pure-Python audit PDF generation, and a modern, responsive **Bootstrap 5** user interface.
+
+> [!NOTE]
+> **Academic Project Benchmark Reference**:
+> ManuFlow was developed to solve and demonstrate the manufacturing, supply chain, and accounting requirements of the **NIT Trichy Order-to-Audit Problem Statement Benchmark** (South Indian snacks manufacturing case study). Reference to the problem statement specifications, initial seed data, and benchmark figures is maintained solely for academic evaluation, validation, and testing purposes. ManuFlow is an independent project and is neither officially developed, owned, nor endorsed by the National Institute of Technology, Tiruchirappalli (NIT Trichy).
 
 The platform enforces end-to-end relational auditability across the entire enterprise lifecycle:
 $$\text{Supplier Purchase} \longrightarrow \text{Stock Ledger} \longrightarrow \text{BOM Production} \longrightarrow \text{Sales Order} \longrightarrow \text{Dual GST Invoice} \longrightarrow \text{Dispatches} \longrightarrow \text{Payment Settlement} \longrightarrow \text{Audit Trail}$$
@@ -28,7 +32,7 @@ The platform enforces strict view-level and service-level governance for six dis
 The project is structured into eight decoupled, single-responsibility Django applications:
 
 ```text
-NIT/
+ManuFlow/
 ├── manage.py                          # Django CLI utility
 ├── requirements.txt                   # Production dependencies (Django, psycopg2, whitenoise, etc.)
 ├── Procfile                           # Production WSGI release & worker specification (Heroku/Render)

@@ -145,8 +145,8 @@ def generate_invoice_pdf(invoice):
 
     # 1. Top Header Banner
     canvas.draw_rect(left, top_y - 48, width, 48, fill_color=(0.10, 0.22, 0.40))
-    canvas.draw_text("NATIONAL INSTITUTE OF TECHNOLOGY TIRUCHIRAPPALLI", left + 14, top_y - 18, font='F2', size=13, color=(1, 1, 1))
-    canvas.draw_text("CENTRE FOR FOOD PROCESSING & POST-HARVEST TECHNOLOGY", left + 14, top_y - 32, font='F1', size=8.5, color=(0.85, 0.90, 0.98))
+    canvas.draw_text("MANUFLOW MANUFACTURING & ORDER MANAGEMENT", left + 14, top_y - 18, font='F2', size=13, color=(1, 1, 1))
+    canvas.draw_text("ENTERPRISE MANUFACTURING & ORDER-TO-AUDIT SUITE", left + 14, top_y - 32, font='F1', size=8.5, color=(0.85, 0.90, 0.98))
     canvas.draw_text_right("TAX INVOICE (DEMO)", right - 14, top_y - 20, font='F2', size=12, color=(1, 0.85, 0.2))
     canvas.draw_text_right("[ACADEMIC SIMULATION DOCUMENT]", right - 14, top_y - 34, font='F1', size=7.5, color=(0.85, 0.90, 0.98))
 
@@ -297,12 +297,12 @@ def generate_invoice_pdf(invoice):
 
     # Signature Block
     sig_x = right - 160
-    canvas.draw_text("For NIT Trichy Centre for Food Processing", sig_x - 10, curr_y - 20, font='F2', size=7.5, color=(0.10, 0.22, 0.40))
+    canvas.draw_text("For ManuFlow Operations & Manufacturing", sig_x - 10, curr_y - 20, font='F2', size=7.5, color=(0.10, 0.22, 0.40))
     canvas.draw_line(sig_x, curr_y - 46, right - 15, curr_y - 46, color=(0.5, 0.5, 0.5), width=0.8)
     canvas.draw_text("Authorised Signatory", sig_x + 15, curr_y - 56, font='F1', size=7.5, color=(0.3, 0.3, 0.3))
 
     # Bottom watermark/footer
-    canvas.draw_text("NOTICE: Academic simulation document for training & evaluation. Not a certified GST Tax Invoice for commercial statutory filing.", left, 25.0, font='F1', size=6.8, color=(0.4, 0.4, 0.4))
+    canvas.draw_text("NOTICE: Academic simulation document for ManuFlow training & evaluation. Not a certified GST Tax Invoice for commercial statutory filing.", left, 25.0, font='F1', size=6.8, color=(0.4, 0.4, 0.4))
     canvas.draw_text_right("Page 1 of 1", right, 25.0, font='F1', size=7, color=(0.5, 0.5, 0.5))
 
     return canvas.render_pdf_bytes()
