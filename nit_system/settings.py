@@ -44,6 +44,12 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
+# Academic Demo Mode Configuration
+# Enabled by default during local development (DEBUG=True) for evaluator convenience.
+# In production (DEBUG=False and DEMO_MODE=False), demo login autofill buttons are removed
+# and the shared demo password (nit@12345) is rejected by authentication backends.
+DEMO_MODE = os.environ.get('DEMO_MODE', str(DEBUG)).lower() in ('true', '1', 't', 'yes')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

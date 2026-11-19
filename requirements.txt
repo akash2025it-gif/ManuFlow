@@ -1,8 +1,11 @@
-Django>=5.1,<6.2
-psycopg2-binary>=2.9.9
-python-dotenv>=1.0.1
-sqlparse>=0.5.0
-asgiref>=3.8.0
-whitenoise>=6.8.0
-dj-database-url>=2.3.0
-gunicorn>=23.0.0
+# NIT Trichy Order-to-Audit Management System - Production Dependency Manifest
+# Genuinely locked exact versions for deterministic, reproducible production builds
+Django==6.1.2
+asgiref==3.12.1
+sqlparse==0.6.0
+tzdata==2026.5
+python-dotenv==1.0.1
+psycopg2-binary==2.9.10
+dj-database-url==2.3.0
+whitenoise==6.9.0
+gunicorn==23.0.0

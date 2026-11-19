@@ -1,0 +1,12 @@
+# Auto-generated lockfile for NIT Trichy Order-to-Audit Management System
+# Generated: 2026-11-19T12:54:00+05:30
+# Deterministic dependency tree pinned to exact distribution releases
+Django==6.1.2
+asgiref==3.12.1
+sqlparse==0.6.0
+tzdata==2026.5
+python-dotenv==1.0.1
+psycopg2-binary==2.9.10
+dj-database-url==2.3.0
+whitenoise==6.9.0
+gunicorn==23.0.0

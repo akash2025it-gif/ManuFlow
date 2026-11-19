@@ -147,8 +147,8 @@ def generate_invoice_pdf(invoice):
     canvas.draw_rect(left, top_y - 48, width, 48, fill_color=(0.10, 0.22, 0.40))
     canvas.draw_text("NATIONAL INSTITUTE OF TECHNOLOGY TIRUCHIRAPPALLI", left + 14, top_y - 18, font='F2', size=13, color=(1, 1, 1))
     canvas.draw_text("CENTRE FOR FOOD PROCESSING & POST-HARVEST TECHNOLOGY", left + 14, top_y - 32, font='F1', size=8.5, color=(0.85, 0.90, 0.98))
-    canvas.draw_text_right("TAX INVOICE", right - 14, top_y - 20, font='F2', size=13, color=(1, 0.85, 0.2))
-    canvas.draw_text_right("[ORIGINAL FOR RECIPIENT]", right - 14, top_y - 34, font='F1', size=8, color=(0.85, 0.90, 0.98))
+    canvas.draw_text_right("TAX INVOICE (DEMO)", right - 14, top_y - 20, font='F2', size=12, color=(1, 0.85, 0.2))
+    canvas.draw_text_right("[ACADEMIC SIMULATION DOCUMENT]", right - 14, top_y - 34, font='F1', size=7.5, color=(0.85, 0.90, 0.98))
 
     curr_y = top_y - 56
 
@@ -302,7 +302,7 @@ def generate_invoice_pdf(invoice):
     canvas.draw_text("Authorised Signatory", sig_x + 15, curr_y - 56, font='F1', size=7.5, color=(0.3, 0.3, 0.3))
 
     # Bottom watermark/footer
-    canvas.draw_text("NOTICE: System-generated simulated GST Tax Invoice for benchmark & training. Seller GSTIN is a demo placeholder.", left, 25.0, font='F1', size=6.8, color=(0.4, 0.4, 0.4))
+    canvas.draw_text("NOTICE: Academic simulation document for training & evaluation. Not a certified GST Tax Invoice for commercial statutory filing.", left, 25.0, font='F1', size=6.8, color=(0.4, 0.4, 0.4))
     canvas.draw_text_right("Page 1 of 1", right, 25.0, font='F1', size=7, color=(0.5, 0.5, 0.5))
 
     return canvas.render_pdf_bytes()

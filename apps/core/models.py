@@ -23,7 +23,10 @@ class AuditLogEntry(models.Model):
     """
     Centralized, tamper-resistant system audit trail for all critical business actions.
     Records who did what, when, in which module, with what reference, and before/after details.
-    Guaranteed immutable once committed to the database.
+    Enforces application-level immutability once written via overridden save/delete methods,
+    custom QuerySet delete/update blocks, and Django Admin permission revocation.
+    (Note: This is application-level protection; direct database-level SQL operations
+    by database superusers outside the Django ORM are not restricted by Django models).
     """
     class Action(models.TextChoices):
         # Authentication

@@ -72,11 +72,12 @@
                         </div>
                     </form>
 
-                    <!-- Role-Based Quick Demo Test Helper -->
+                    {% if DEMO_MODE %}
+                    <!-- Role-Based Quick Demo Test Helper (Academic Evaluation Only - Disabled in Production) -->
                     <div class="mt-4 pt-4 border-top">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <span class="small fw-semibold text-secondary text-uppercase tracking-wider">
-                                <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Role Test Accounts
+                                <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Role Demo Accounts (Academic)
                             </span>
                             <span class="badge bg-light text-muted border">Default pass: nit@12345</span>
                         </div>
@@ -101,6 +102,7 @@
                             </button>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
             </div>
 

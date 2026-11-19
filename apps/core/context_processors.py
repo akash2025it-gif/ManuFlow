@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.conf import settings
 
 
 def system_context(request):
@@ -11,4 +12,6 @@ def system_context(request):
         'INSTITUTION_NAME': 'National Institute of Technology, Tiruchirappalli',
         'CURRENT_YEAR': datetime.now().year,
         'SYSTEM_VERSION': 'v1.0.0-foundation',
+        'DEMO_MODE': getattr(settings, 'DEMO_MODE', settings.DEBUG),
+        'DEBUG': settings.DEBUG,
     }

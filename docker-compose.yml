@@ -23,13 +23,18 @@ services:
     restart: unless-stopped
     command: >
       sh -c "python manage.py migrate --noinput &&
-             python manage.py seed_users &&
-             python manage.py seed_snacks_benchmark &&
-             python manage.py run_nit_production_benchmark &&
-             python manage.py run_nit_sales_benchmark &&
+             if [ \"$$SEED_DEMO_DATA\" = \"true\" ]; then
+               echo 'Academic evaluation flag detected: Seeding demo benchmark data...' &&
+               python manage.py seed_users &&
+               python manage.py seed_snacks_benchmark &&
+               python manage.py run_nit_production_benchmark &&
+               python manage.py run_nit_sales_benchmark;
+             fi &&
              gunicorn nit_system.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     environment:
       - DEBUG=False
+      - DEMO_MODE=False
+      - SEED_DEMO_DATA=false
       - SECRET_KEY=nit-trichy-order-to-audit-docker-production-key-2026-safe-eval
       - ALLOWED_HOSTS=localhost,127.0.0.1,web
       - CSRF_TRUSTED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
