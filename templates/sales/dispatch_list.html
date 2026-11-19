@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Dispatch Challans - NIT Trichy{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-7">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'sales_hub' %}">Sales Hub</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dispatch Challans</li>
+                </ol>
+            </nav>
+            <h2 class="h3 fw-bold mb-0 text-dark">
+                <i class="bi bi-truck text-info me-2"></i>Material Dispatch Challans
+            </h2>
+            <p class="text-muted small mb-0">Traceable logistics dispatches deducting finished goods stock via ledger entries.</p>
+        </div>
+        <div class="col-md-5 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'sales_order_list' %}?status=APPROVED" class="btn btn-primary shadow-sm">
+                <i class="bi bi-box-seam me-1"></i> Orders Ready to Dispatch
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search dispatch #, order #, carrier, vehicle or LR #...">
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                    {% if search_query %}
+                    <a href="{% url 'dispatch_list' %}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bi bi-x-circle"></i></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dispatches Table -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Dispatch Ref</th>
+                        <th>Sales Order</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Carrier Name</th>
+                        <th>Vehicle #</th>
+                        <th>LR / Waybill #</th>
+                        <th class="text-center">Stock Ledger</th>
+                        <th>Handled By</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in dispatches %}
+                    <tr>
+                        <td class="fw-semibold text-primary font-monospace">{{ d.dispatch_number }}</td>
+                        <td>
+                            <a href="{% url 'sales_order_detail' d.sales_order.pk %}" class="text-decoration-none">
+                                {{ d.sales_order.order_number }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="fw-medium text-dark">{{ d.sales_order.customer.name }}</div>
+                            <small class="text-muted">{{ d.sales_order.delivery_city }}</small>
+                        </td>
+                        <td class="small">{{ d.dispatch_date|date:"d-M-Y" }}</td>
+                        <td>{{ d.carrier_name }}</td>
+                        <td class="font-monospace small">{{ d.vehicle_number|default:"-" }}</td>
+                        <td class="font-monospace small">{{ d.lr_number|default:"-" }}</td>
+                        <td class="text-center">
+                            {% if d.is_posted %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    <i class="bi bi-check-circle me-1"></i>Stock Deducted
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending Post</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ d.dispatched_by.get_full_name|default:d.dispatched_by.username }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'sales_order_detail' d.sales_order.pk %}" class="btn btn-sm btn-outline-secondary" title="View Order">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-5">
+                            <i class="bi bi-truck fs-2 d-block mb-2 text-secondary"></i>
+                            No dispatch notes found matching your criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-white py-3 border-0">
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for p in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == p %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}&q={{ search_query }}">{{ p }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

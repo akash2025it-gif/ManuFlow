@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-5">
+            <!-- Institutional Login Card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="bg-primary text-white p-4 text-center hero-gradient">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-20 rounded-circle p-3 mb-2">
+                        <i class="bi bi-shield-lock-fill fs-2 text-warning"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">NIT Trichy Portal</h4>
+                    <p class="mb-0 small text-white-50">Order-to-Audit Management System</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <h5 class="fw-bold text-dark mb-1">Sign In</h5>
+                    <p class="text-muted small mb-4">Enter your institutional staff credentials to continue.</p>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'login' %}{% if next %}?next={{ next }}{% endif %}" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Username / Email -->
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold small text-secondary">
+                                <i class="bi bi-person me-1"></i> {{ form.username.label }}
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.username.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label for="{{ form.password.id_for_label }}" class="form-label fw-semibold small text-secondary">
+                                <i class="bi bi-key me-1"></i> {{ form.password.label }}
+                            </label>
+                            {{ form.password }}
+                            {% if form.password.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.password.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Remember Me -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                {{ form.remember_me }}
+                                <label class="form-check-label small text-muted" for="{{ form.remember_me.id_for_label }}">
+                                    {{ form.remember_me.label }}
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Authenticate & Enter
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Role-Based Quick Demo Test Helper -->
+                    <div class="mt-4 pt-4 border-top">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="small fw-semibold text-secondary text-uppercase tracking-wider">
+                                <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Role Test Accounts
+                            </span>
+                            <span class="badge bg-light text-muted border">Default pass: nit@12345</span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="fillDemoCredentials('admin@nit.edu', 'nit@12345')">
+                                Admin
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info text-dark" onclick="fillDemoCredentials('salesman@nit.edu', 'nit@12345')">
+                                Salesman
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-warning text-dark" onclick="fillDemoCredentials('production@nit.edu', 'nit@12345')">
+                                Production
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="fillDemoCredentials('auditor@nit.edu', 'nit@12345')">
+                                Auditor
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="fillDemoCredentials('owner@nit.edu', 'nit@12345')">
+                                Owner
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fillDemoCredentials('accountant@nit.edu', 'nit@12345')">
+                                Accountant
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-center text-muted small mt-3">
+                Restricted to authorized personnel of NIT Tiruchirappalli. All activities are audited.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

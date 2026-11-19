@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+                <div class="mb-4">
+                    <span class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle p-4">
+                        <i class="bi bi-shield-lock-fill display-3"></i>
+                    </span>
+                </div>
+                <h1 class="display-6 fw-bold text-danger mb-2">403 Forbidden</h1>
+                <h4 class="fw-semibold mb-3">Access Restricted by Role</h4>
+                <p class="text-muted mb-4">
+                    {% if exception %}
+                        {{ exception }}
+                    {% else %}
+                        Your assigned account role does not have permission to view or execute actions on this resource. 
+                        The NIT Trichy Order-to-Audit system strictly enforces role boundaries.
+                    {% endif %}
+                </p>
+                <div class="d-grid gap-2">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard_home' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-speedometer2 me-2"></i> Return to My Assigned Dashboard
+                        </a>
+                        <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-person-badge me-2"></i> View My Role & Permissions
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Sign In to Authorized Account
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

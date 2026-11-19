@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Execute Dispatch for {{ order.order_number }} - NIT Trichy{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'sales_hub' %}">Sales Hub</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'sales_order_list' %}">Sales Orders</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'sales_order_detail' order.pk %}">{{ order.order_number }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dispatch</li>
+                </ol>
+            </nav>
+            <h2 class="h3 fw-bold mb-0 text-dark">
+                <i class="bi bi-truck text-success me-2"></i>Prepare & Execute Material Dispatch
+            </h2>
+            <p class="text-muted small mb-0">Record transport logistics and trigger finished goods inventory deduction for {{ order.order_number }}.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'sales_order_detail' order.pk %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Order
+            </a>
+        </div>
+    </div>
+
+    <!-- Items to Dispatch Table -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-boxes me-2 text-primary"></i>Finished Goods Items To Be Deducted from Warehouse</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Product & Pack SKU</th>
+                        <th class="text-end">Ordered Quantity</th>
+                        <th class="text-end">Unit Price (₹)</th>
+                        <th class="text-end">Line Total (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ item.product_pack_size.product.name }}</div>
+                            <small class="text-muted">{{ item.product_pack_size.pack_name }} [{{ item.product_pack_size.sku_code }}]</small>
+                        </td>
+                        <td class="text-end fw-bold text-primary">{{ item.quantity|floatformat:2 }} {{ item.uom.code }}</td>
+                        <td class="text-end font-monospace">₹{{ item.unit_price|floatformat:2 }}</td>
+                        <td class="text-end font-monospace fw-semibold">₹{{ item.total_price|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Dispatch Execution Form -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-truck me-2 text-success"></i>Logistics & Transport Details</h5>
+        </div>
+        <div class="card-body p-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-4">
+                    {% for error in form.non_field_errors %}
+                        <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.carrier_name.id_for_label }}" class="form-label fw-semibold small">
+                            Transporter / Logistics Carrier <span class="text-danger">*</span>
+                        </label>
+                        {{ form.carrier_name }}
+                        {% if form.carrier_name.errors %}<div class="text-danger small mt-1">{{ form.carrier_name.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="{{ form.vehicle_number.id_for_label }}" class="form-label fw-semibold small">
+                            Vehicle / Truck Number
+                        </label>
+                        {{ form.vehicle_number }}
+                        {% if form.vehicle_number.errors %}<div class="text-danger small mt-1">{{ form.vehicle_number.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="{{ form.lr_number.id_for_label }}" class="form-label fw-semibold small">
+                            LR / Waybill / Consignment #
+                        </label>
+                        {{ form.lr_number }}
+                        {% if form.lr_number.errors %}<div class="text-danger small mt-1">{{ form.lr_number.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-12">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label fw-semibold small">
+                            Loading Remarks & Dispatch Notes
+                        </label>
+                        {{ form.notes }}
+                    </div>
+                </div>
+
+                <!-- Audit Assurance Callout -->
+                <div class="alert alert-info d-flex align-items-center mt-4 mb-4">
+                    <i class="bi bi-shield-check fs-2 me-3 text-primary"></i>
+                    <div class="small">
+                        <strong>Traceable Ledger Invariant:</strong>
+                        Confirming dispatch will atomically generate `SALES_DISPATCH` negative ledger movements in `StockLedgerEntry`, reduce finished stock quantity on hand, and update order status to `DISPATCHED`. Duplicate posting is programmatically prevented.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'sales_order_detail' order.pk %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success shadow-sm px-4">
+                        <i class="bi bi-check2-circle me-1"></i> Confirm & Post Dispatch
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

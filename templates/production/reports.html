@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'production_hub' %}" class="text-decoration-none text-muted small">
+                    <i class="bi bi-arrow-left"></i> Production Hub
+                </a>
+            </div>
+            <h2 class="fw-bold mb-0">Production History & Variance Intelligence Report</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{% url 'production_run_list' %}" class="btn btn-outline-dark">
+                <i class="bi bi-list-task me-1"></i> Work Orders Registry
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-secondary">
+                <i class="bi bi-printer me-1"></i> Print / Export Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Aggregate Production Intelligence Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card border-top border-4 border-primary">
+                <div class="stat-label">Total Batches Completed</div>
+                <div class="stat-value text-primary fs-3">{{ total_completed }}</div>
+                <div class="small text-muted mt-2">
+                    <i class="bi bi-check2-circle text-success"></i> Fully posted to stock ledger
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card border-top border-4 border-success">
+                <div class="stat-label">Total Good Units Produced</div>
+                <div class="stat-value text-success fs-3">{{ total_output }}</div>
+                <div class="small text-muted mt-2">
+                    <i class="bi bi-boxes"></i> Retail commercial packages
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card border-top border-4 border-info">
+                <div class="stat-label">Total Material Cost Absorbed</div>
+                <div class="stat-value text-dark fs-3 font-monospace">₹ {{ total_material_cost }}</div>
+                <div class="small text-muted mt-2">
+                    Weighted-average valuation
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card border-top border-4 border-warning">
+                <div class="stat-label">Total Overheads Allocated</div>
+                <div class="stat-value text-warning-emphasis fs-3 font-monospace">₹ {{ total_overhead_cost }}</div>
+                <div class="small text-muted mt-2">
+                    Labour & Gas/Power utilities
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Variance Alert Register (Runs with alerts > 3%) -->
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 border-danger">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                <h5 class="mb-0 fw-bold">Variance Alert Register (Yield or Materials Exceeding 3% Tolerance)</h5>
+            </div>
+            <span class="badge bg-danger text-white">{{ alert_runs|length }} Flagged Runs</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Run Number</th>
+                            <th>Product & SKU</th>
+                            <th>Expected Output</th>
+                            <th>Actual Output</th>
+                            <th>Yield Variance</th>
+                            <th>Material Alerts</th>
+                            <th>Unit Cost</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in alert_runs %}
+                            <tr>
+                                <td class="fw-bold font-monospace">
+                                    <a href="{% url 'production_run_detail' r.pk %}">{{ r.run_number }}</a>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ r.product.name }}</div>
+                                    <div class="text-muted small">Batch: {{ r.batch_number }}</div>
+                                </td>
+                                <td>{{ r.expected_output_quantity }} pkts</td>
+                                <td class="fw-bold text-danger">{{ r.actual_output_quantity }} pkts</td>
+                                <td>
+                                    <span class="badge {% if r.is_yield_alert_triggered %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ r.yield_variance_pct }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    {% for mat in r.material_variance_alerts %}
+                                        <div class="small text-danger">
+                                            &bull; {{ mat.item_name }}: <strong>{{ mat.variance_pct }}%</strong> ({{ mat.variance_quantity }} {{ mat.uom.code }})
+                                        </div>
+                                    {% empty %}
+                                        <span class="text-muted small">None</span>
+                                    {% endfor %}
+                                </td>
+                                <td class="font-monospace text-primary">₹ {{ r.unit_cost_per_output }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'production_run_detail' r.pk %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-eye"></i> Audit
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-success">
+                                    <i class="bi bi-check-circle me-1"></i> No variance alerts recorded! All batches executed within the 3.00% tolerance threshold.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Batches Ledger Summary -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history text-primary me-2"></i>Batch Production History & Cost Absorptions</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Run #</th>
+                            <th>Mfd Date</th>
+                            <th>Product</th>
+                            <th>Output Units</th>
+                            <th>Yield %</th>
+                            <th>Material Cost</th>
+                            <th>Overhead Cost</th>
+                            <th>Total Batch Cost</th>
+                            <th>Unit Cost</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in completed_runs %}
+                            <tr>
+                                <td class="fw-bold font-monospace">
+                                    <a href="{% url 'production_run_detail' r.pk %}">{{ r.run_number }}</a>
+                                </td>
+                                <td>{{ r.manufacture_date|date:"d M Y" }}</td>
+                                <td>
+                                    <div class="fw-semibold">{{ r.product.name }}</div>
+                                    <div class="text-muted small">{{ r.product_pack_size.pack_name }}</div>
+                                </td>
+                                <td class="fw-bold text-success">{{ r.actual_output_quantity }}</td>
+                                <td>
+                                    <span class="badge {% if r.is_yield_alert_triggered %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-success-subtle text-success border border-success-subtle{% endif %}">
+                                        {{ r.yield_variance_pct }}%
+                                    </span>
+                                </td>
+                                <td class="font-monospace">₹ {{ r.total_material_cost }}</td>
+                                <td class="font-monospace">₹ {{ r.total_overhead_cost }}</td>
+                                <td class="font-monospace fw-bold">₹ {{ r.total_production_cost }}</td>
+                                <td class="font-monospace text-primary fw-bold">₹ {{ r.unit_cost_per_output }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'production_run_detail' r.pk %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-eye"></i> Detail
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-center py-4 text-muted">No completed batches in history.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

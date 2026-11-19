@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Breadcrumb -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'raw_material_list' %}" class="text-decoration-none small text-muted">&larr; Raw Materials</a>
+                <span class="text-muted small">/</span>
+                <span class="badge bg-light text-secondary border font-monospace">{{ material.code }}</span>
+            </div>
+            <h2 class="fw-bold mb-0">{{ material.name }}</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                <a href="{% url 'raw_material_update' material.pk %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-pencil me-1"></i> Edit Material
+                </a>
+                <a href="{% url 'raw_material_delete' material.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash3 me-1"></i> Delete
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Specification & Costing</h5>
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">MATERIAL CATEGORY</label>
+                <div class="fw-bold text-dark fs-5">{{ material.category|default:"Chemical Base" }}</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">INVENTORY UNIT (UOM)</label>
+                <div class="font-monospace fs-5 fw-bold text-primary">{{ material.uom.code }} <small class="text-muted fs-6">({{ material.uom.name }})</small></div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">STANDARD INVENTORY COST</label>
+                <div class="display-6 fw-bold text-success fs-3">₹ {{ material.standard_cost }} <small class="fs-6 text-muted">/ {{ material.uom.code }}</small></div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">REORDER THRESHOLD</label>
+                <div class="font-monospace fs-5 fw-bold text-secondary">{{ material.reorder_level }} {{ material.uom.code }}</div>
+            </div>
+            <div class="col-sm-6">
+                <label class="small text-muted fw-semibold">APPROVED PREFERRED SUPPLIER</label>
+                <div>
+                    {% if material.preferred_supplier %}
+                        <a href="{% url 'supplier_detail' material.preferred_supplier.pk %}" class="fw-bold text-dark text-decoration-none">
+                            <i class="bi bi-truck text-success me-1"></i> {{ material.preferred_supplier.name }} ({{ material.preferred_supplier.code }})
+                        </a>
+                    {% else %}
+                        <span class="text-muted">No primary supplier assigned</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <label class="small text-muted fw-semibold">TECHNICAL DESCRIPTION</label>
+                <div class="text-secondary">{{ material.description|default:"No technical description entered." }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active BOM Usages Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Formulation BOM Usages</h5>
+                <small class="text-muted">Finished product recipes containing this raw material ingredient</small>
+            </div>
+            <span class="badge bg-primary-subtle text-primary">{{ bom_usages.count }} Active Recipes</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>BOM Code</th>
+                        <th>Finished Product</th>
+                        <th>Batch Consumption Qty</th>
+                        <th>Process Loss Margin</th>
+                        <th class="text-end">Recipe Specs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in bom_usages %}
+                    <tr>
+                        <td><span class="font-monospace fw-bold text-dark">{{ item.bom.bom_code }}</span></td>
+                        <td>
+                            <a href="{% url 'product_detail' item.bom.product.pk %}" class="fw-semibold text-primary text-decoration-none">
+                                {{ item.bom.product.name }}
+                            </a>
+                        </td>
+                        <td><span class="font-monospace fw-bold">{{ item.quantity }} {{ item.uom.code }}</span></td>
+                        <td><span class="badge bg-light text-secondary border">{{ item.scrap_tolerance_pct }}% Loss</span></td>
+                        <td class="text-end">
+                            <a href="{% url 'bom_detail' item.bom.pk %}" class="btn btn-sm btn-outline-secondary">View BOM</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            This raw material is not currently assigned to any active production BOM.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

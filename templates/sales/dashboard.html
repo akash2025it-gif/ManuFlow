@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Sales & Distribution Hub - NIT Trichy{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Header & Breadcrumbs -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-7">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sales Hub</li>
+                </ol>
+            </nav>
+            <h2 class="h3 fw-bold mb-0 text-dark">
+                <i class="bi bi-receipt text-primary me-2"></i>Sales & Distribution Management
+            </h2>
+            <p class="text-muted small mb-0">Order-to-Audit commercial tracking, GST invoicing (2.5%+2.5% CGST/SGST or 5% IGST), stock dispatch & payment reconciliation.</p>
+        </div>
+        <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end flex-wrap">
+            {% if user.role == 'SALESMAN' or user.role == 'ADMIN' or user.is_superuser or user.role == 'OWNER' %}
+            <a href="{% url 'sales_order_create' %}" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> New Sales Order
+            </a>
+            {% endif %}
+            <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary shadow-sm">
+                <i class="bi bi-file-earmark-pdf me-1"></i> Tax Invoices
+            </a>
+            <a href="{% url 'dispatch_list' %}" class="btn btn-outline-secondary shadow-sm">
+                <i class="bi bi-truck me-1"></i> Dispatches
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-body p-3.5 d-flex align-items-center">
+                    <div class="rounded-3 bg-primary-subtle text-primary p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                        <i class="bi bi-bag-check fs-4"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Total Orders</span>
+                        <h3 class="fw-bold mb-0 text-dark">{{ total_orders }}</h3>
+                        <span class="text-muted" style="font-size: 0.75rem;">Lifetime commercial orders</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-body p-3.5 d-flex align-items-center">
+                    <div class="rounded-3 bg-warning-subtle text-warning p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                        <i class="bi bi-hourglass-split fs-4"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Awaiting Approval</span>
+                        <h3 class="fw-bold mb-0 text-dark">{{ pending_approval }}</h3>
+                        <a href="{% url 'sales_order_list' %}?status=SUBMITTED" class="text-warning text-decoration-none small" style="font-size: 0.75rem;">
+                            Review submitted queue <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-body p-3.5 d-flex align-items-center">
+                    <div class="rounded-3 bg-success-subtle text-success p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                        <i class="bi bi-cash-stack fs-4"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Gross Revenue</span>
+                        <h3 class="fw-bold mb-0 text-dark">₹{{ total_revenue|floatformat:2 }}</h3>
+                        <span class="text-muted" style="font-size: 0.75rem;">Invoiced & dispatched value</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100 rounded-3">
+                <div class="card-body p-3.5 d-flex align-items-center">
+                    <div class="rounded-3 bg-danger-subtle text-danger p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                        <i class="bi bi-wallet2 fs-4"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold">Receivables Due</span>
+                        <h3 class="fw-bold mb-0 text-danger">₹{{ unpaid_balance|floatformat:2 }}</h3>
+                        <a href="{% url 'invoice_list' %}?payment_status=PENDING" class="text-danger text-decoration-none small" style="font-size: 0.75rem;">
+                            View pending invoices <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workflow Lifecycle Banner -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-light">
+        <div class="card-body p-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary rounded-pill px-2.5 py-1.5 font-monospace">1. DRAFT</span>
+                    <i class="bi bi-arrow-right text-muted"></i>
+                    <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1.5 font-monospace">2. SUBMITTED</span>
+                    <i class="bi bi-arrow-right text-muted"></i>
+                    <span class="badge bg-primary rounded-pill px-2.5 py-1.5 font-monospace">3. APPROVED</span>
+                    <i class="bi bi-arrow-right text-muted"></i>
+                    <span class="badge bg-info text-dark rounded-pill px-2.5 py-1.5 font-monospace">4. INVOICED</span>
+                    <i class="bi bi-arrow-right text-muted"></i>
+                    <span class="badge bg-success rounded-pill px-2.5 py-1.5 font-monospace">5. DISPATCHED</span>
+                </div>
+                <div class="small text-muted">
+                    <i class="bi bi-shield-check text-success me-1"></i> Strict audit invariant: Zero negative stock permitted at verification or dispatch.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Tables Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Recent Sales Orders -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold text-dark">
+                        <i class="bi bi-bag-check me-2 text-primary"></i>Recent Sales Orders
+                    </h5>
+                    <a href="{% url 'sales_order_list' %}" class="btn btn-sm btn-outline-primary">View All Orders</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th class="text-end">Total (₹)</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'sales_order_detail' order.pk %}" class="fw-semibold text-primary text-decoration-none">
+                                        {{ order.order_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-dark text-truncate" style="max-width: 160px;">{{ order.customer.name }}</div>
+                                    <small class="text-muted">{{ order.delivery_city|default:order.delivery_state }}</small>
+                                </td>
+                                <td class="small text-muted">{{ order.order_date|date:"d-M-Y" }}</td>
+                                <td class="text-end fw-semibold">₹{{ order.total_amount|floatformat:2 }}</td>
+                                <td class="text-center">
+                                    {% if order.status == 'DRAFT' %}
+                                        <span class="badge bg-secondary">Draft</span>
+                                    {% elif order.status == 'SUBMITTED' %}
+                                        <span class="badge bg-warning text-dark">Submitted</span>
+                                    {% elif order.status == 'APPROVED' %}
+                                        <span class="badge bg-primary">Approved</span>
+                                    {% elif order.status == 'INVOICED' %}
+                                        <span class="badge bg-info text-dark">Invoiced</span>
+                                    {% elif order.status == 'DISPATCHED' %}
+                                        <span class="badge bg-success">Dispatched</span>
+                                    {% elif order.status == 'REJECTED' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-dark">{{ order.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'sales_order_detail' order.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="View Order">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No sales orders found. Click "New Sales Order" to create one.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Invoices & Payment Status -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold text-dark">
+                        <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Recent Tax Invoices
+                    </h5>
+                    <a href="{% url 'invoice_list' %}" class="btn btn-sm btn-outline-secondary">All Invoices</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Customer</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-center">Payment</th>
+                                <th class="text-center">PDF</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inv in recent_invoices %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'invoice_detail' inv.pk %}" class="fw-semibold text-dark text-decoration-none">
+                                        {{ inv.invoice_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="small fw-medium text-truncate" style="max-width: 120px;">{{ inv.customer_name }}</div>
+                                </td>
+                                <td class="text-end fw-semibold small">₹{{ inv.grand_total|floatformat:2 }}</td>
+                                <td class="text-center">
+                                    {% if inv.payment_status == 'PAID' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Paid</span>
+                                    {% elif inv.payment_status == 'PARTIAL' %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Partial</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'invoice_pdf' inv.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2" title="Download PDF" target="_blank">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No tax invoices generated yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Dispatches Row -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold text-dark">
+                        <i class="bi bi-truck me-2 text-info"></i>Recent Material Dispatches (Finished Goods Outflows)
+                    </h5>
+                    <a href="{% url 'dispatch_list' %}" class="btn btn-sm btn-outline-info">View Dispatches</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Dispatch Ref</th>
+                                <th>Sales Order</th>
+                                <th>Date</th>
+                                <th>Logistics Carrier</th>
+                                <th>Vehicle / LR #</th>
+                                <th class="text-center">Ledger Posted</th>
+                                <th>Handled By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dsp in recent_dispatches %}
+                            <tr>
+                                <td class="fw-semibold text-primary">{{ dsp.dispatch_number }}</td>
+                                <td>
+                                    <a href="{% url 'sales_order_detail' dsp.sales_order.pk %}" class="text-decoration-none">
+                                        {{ dsp.sales_order.order_number }}
+                                    </a>
+                                </td>
+                                <td class="small">{{ dsp.dispatch_date|date:"d-M-Y" }}</td>
+                                <td>{{ dsp.carrier_name }}</td>
+                                <td class="small text-muted">{{ dsp.vehicle_number|default:"-" }} / {{ dsp.lr_number|default:"-" }}</td>
+                                <td class="text-center">
+                                    {% if dsp.is_posted %}
+                                        <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Stock Deducted</span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning">Pending Post</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small text-muted">{{ dsp.dispatched_by.get_full_name|default:dsp.dispatched_by.username }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">No goods dispatches recorded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Breadcrumb -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'purchase_order_list' %}" class="text-decoration-none small text-muted">&larr; Purchase Orders</a>
+                <span class="text-muted small">/</span>
+                <span class="badge bg-light text-secondary border font-monospace">{{ po.po_number }}</span>
+            </div>
+            <h2 class="fw-bold mb-0">Purchase Order: {{ po.po_number }}</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if can_manage %}
+                {% if po.status == 'SUBMITTED' %}
+                    <form method="post" action="{% url 'purchase_order_approve' po.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary fw-medium">
+                            <i class="bi bi-check2-circle me-1"></i> Approve Purchase Order
+                        </button>
+                    </form>
+                {% endif %}
+                {% if po.status in 'APPROVED,PARTIALLY_RECEIVED' %}
+                    <a href="{% url 'grn_create' %}?po={{ po.pk }}" class="btn btn-success fw-medium">
+                        <i class="bi bi-box-arrow-in-down me-1"></i> Inward Goods Receipt (GRN)
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- PO Details Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Purchase Order Specifications</h5>
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">VENDOR / SUPPLIER</label>
+                <div>
+                    <a href="{% url 'supplier_detail' po.supplier.pk %}" class="fw-bold text-dark text-decoration-none fs-5">
+                        <i class="bi bi-truck text-success me-1"></i> {{ po.supplier.name }}
+                    </a>
+                    <div class="small text-muted font-monospace">{{ po.supplier.code }}</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">ORDER DATE & DELIVERY</label>
+                <div class="fw-bold text-dark">{{ po.order_date|date:"M d, Y" }}</div>
+                <small class="text-muted">Expected: {{ po.expected_delivery_date|date:"M d, Y"|default:"Immediate" }}</small>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">ORDER STATUS</label>
+                <div>
+                    {% if po.status == 'RECEIVED' %}
+                        <span class="badge bg-success-subtle text-success fs-6">Fully Received</span>
+                    {% elif po.status == 'PARTIALLY_RECEIVED' %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis fs-6">Partially Received</span>
+                    {% elif po.status == 'APPROVED' %}
+                        <span class="badge bg-primary-subtle text-primary fs-6">Approved for Delivery</span>
+                    {% elif po.status == 'SUBMITTED' %}
+                        <span class="badge bg-info-subtle text-info-emphasis fs-6">Awaiting Approval</span>
+                    {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary fs-6">{{ po.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">TOTAL COMMITMENT VALUE</label>
+                <div class="display-6 fw-bold text-success fs-3">₹ {{ po.total_amount }}</div>
+            </div>
+            <div class="col-12 mt-2">
+                <label class="small text-muted fw-semibold">TERMS & SPECIAL NOTES</label>
+                <div class="text-secondary">{{ po.notes|default:"Standard purchase terms apply." }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Line Items Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Ordered Materials & Receiving Status</h5>
+                <small class="text-muted">Tracking ordered vs delivered inventory quantities</small>
+            </div>
+            <span class="badge bg-dark-subtle text-dark">{{ items.count }} Line Items</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Material Item</th>
+                        <th>Ordered Qty</th>
+                        <th>Received Qty</th>
+                        <th>Pending Delivery</th>
+                        <th>Unit Rate (₹)</th>
+                        <th>Total Amount (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="font-monospace text-muted">{{ forloop.counter }}</td>
+                        <td>
+                            {% if item.item_type == 'RAW_MATERIAL' %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Raw Material</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Packaging</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong class="text-dark">{{ item.item_name }}</strong>
+                            <div class="small text-muted font-monospace">{{ item.item_code }}</div>
+                        </td>
+                        <td><span class="font-monospace fw-bold text-dark">{{ item.ordered_quantity }} {{ item.uom.code }}</span></td>
+                        <td>
+                            <span class="font-monospace fw-bold {% if item.received_quantity >= item.ordered_quantity %}text-success{% elif item.received_quantity > 0 %}text-warning-emphasis{% else %}text-muted{% endif %}">
+                                {{ item.received_quantity }} {{ item.uom.code }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if item.pending_quantity > 0 %}
+                                <span class="badge bg-danger-subtle text-danger font-monospace">
+                                    {{ item.pending_quantity }} {{ item.uom.code }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success">Fulfilled</span>
+                            {% endif %}
+                        </td>
+                        <td>₹ {{ item.unit_price }}</td>
+                        <td><strong class="text-dark">₹ {{ item.line_total }}</strong></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No items in this purchase order.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light fw-bold">
+                        <td colspan="7" class="text-end">ORDER TOTAL AMOUNT:</td>
+                        <td class="text-success fs-6">₹ {{ po.total_amount }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Associated Goods Receipt Notes -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Linked Inbound Material Receipts (GRN)</h5>
+                <small class="text-muted">Consignments received against this Purchase Order</small>
+            </div>
+            <span class="badge bg-primary-subtle text-primary">{{ receipts.count }} GRN{{ receipts.count|pluralize }}</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>GRN Number</th>
+                        <th>Challan / Invoice No</th>
+                        <th>Receipt Date</th>
+                        <th>Status</th>
+                        <th>Inspector</th>
+                        <th class="text-end">View GRN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grn in receipts %}
+                    <tr>
+                        <td><span class="font-monospace fw-bold text-dark">{{ grn.grn_number }}</span></td>
+                        <td>{{ grn.supplier_invoice_no|default:"-" }}</td>
+                        <td>{{ grn.received_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if grn.is_posted %}
+                                <span class="badge bg-success-subtle text-success">Posted to Stock</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis">Pending Posting</span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted">@{{ grn.received_by.username }}</small></td>
+                        <td class="text-end">
+                            <a href="{% url 'grn_detail' grn.pk %}" class="btn btn-sm btn-outline-primary">Inspect</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No goods receipt notes recorded yet against this PO.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

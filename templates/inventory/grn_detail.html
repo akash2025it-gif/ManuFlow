@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Breadcrumb -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'grn_list' %}" class="text-decoration-none small text-muted">&larr; Material Receipts (GRN)</a>
+                <span class="text-muted small">/</span>
+                <span class="badge bg-light text-secondary border font-monospace">{{ grn.grn_number }}</span>
+            </div>
+            <h2 class="fw-bold mb-0">Goods Receipt Note: {{ grn.grn_number }}</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if can_manage and not grn.is_posted and grn.status != 'CANCELLED' %}
+                <form method="post" action="{% url 'grn_post' grn.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i> Post Consignment to Stock Ledger
+                    </button>
+                </form>
+            {% endif %}
+            {% if grn.purchase_order %}
+                <a href="{% url 'purchase_order_detail' grn.purchase_order.pk %}" class="btn btn-outline-primary">
+                    <i class="bi bi-cart me-1"></i> View Parent PO
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- GRN Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Receipt & Inward Specifications</h5>
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">VENDOR / SUPPLIER</label>
+                <div>
+                    <a href="{% url 'supplier_detail' grn.supplier.pk %}" class="fw-bold text-dark text-decoration-none fs-5">
+                        <i class="bi bi-truck text-success me-1"></i> {{ grn.supplier.name }}
+                    </a>
+                    <div class="small text-muted font-monospace">{{ grn.supplier.code }}</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">CHALLAN / INVOICE NUMBER</label>
+                <div class="fw-bold text-dark font-monospace fs-5">{{ grn.supplier_invoice_no|default:"Challan Pending" }}</div>
+                <small class="text-muted">Date: {{ grn.invoice_date|date:"M d, Y"|default:"-" }}</small>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">MATERIAL INWARD DATE</label>
+                <div class="fw-bold text-dark fs-5">{{ grn.received_date|date:"M d, Y" }}</div>
+                <small class="text-muted">Store Officer: @{{ grn.received_by.username }}</small>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">POSTING STATUS</label>
+                <div>
+                    {% if grn.is_posted %}
+                        <span class="badge bg-success-subtle text-success fs-6 border border-success-subtle">
+                            <i class="bi bi-check-circle-fill me-1"></i> Posted to Inventory
+                        </span>
+                        <div class="small text-muted mt-1">{{ grn.posted_at|date:"M d, Y H:i" }}</div>
+                    {% else %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis fs-6 border border-warning-subtle">
+                            <i class="bi bi-clock-history me-1"></i> Awaiting Verification Post
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if grn.notes %}
+            <div class="col-12 mt-2">
+                <label class="small text-muted fw-semibold">INSPECTION OBSERVATIONS</label>
+                <div class="text-secondary">{{ grn.notes }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Items Table with Batches & Expiry Dates -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Consignment Line Items, Batches & Expiry Dates</h5>
+                <small class="text-muted">Quality inspection breakdown showing accepted and rejected inventory lots</small>
+            </div>
+            <span class="badge bg-dark-subtle text-dark">{{ items.count }} Items</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Material Item</th>
+                        <th>Delivered Qty</th>
+                        <th>QA Rejected Qty</th>
+                        <th>Accepted Qty</th>
+                        <th>Unit Rate (₹)</th>
+                        <th>Batch / Lot Number</th>
+                        <th>Expiry Date</th>
+                        <th>Warehouse Bay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="font-monospace text-muted">{{ forloop.counter }}</td>
+                        <td>
+                            {% if item.item_type == 'RAW_MATERIAL' %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Raw Material</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Packaging</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong class="text-dark">{{ item.item_name }}</strong>
+                            <div class="small text-muted font-monospace">{{ item.item_code }}</div>
+                        </td>
+                        <td><span class="font-monospace">{{ item.received_quantity }} {{ item.uom.code }}</span></td>
+                        <td>
+                            {% if item.rejected_quantity > 0 %}
+                                <span class="badge bg-danger-subtle text-danger font-monospace">{{ item.rejected_quantity }} {{ item.uom.code }}</span>
+                            {% else %}
+                                <span class="text-muted small">0.00</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-success-subtle text-success fs-6 font-monospace">
+                                {{ item.accepted_quantity }} {{ item.uom.code }}
+                            </span>
+                        </td>
+                        <td>₹ {{ item.unit_price }}</td>
+                        <td><span class="font-monospace fw-bold text-dark">{{ item.batch_number }}</span></td>
+                        <td>
+                            {% if item.expiry_date %}
+                                <span class="font-monospace small text-dark">{{ item.expiry_date|date:"M d, Y" }}</span>
+                            {% else %}
+                                <span class="text-muted small">Non-Perishable</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-secondary border">{{ item.storage_location }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4 text-muted">No line items in this Goods Receipt Note.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Traceable Ledger Impact -->
+    {% if ledger_entries %}
+    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden border-start border-4 border-success">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-success-subtle bg-opacity-25">
+            <div>
+                <h5 class="fw-bold mb-0 text-success">
+                    <i class="bi bi-shield-check me-1"></i> Immutable Stock Ledger Audit Trail
+                </h5>
+                <small class="text-muted">Exact movements verified: <strong>Opening + Receipts - Issues = Closing</strong></small>
+            </div>
+            <span class="badge bg-success text-white font-monospace">Traceable</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Txn Entry</th>
+                        <th>Timestamp</th>
+                        <th>Item</th>
+                        <th>Opening</th>
+                        <th>Receipt (+)</th>
+                        <th>Closing</th>
+                        <th>Valuation (₹)</th>
+                        <th>Executed By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in ledger_entries %}
+                    <tr>
+                        <td><span class="font-monospace small fw-bold text-dark">{{ entry.entry_number }}</span></td>
+                        <td><small class="text-muted">{{ entry.timestamp|date:"M d, H:i" }}</small></td>
+                        <td>
+                            <strong>{{ entry.item_name }}</strong>
+                            <div class="small text-muted font-monospace">{{ entry.batch_number }}</div>
+                        </td>
+                        <td><span class="font-monospace text-secondary">{{ entry.opening_quantity }}</span></td>
+                        <td><span class="font-monospace fw-bold text-success">+{{ entry.quantity_change }} {{ entry.uom.code }}</span></td>
+                        <td><span class="font-monospace fw-bold text-dark">{{ entry.closing_quantity }} {{ entry.uom.code }}</span></td>
+                        <td>₹ {{ entry.total_value }}</td>
+                        <td><small class="text-muted">@{{ entry.performed_by.username }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

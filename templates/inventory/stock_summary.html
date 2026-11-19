@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'inventory_dashboard' %}" class="text-decoration-none small text-muted">&larr; Inventory Dashboard</a>
+            </div>
+            <h2 class="fw-bold mb-0">Current Stock Summary & Inventory Balances</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{% url 'stock_ledger_list' %}" class="btn btn-outline-dark">
+                <i class="bi bi-journal-text me-1"></i> Movement Ledger
+            </a>
+            {% if can_manage %}
+                <a href="{% url 'stock_adjustment_create' %}" class="btn btn-warning text-dark fw-medium">
+                    <i class="bi bi-sliders2 me-1"></i> Physical Count Audit
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ query }}" class="form-control border-start-0" placeholder="Search by item code, description, or batch number...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-select">
+                    <option value="">All Inventory Classifications</option>
+                    {% for code, label in type_choices %}
+                        <option value="{{ code }}" {% if item_type == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" name="low_stock" value="1" id="lowStockToggle" {% if filter_low_stock == '1' %}checked{% endif %}>
+                    <label class="form-check-label fw-semibold small text-danger" for="lowStockToggle">
+                        Low Stock Only
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'stock_summary' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Item Description</th>
+                        <th>Classification</th>
+                        <th>Batch / Lot</th>
+                        <th>Expiry Date</th>
+                        <th>Stock on Hand</th>
+                        <th>Reorder Level</th>
+                        <th>Unit Rate (₹)</th>
+                        <th>Stock Valuation (₹)</th>
+                        <th>Warehouse Location</th>
+                        <th class="text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr class="{% if item.is_low_stock %}table-warning bg-opacity-25{% endif %}">
+                        <td>
+                            <strong class="text-dark">{{ item.item_name }}</strong>
+                            <div class="small text-muted font-monospace">{{ item.item_code }}</div>
+                        </td>
+                        <td>
+                            {% if item.item_type == 'RAW_MATERIAL' %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Raw Material</span>
+                            {% elif item.item_type == 'PACKAGING_MATERIAL' %}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Packaging</span>
+                            {% else %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Finished Goods</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="font-monospace fw-bold text-dark">{{ item.batch_number|default:"-" }}</span></td>
+                        <td>
+                            {% if item.expiry_date %}
+                                <span class="font-monospace small text-dark">{{ item.expiry_date|date:"M d, Y" }}</span>
+                            {% else %}
+                                <span class="text-muted small">Non-Perishable</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="font-monospace fw-bold fs-6 {% if item.is_low_stock %}text-danger{% else %}text-dark{% endif %}">
+                                {{ item.quantity_on_hand }} {{ item.uom.code }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="font-monospace text-secondary small">
+                                {% if item.raw_material %}{{ item.raw_material.reorder_level }}
+                                {% elif item.packaging_material %}{{ item.packaging_material.reorder_level }}
+                                {% else %}-{% endif %} {{ item.uom.code }}
+                            </span>
+                        </td>
+                        <td>₹ {{ item.unit_cost }}</td>
+                        <td><strong class="text-dark">₹ {{ item.total_valuation }}</strong></td>
+                        <td><span class="badge bg-light text-secondary border">{{ item.location }}</span></td>
+                        <td class="text-end">
+                            {% if item.is_low_stock %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Reorder Alert
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                    <i class="bi bi-check2"></i> Normal
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-4 text-muted">
+                            No inventory records found matching your filters.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&type={{ item_type }}&low_stock={{ filter_low_stock }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&type={{ item_type }}&low_stock={{ filter_low_stock }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

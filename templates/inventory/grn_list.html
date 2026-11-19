@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'inventory_dashboard' %}" class="text-decoration-none small text-muted">&larr; Inventory Dashboard</a>
+            </div>
+            <h2 class="fw-bold mb-0">Goods Receipt Notes (Inbound Consignments)</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if can_manage %}
+                <a href="{% url 'grn_create' %}" class="btn btn-success fw-medium">
+                    <i class="bi bi-box-arrow-in-down me-1"></i> Inward New Material Receipt (GRN)
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-7">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ query }}" class="form-control border-start-0" placeholder="Search by GRN number, vendor invoice no, or supplier name...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for code, label in status_choices %}
+                        <option value="{{ code }}" {% if status == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'grn_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>GRN Number</th>
+                        <th>Supplier / Vendor</th>
+                        <th>Challan / Invoice No</th>
+                        <th>Material Inward Date</th>
+                        <th>Linked PO</th>
+                        <th>Ledger Status</th>
+                        <th>Store Officer</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grn in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'grn_detail' grn.pk %}" class="fw-bold text-dark text-decoration-none font-monospace">
+                                {{ grn.grn_number }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'supplier_detail' grn.supplier.pk %}" class="fw-semibold text-primary text-decoration-none">
+                                {{ grn.supplier.name }}
+                            </a>
+                        </td>
+                        <td><span class="font-monospace text-dark">{{ grn.supplier_invoice_no|default:"-" }}</span></td>
+                        <td>{{ grn.received_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if grn.purchase_order %}
+                                <a href="{% url 'purchase_order_detail' grn.purchase_order.pk %}" class="font-monospace text-decoration-none">
+                                    {{ grn.purchase_order.po_number }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">Direct Consignment</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if grn.is_posted %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                    <i class="bi bi-check2-circle"></i> Posted to Stock
+                                </span>
+                            {% elif grn.status == 'CANCELLED' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Cancelled</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">
+                                    <i class="bi bi-clock-history"></i> Pending Ledger Post
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted">@{{ grn.received_by.username }}</small></td>
+                        <td class="text-end">
+                            <a href="{% url 'grn_detail' grn.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-eye"></i> Details
+                            </a>
+                            {% if can_manage and not grn.is_posted and grn.status != 'CANCELLED' %}
+                                <form method="post" action="{% url 'grn_post' grn.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success" title="Post to Inventory Ledger">
+                                        <i class="bi bi-check-lg"></i> Post
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No goods receipt notes found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&status={{ status }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&status={{ status }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

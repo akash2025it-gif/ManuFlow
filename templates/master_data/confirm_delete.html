@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                <div class="mb-3">
+                    <span class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle p-3">
+                        <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+                    </span>
+                </div>
+                <h4 class="fw-bold mb-2 text-danger">Confirm Permanent Deletion</h4>
+                <p class="text-muted mb-4">
+                    Are you sure you want to delete <br><strong class="text-dark">{{ object_name }}</strong>?<br>
+                    <small class="text-danger">This action cannot be undone and may affect associated historical logs or bills of materials.</small>
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg fw-semibold">
+                            <i class="bi bi-trash3 me-1"></i> Yes, Delete Record
+                        </button>
+                        {% if back_url %}
+                            {% if back_pk %}
+                                <a href="{% url back_url back_pk %}" class="btn btn-outline-secondary">Cancel & Keep Record</a>
+                            {% else %}
+                                <a href="{% url back_url %}" class="btn btn-outline-secondary">Cancel & Keep Record</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

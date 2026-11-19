@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Breadcrumb -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'supplier_list' %}" class="text-decoration-none small text-muted">&larr; Approved Suppliers</a>
+                <span class="text-muted small">/</span>
+                <span class="badge bg-light text-secondary border font-monospace">{{ supplier.code }}</span>
+            </div>
+            <h2 class="fw-bold mb-0">{{ supplier.name }}</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                <a href="{% url 'supplier_update' supplier.pk %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-pencil me-1"></i> Edit Supplier
+                </a>
+                <a href="{% url 'supplier_delete' supplier.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash3 me-1"></i> Delete
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Vendor Information</h5>
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">PRIMARY CONTACT</label>
+                <div class="fw-bold text-dark">{{ supplier.contact_person|default:"Not Listed" }}</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">PHONE & EMAIL</label>
+                <div class="text-dark">{{ supplier.phone|default:"-" }} / {{ supplier.email|default:"-" }}</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">GSTIN / TAX IDENTIFIER</label>
+                <div class="font-monospace fw-bold text-primary">{{ supplier.tax_id_gst|default:"Not Provided" }}</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">PAYMENT TERMS</label>
+                <div class="fw-bold text-dark">{{ supplier.payment_terms }}</div>
+            </div>
+            <div class="col-12">
+                <label class="small text-muted fw-semibold">HEADQUARTERS ADDRESS</label>
+                <div class="text-secondary">{{ supplier.address|default:"-" }}, {{ supplier.city }}, {{ supplier.state }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supplied Materials Tables -->
+    <div class="row g-4">
+        <!-- Raw Materials Supplied -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Raw Materials Sourced</h5>
+                    <span class="badge bg-primary-subtle text-primary">{{ raw_materials.count }} Items</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Code & Material</th>
+                                <th>Category</th>
+                                <th>Unit Cost</th>
+                                <th class="text-end">View</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rm in raw_materials %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ rm.name }}</div>
+                                    <small class="font-monospace text-muted">{{ rm.code }}</small>
+                                </td>
+                                <td><span class="badge bg-light text-secondary border">{{ rm.category }}</span></td>
+                                <td><strong class="text-dark">₹ {{ rm.standard_cost }}</strong> / {{ rm.uom.code }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'raw_material_detail' rm.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-3 text-muted">No raw materials linked to this supplier.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Packaging Materials Supplied -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Packaging Components Sourced</h5>
+                    <span class="badge bg-secondary-subtle text-secondary">{{ packaging_materials.count }} Items</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Code & Component</th>
+                                <th>Type</th>
+                                <th>Unit Cost</th>
+                                <th class="text-end">View</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pm in packaging_materials %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ pm.name }}</div>
+                                    <small class="font-monospace text-muted">{{ pm.code }}</small>
+                                </td>
+                                <td><span class="badge bg-light text-secondary border">{{ pm.get_material_type_display }}</span></td>
+                                <td><strong class="text-dark">₹ {{ pm.standard_cost }}</strong> / {{ pm.uom.code }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'packaging_material_detail' pm.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-3 text-muted">No packaging components linked to this supplier.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

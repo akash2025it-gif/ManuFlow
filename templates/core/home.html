@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Hero Banner -->
+    <div class="hero-gradient p-5 mb-5 shadow-sm">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-white text-primary mb-3 px-3 py-2 fw-bold text-uppercase tracking-wider">
+                    <i class="bi bi-mortarboard me-1"></i> NIT Tiruchirappalli
+                </span>
+                <h1 class="display-5 fw-bold mb-3 text-white">Order-to-Audit Management System</h1>
+                <p class="lead mb-4 text-white-50">
+                    A unified enterprise platform delivering end-to-end traceability, role-based workflows, 
+                    manufacturing tracking, and financial reconciliation from sales quotation to final compliance audit.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard_home' %}" class="btn btn-warning btn-lg px-4 fw-semibold text-dark">
+                            <i class="bi bi-speedometer2 me-2"></i> Open My Dashboard ({{ user.get_role_display }})
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-warning btn-lg px-4 fw-semibold text-dark shadow">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Access System Portal
+                        </a>
+                    {% endif %}
+                    <a href="#workflow-roles" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-diagram-3 me-2"></i> View Role Architecture
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <div class="p-4 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 shadow-lg">
+                    <i class="bi bi-shield-shaded display-1 text-warning mb-3"></i>
+                    <h5 class="text-white fw-bold">Enterprise Governance</h5>
+                    <p class="text-white-50 small mb-0">Role-Based Access Control & Immutable Audit Logs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5 Role-Based Pillars -->
+    <div id="workflow-roles" class="mb-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Comprehensive Order-to-Audit Role Matrix</h2>
+            <p class="text-muted">Strict boundary isolation and purpose-built dashboards for every operational stakeholder.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- 1. Admin -->
+            <div class="col-md-6 col-lg">
+                <div class="stat-card h-100 border-top border-4 border-danger">
+                    <div class="stat-icon bg-danger-subtle text-danger mb-3">
+                        <i class="bi bi-gear-wide-connected"></i>
+                    </div>
+                    <h5 class="fw-bold">1. Admin</h5>
+                    <p class="text-muted small">
+                        User account provisioning, institutional security controls, role assignment, and technical configuration.
+                    </p>
+                    <span class="badge badge-role-admin">System Admin</span>
+                </div>
+            </div>
+
+            <!-- 2. Salesman -->
+            <div class="col-md-6 col-lg">
+                <div class="stat-card h-100 border-top border-4 border-info">
+                    <div class="stat-icon bg-info-subtle text-info mb-3">
+                        <i class="bi bi-cart-check"></i>
+                    </div>
+                    <h5 class="fw-bold">2. Salesman</h5>
+                    <p class="text-muted small">
+                        Customer relationship, purchase order ingestion, pricing quotations, and sales confirmation pipeline.
+                    </p>
+                    <span class="badge badge-role-salesman">Sales Order</span>
+                </div>
+            </div>
+
+            <!-- 3. Production -->
+            <div class="col-md-6 col-lg">
+                <div class="stat-card h-100 border-top border-4 border-warning">
+                    <div class="stat-icon bg-warning-subtle text-warning mb-3">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                    <h5 class="fw-bold">3. Production</h5>
+                    <p class="text-muted small">
+                        Shop floor management, job card scheduling, material requirements, and batch manufacturing execution.
+                    </p>
+                    <span class="badge badge-role-production">Shop Floor</span>
+                </div>
+            </div>
+
+            <!-- 4. Auditor -->
+            <div class="col-md-6 col-lg">
+                <div class="stat-card h-100 border-top border-4 border-primary">
+                    <div class="stat-icon bg-primary-subtle text-primary mb-3">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h5 class="fw-bold">4. Auditor</h5>
+                    <p class="text-muted small">
+                        Independent compliance checks, order-to-cash reconciliation, delivery discrepancy investigation, and risk reporting.
+                    </p>
+                    <span class="badge badge-role-auditor">Quality & Finance</span>
+                </div>
+            </div>
+
+            <!-- 5. Owner -->
+            <div class="col-md-6 col-lg">
+                <div class="stat-card h-100 border-top border-4 border-success">
+                    <div class="stat-icon bg-success-subtle text-success mb-3">
+                        <i class="bi bi-briefcase"></i>
+                    </div>
+                    <h5 class="fw-bold">5. Owner</h5>
+                    <p class="text-muted small">
+                        Executive oversight, organization-wide financial performance, strategic decisions, and operational KPIs.
+                    </p>
+                    <span class="badge badge-role-owner">Executive Lead</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Foundation Stack Overview -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h4 class="fw-bold mb-2">Clean Enterprise Architecture</h4>
+                <p class="text-muted mb-0">
+                    Engineered using <strong>Django 6.x</strong>, <strong>PostgreSQL</strong> ready, 
+                    custom user model with strict role isolation, automated session management, 
+                    and responsive Bootstrap 5 interface components.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <span class="badge bg-light text-dark border p-2 me-2">Python 3.15</span>
+                <span class="badge bg-light text-dark border p-2 me-2">Django</span>
+                <span class="badge bg-light text-dark border p-2">PostgreSQL</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

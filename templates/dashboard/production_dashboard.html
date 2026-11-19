@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-3">
+    <!-- Role Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge badge-role-production px-3 py-1.5 rounded-pill font-monospace">
+                    <i class="bi bi-gear-wide-connected me-1"></i> PRODUCTION FLOOR
+                </span>
+                <span class="text-muted small">BOM Execution, Batch Variance & Costing</span>
+            </div>
+            <h2 class="fw-bold mb-0">Production Operations & Batch Control</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{% url 'production_run_create' %}" class="btn btn-warning text-dark fw-medium">
+                <i class="bi bi-plus-circle me-1"></i> New Production Run
+            </a>
+            <a href="{% url 'production_run_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-kanban me-1"></i> Work Orders
+            </a>
+            <a href="{% url 'stock_summary' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-box-seam me-1"></i> Stock Balances
+            </a>
+        </div>
+    </div>
+
+    <!-- Production Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Total Good Output</div>
+                        <div class="stat-value text-dark fs-3">{{ total_good_output|floatformat:0 }} <span class="fs-6 text-muted">packets</span></div>
+                    </div>
+                    <div class="stat-icon bg-success-subtle text-success">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+                </div>
+                <div class="small text-muted mt-2">
+                    Planned target: {{ total_planned|floatformat:0 }} pkts
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Batches Completed</div>
+                        <div class="stat-value text-dark fs-3">{{ completed_runs_count }}</div>
+                    </div>
+                    <div class="stat-icon bg-primary-subtle text-primary">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                </div>
+                <div class="small text-success mt-2">
+                    <i class="bi bi-check-circle"></i> Finished stock posted
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Active / Scheduled Runs</div>
+                        <div class="stat-value text-dark fs-3">{{ active_runs_count }}</div>
+                    </div>
+                    <div class="stat-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+                <div class="small text-muted mt-2">
+                    In preparation / planned
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Yield Variance Alerts</div>
+                        <div class="stat-value text-danger fs-3">{{ yield_alerts_count }}</div>
+                    </div>
+                    <div class="stat-icon bg-danger-subtle text-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="small text-danger mt-2">
+                    <i class="bi bi-bell"></i> Deviations &ge; 3% from BOM
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Production Runs Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+        <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Production Runs & BOM Tracking</h5>
+                <small class="text-muted">Batch execution, raw material consumption and yield monitoring</small>
+            </div>
+            <a href="{% url 'production_run_list' %}" class="btn btn-sm btn-outline-primary">All Runs &rarr;</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Run #</th>
+                        <th>Product / BOM</th>
+                        <th>Batch Lot</th>
+                        <th>Planned Qty</th>
+                        <th>Good Output</th>
+                        <th>Yield Variance</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for run in recent_runs %}
+                    <tr>
+                        <td class="font-monospace fw-bold text-dark">{{ run.run_number }}</td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ run.bill_of_materials.product.name }}</div>
+                            <span class="font-monospace text-muted small">{{ run.bill_of_materials.code }}</span>
+                        </td>
+                        <td class="font-monospace small">{{ run.batch_number }}</td>
+                        <td class="font-monospace">{{ run.planned_quantity|floatformat:0 }} pkts</td>
+                        <td class="font-monospace fw-bold">{{ run.actual_output_quantity|floatformat:0 }} pkts</td>
+                        <td>
+                            {% if run.is_posted %}
+                            <span class="badge {% if run.is_yield_alert_triggered %}bg-danger{% else %}bg-success-subtle text-success{% endif %} font-monospace">
+                                {{ run.yield_variance_pct|floatformat:2 }}%
+                            </span>
+                            {% else %}
+                            <span class="badge bg-light text-dark border">Pending Execution</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {% if run.status == 'COMPLETED' %}bg-success-subtle text-success border border-success-subtle{% elif run.status == 'IN_PROGRESS' %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %} rounded-pill">
+                                {{ run.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'production_run_detail' pk=run.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="bi bi-gear fs-3 d-block mb-1 text-secondary opacity-50"></i>
+                            No production runs scheduled. <a href="{% url 'production_run_create' %}">Launch a new run</a>.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

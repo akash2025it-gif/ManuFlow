@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'inventory_dashboard' %}" class="text-decoration-none small text-muted">&larr; Inventory Dashboard</a>
+            </div>
+            <h2 class="fw-bold mb-0">Traceable Stock Movement Ledger</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{% url 'stock_summary' %}" class="btn btn-outline-primary">
+                <i class="bi bi-boxes me-1"></i> Current Stock Balances
+            </a>
+        </div>
+    </div>
+
+    <!-- Audit Proof Banner -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white border-start border-4 border-success">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success-subtle text-success p-3 rounded-circle">
+                    <i class="bi bi-shield-check fs-3"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-1">Audit Trail Integrity Verification</h5>
+                    <p class="text-muted small mb-0">
+                        Every stock transaction strictly satisfies the perpetual inventory equation: 
+                        <span class="badge bg-light text-dark border font-monospace fs-6">Opening Balance + Receipts - Issues = Closing Balance</span>
+                    </p>
+                </div>
+            </div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace">
+                Immutable Ledger Active
+            </span>
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ query }}" class="form-control border-start-0" placeholder="Search by Txn ID, source document, item, or batch...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="movement" class="form-select">
+                    <option value="">All Movement Types</option>
+                    {% for code, label in movement_choices %}
+                        <option value="{{ code }}" {% if movement_type == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="type" class="form-select">
+                    <option value="">All Item Types</option>
+                    {% for code, label in type_choices %}
+                        <option value="{{ code }}" {% if item_type == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'stock_ledger_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Txn Entry ID</th>
+                        <th>Timestamp</th>
+                        <th>Movement Type</th>
+                        <th>Item Description</th>
+                        <th>Batch / Lot</th>
+                        <th>Opening Qty</th>
+                        <th>Delta (+ / -)</th>
+                        <th>Closing Qty</th>
+                        <th>Valuation (₹)</th>
+                        <th>Source Reference</th>
+                        <th>Executed By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in page_obj %}
+                    <tr>
+                        <td><span class="font-monospace small fw-bold text-dark">{{ m.entry_number }}</span></td>
+                        <td><small class="text-muted">{{ m.timestamp|date:"M d, Y H:i" }}</small></td>
+                        <td>
+                            {% if 'RECEIPT' in m.movement_type or 'IN' in m.movement_type or 'OPENING' in m.movement_type %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                    {{ m.get_movement_type_display }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">
+                                    {{ m.get_movement_type_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong class="text-dark">{{ m.item_name }}</strong>
+                            <div class="small text-muted font-monospace">{{ m.item_code }}</div>
+                        </td>
+                        <td><span class="font-monospace small text-muted">{{ m.batch_number|default:"-" }}</span></td>
+                        <td><span class="font-monospace text-secondary">{{ m.opening_quantity }}</span></td>
+                        <td>
+                            {% if m.quantity_change > 0 %}
+                                <span class="font-monospace fw-bold text-success">+{{ m.quantity_change }} {{ m.uom.code }}</span>
+                            {% elif m.quantity_change < 0 %}
+                                <span class="font-monospace fw-bold text-danger">{{ m.quantity_change }} {{ m.uom.code }}</span>
+                            {% else %}
+                                <span class="font-monospace text-muted">0.0000</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="font-monospace fw-bold text-dark">
+                                {{ m.closing_quantity }} {{ m.uom.code }}
+                            </span>
+                        </td>
+                        <td>₹ {{ m.total_value }}</td>
+                        <td>
+                            <span class="badge bg-light text-dark border font-monospace">
+                                {{ m.reference_type }}: {{ m.reference_id }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">@{{ m.performed_by.username }}</small></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="text-center py-4 text-muted">
+                            No stock ledger records found matching query.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&movement={{ movement_type }}&type={{ item_type }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&movement={{ movement_type }}&type={{ item_type }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

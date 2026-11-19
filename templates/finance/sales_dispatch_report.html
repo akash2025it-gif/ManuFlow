@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Dispatch Audit Report - NIT Trichy{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-7">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sales Dispatch Report</li>
+                </ol>
+            </nav>
+            <h2 class="h3 fw-bold mb-0 text-dark">
+                <i class="bi bi-truck text-secondary me-2"></i>Sales Dispatch & Outward Movement Audit
+            </h2>
+            <p class="text-muted small mb-0">Traceable outward logistics logs with carrier details, vehicle numbers, and LR references.</p>
+        </div>
+        <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end flex-wrap">
+            <a href="{% url 'dispatch_list' %}" class="btn btn-outline-primary">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Sales Dispatches
+            </a>
+            <a href="{% url 'finance:gst_sales_register' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-receipt-cutoff me-1"></i> Sales Register
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-muted mb-1">From Dispatch Date</label>
+                    {{ form.start_date }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-muted mb-1">To Dispatch Date</label>
+                    {{ form.end_date }}
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i> Filter Dispatches
+                    </button>
+                    {% if request.GET.start_date or request.GET.end_date %}
+                    <a href="{% url 'finance:sales_dispatch_report' %}" class="btn btn-outline-secondary" title="Reset">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dispatches Table -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <h5 class="h6 fw-bold mb-0 text-dark">
+                <i class="bi bi-send-check me-2 text-primary"></i>Outward Dispatch Records ({{ total_dispatches }} Shipments)
+            </h5>
+            <span class="badge bg-light text-muted border">Physical Inventory Deducted</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase text-muted">
+                    <tr>
+                        <th>Dispatch #</th>
+                        <th>Date</th>
+                        <th>Order #</th>
+                        <th>Invoice #</th>
+                        <th>Customer / Destination</th>
+                        <th>Logistics Carrier</th>
+                        <th>Vehicle #</th>
+                        <th>LR #</th>
+                        <th>Dispatched By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in dispatches %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'dispatch_detail' d.id %}" class="fw-bold font-monospace text-primary text-decoration-none">
+                                {{ d.dispatch_number }}
+                            </a>
+                        </td>
+                        <td class="font-monospace small text-nowrap">{{ d.dispatch_date|date:"d M Y" }}</td>
+                        <td>
+                            <a href="{% url 'sales_order_detail' d.sales_order.id %}" class="font-monospace small text-decoration-none">
+                                {{ d.sales_order.order_number }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if d.invoice %}
+                            <a href="{% url 'invoice_detail' d.invoice.id %}" class="font-monospace small text-decoration-none">
+                                {{ d.invoice.invoice_number }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-medium text-dark">{{ d.sales_order.customer.name }}</div>
+                            <span class="text-muted small">{{ d.sales_order.delivery_city }}, {{ d.sales_order.delivery_state }}</span>
+                        </td>
+                        <td>
+                            <span class="fw-semibold text-dark">{{ d.carrier_name|default:"Direct Handover" }}</span>
+                        </td>
+                        <td class="font-monospace small text-muted">{{ d.vehicle_number|default:"-" }}</td>
+                        <td class="font-monospace small text-muted">{{ d.lr_number|default:"-" }}</td>
+                        <td class="small text-muted">{{ d.dispatched_by.username|default:"Warehouse Staff" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-truck fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                            <h6 class="fw-bold">No Dispatches Found</h6>
+                            <p class="small text-muted mb-0">Dispatched orders will appear here for logistics and stock reconciliation.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

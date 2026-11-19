@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Ledger Audit Report - NIT Trichy{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-7">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Stock Movement Ledger</li>
+                </ol>
+            </nav>
+            <h2 class="h3 fw-bold mb-0 text-dark">
+                <i class="bi bi-journal-text text-dark me-2"></i>Traceable Stock Movement Ledger Report
+            </h2>
+            <p class="text-muted small mb-0">Auditable, immutable chronological record of every inventory receipt, issue, dispatch, and adjustment.</p>
+        </div>
+        <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end flex-wrap">
+            <div class="btn-group shadow-sm">
+                <a href="{% url 'finance:export_stock_ledger' %}?format=excel{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.movement_type %}&movement_type={{ request.GET.movement_type }}{% endif %}{% if request.GET.item_type %}&item_type={{ request.GET.item_type }}{% endif %}" class="btn btn-outline-success">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+                </a>
+                <a href="{% url 'finance:export_stock_ledger' %}?format=csv{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.movement_type %}&movement_type={{ request.GET.movement_type }}{% endif %}{% if request.GET.item_type %}&item_type={{ request.GET.item_type }}{% endif %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-file-earmark-text me-1"></i> CSV
+                </a>
+            </div>
+            <a href="{% url 'finance:stock_report' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-boxes me-1"></i> Stock Balances
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted mb-1">From Date</label>
+                    {{ form.start_date }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted mb-1">To Date</label>
+                    {{ form.end_date }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted mb-1">Movement Type</label>
+                    {{ form.movement_type }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold text-muted mb-1">Item Category</label>
+                    {{ form.item_type }}
+                </div>
+                <div class="col-md-1 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary w-100" title="Apply Filter">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                    <a href="{% url 'finance:stock_ledger_report' %}" class="btn btn-outline-secondary" title="Reset">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ledger Table -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <h5 class="h6 fw-bold mb-0 text-dark">
+                <i class="bi bi-list-check me-2 text-primary"></i>Movement Logs ({{ total_entries }} Entries)
+            </h5>
+            <span class="badge bg-light text-muted border">FIFO / Chronological Movement</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase text-muted">
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Movement Type</th>
+                        <th>Category</th>
+                        <th>Item Description</th>
+                        <th>Batch #</th>
+                        <th class="text-end">Qty Change</th>
+                        <th>UOM</th>
+                        <th class="text-end">Unit Cost (₹)</th>
+                        <th class="text-end">Balance After</th>
+                        <th>Source Ref</th>
+                        <th>Logged By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in ledger_entries %}
+                    <tr>
+                        <td class="font-monospace small text-muted">{{ e.entry_number|default:e.id }}</td>
+                        <td class="font-monospace small text-nowrap">{{ e.timestamp|date:"d M Y H:i" }}</td>
+                        <td>
+                            <span class="badge {% if 'RECEIPT' in e.movement_type or 'OUTPUT' in e.movement_type or 'OPENING' in e.movement_type %}bg-success bg-opacity-10 text-success border border-success{% elif 'DISPATCH' in e.movement_type or 'ISSUE' in e.movement_type %}bg-danger bg-opacity-10 text-danger border border-danger{% else %}bg-warning bg-opacity-10 text-warning border border-warning{% endif %}">
+                                {{ e.get_movement_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border small">{{ e.get_item_type_display }}</span>
+                        </td>
+                        <td class="fw-medium text-dark">{{ e.item_name }}</td>
+                        <td class="font-monospace small">{{ e.batch_number|default:"-" }}</td>
+                        <td class="text-end font-monospace fw-bold {% if e.quantity_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                            {% if e.quantity_change > 0 %}+{% endif %}{{ e.quantity_change|floatformat:2 }}
+                        </td>
+                        <td class="small">{{ e.uom.code }}</td>
+                        <td class="text-end font-monospace">₹{{ e.unit_cost|floatformat:2 }}</td>
+                        <td class="text-end font-monospace fw-bold text-dark">{{ e.closing_quantity|floatformat:2 }}</td>
+                        <td class="font-monospace small text-muted">{{ e.reference_type }}{% if e.reference_id %}: {{ e.reference_id }}{% endif %}</td>
+                        <td class="small text-muted">{{ e.performed_by.username|default:"System" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="12" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                            <h6 class="fw-bold">No Movement Entries Found</h6>
+                            <p class="small text-muted mb-0">Try adjusting the date range or filters above.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

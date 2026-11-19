@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Breadcrumb & Top Bar -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'product_list' %}" class="text-decoration-none small text-muted">&larr; Finished Products</a>
+                <span class="text-muted small">/</span>
+                <span class="badge bg-light text-secondary border font-monospace">{{ product.code }}</span>
+            </div>
+            <h2 class="fw-bold mb-0">{{ product.name }}</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                <a href="{% url 'pack_size_create' product.pk %}" class="btn btn-outline-primary fw-medium">
+                    <i class="bi bi-box-seam me-1"></i> Add Pack Size (SKU)
+                </a>
+                <a href="{% url 'bom_create' %}?product={{ product.pk }}" class="btn btn-dark fw-medium">
+                    <i class="bi bi-diagram-3 me-1"></i> Configure BOM
+                </a>
+                <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-pencil me-1"></i> Edit
+                </a>
+                <a href="{% url 'product_delete' product.pk %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash3"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Product Summary Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+                <div class="small text-muted fw-semibold text-uppercase">Product Family / Category</div>
+                <div class="fw-bold text-dark fs-5">{{ product.category|default:"General Industrial" }}</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="small text-muted fw-semibold text-uppercase">Bulk Production Unit</div>
+                <div class="fw-bold text-primary fs-5 font-monospace">{{ product.base_uom.code }} <small class="text-muted fs-6">({{ product.base_uom.name }})</small></div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="small text-muted fw-semibold text-uppercase">Catalog Status</div>
+                <div>
+                    {% if product.is_active %}
+                        <span class="badge bg-success-subtle text-success fs-6">Active Commercial Item</span>
+                    {% else %}
+                        <span class="badge bg-danger-subtle text-danger fs-6">Discontinued / Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="small text-muted fw-semibold text-uppercase">Pack Size Variants</div>
+                <div class="fw-bold text-dark fs-5">{{ pack_sizes.count }} Commercial SKUs</div>
+            </div>
+            <div class="col-12 mt-2">
+                <div class="small text-muted fw-semibold text-uppercase">Description & Application Notes</div>
+                <p class="text-secondary mb-0">{{ product.description|default:"No technical description entered." }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Pack Sizes & Commercial Pricing (Retailer / Distributor) -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Commercial Pack Sizes & Pricing Tiers</h5>
+                <small class="text-muted">Pack volume, packaging containers, MRP, Retailer, and Wholesale Distributor pricing</small>
+            </div>
+            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                <a href="{% url 'pack_size_create' product.pk %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Add SKU
+                </a>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>SKU Code</th>
+                        <th>Pack Description</th>
+                        <th>Net Volume/Weight</th>
+                        <th>Primary Container</th>
+                        <th>MRP (₹)</th>
+                        <th>Retailer Price (₹)</th>
+                        <th>Distributor Price (₹)</th>
+                        <th>Barcode</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ps in pack_sizes %}
+                    <tr>
+                        <td><span class="font-monospace fw-bold text-dark">{{ ps.sku_code }}</span></td>
+                        <td class="fw-semibold text-secondary">{{ ps.pack_name }}</td>
+                        <td><span class="font-monospace fw-bold text-primary">{{ ps.pack_size_value }} {{ ps.uom.code }}</span></td>
+                        <td>
+                            {% if ps.primary_packaging %}
+                                <a href="{% url 'packaging_material_detail' ps.primary_packaging.pk %}" class="text-decoration-none">
+                                    {{ ps.primary_packaging.name }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">None</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="fw-bold text-dark">₹ {{ ps.mrp }}</span></td>
+                        <td><span class="text-info-emphasis fw-semibold">₹ {{ ps.retailer_price }}</span></td>
+                        <td><span class="text-success-emphasis fw-semibold">₹ {{ ps.distributor_price }}</span></td>
+                        <td><span class="font-monospace small text-muted">{{ ps.barcode|default:"-" }}</span></td>
+                        <td class="text-end">
+                            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                                <a href="{% url 'pack_size_update' ps.pk %}" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'pack_size_delete' ps.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></a>
+                            {% else %}
+                                <span class="text-muted small">View Only</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            No pack sizes configured yet for this finished product.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Section: Bill of Materials (BOM) Specifications -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Production Bill of Materials (BOM)</h5>
+                <small class="text-muted">Master mixing formulas, ingredient quantities, and expected yield percentage</small>
+            </div>
+            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                <a href="{% url 'bom_create' %}?product={{ product.pk }}" class="btn btn-sm btn-dark">
+                    <i class="bi bi-plus-lg me-1"></i> Add BOM Formulation
+                </a>
+            {% endif %}
+        </div>
+        <div class="p-3">
+            <div class="row g-3">
+                {% for bom in boms %}
+                <div class="col-lg-6">
+                    <div class="card border border-2 {% if bom.is_active_version %}border-success-subtle{% else %}border-light{% endif %} rounded-3 p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="font-monospace fw-bold fs-6 text-dark">{{ bom.bom_code }}</span>
+                                <div class="fw-semibold text-secondary">{{ bom.name }} ({{ bom.version }})</div>
+                            </div>
+                            {% if bom.is_active_version %}
+                                <span class="badge bg-success-subtle text-success">Active Standard Revision</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary">Historical</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="row g-2 small my-2 py-2 bg-light rounded-2">
+                            <div class="col-4">
+                                <span class="text-muted d-block">Batch Size</span>
+                                <strong class="font-monospace">{{ bom.batch_size }} {{ bom.output_uom.code }}</strong>
+                            </div>
+                            <div class="col-4">
+                                <span class="text-muted d-block">Expected Yield</span>
+                                <strong class="text-success">{{ bom.expected_yield_pct }}%</strong>
+                            </div>
+                            <div class="col-4">
+                                <span class="text-muted d-block">Net Output</span>
+                                <strong class="font-monospace">{{ bom.expected_output_quantity }} {{ bom.output_uom.code }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="small text-muted mb-3">
+                            Contains <strong>{{ bom.items.count }}</strong> ingredients / components.
+                            Estimated batch cost: <strong>₹ {{ bom.total_estimated_cost }}</strong>.
+                        </div>
+
+                        <div class="mt-auto d-flex justify-content-end gap-2">
+                            <a href="{% url 'bom_detail' bom.pk %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye me-1"></i> View Full BOM Ingredients
+                            </a>
+                            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                                <a href="{% url 'bom_update' bom.pk %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 py-3 text-center text-muted">
+                    No Bill of Materials (BOM) created yet for this product.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'inventory_dashboard' %}" class="text-decoration-none small text-muted">&larr; Inventory Dashboard</a>
+            </div>
+            <h2 class="fw-bold mb-0">Stock Adjustments & Physical Inventory Audits</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if can_manage %}
+                <a href="{% url 'stock_adjustment_create' %}" class="btn btn-warning text-dark fw-medium">
+                    <i class="bi bi-sliders2 me-1"></i> New Physical Count Audit
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Adjustment Ref</th>
+                        <th>Audit Date</th>
+                        <th>Reason for Adjustment</th>
+                        <th>Posting Status</th>
+                        <th>Auditor / Store Officer</th>
+                        <th>Approved By</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for adj in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'stock_adjustment_detail' adj.pk %}" class="fw-bold text-dark text-decoration-none font-monospace">
+                                {{ adj.adjustment_number }}
+                            </a>
+                        </td>
+                        <td>{{ adj.adjustment_date|date:"M d, Y" }}</td>
+                        <td><span class="badge bg-light text-secondary border">{{ adj.get_reason_display }}</span></td>
+                        <td>
+                            {% if adj.is_posted %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                    <i class="bi bi-check2-circle"></i> Posted to Stock Ledger
+                                </span>
+                            {% elif adj.status == 'CANCELLED' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Cancelled</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">
+                                    <i class="bi bi-clock-history"></i> Draft / Verification Pending
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted">@{{ adj.created_by.username }}</small></td>
+                        <td>
+                            {% if adj.approved_by %}
+                                <small class="text-success fw-semibold">@{{ adj.approved_by.username }}</small>
+                            {% else %}
+                                <small class="text-muted">Pending Approval</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'stock_adjustment_detail' adj.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-eye"></i> Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No stock adjustments recorded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Record Customer Payment - NIT Trichy{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-7">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'finance:payments_list' %}">Payments</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Record Payment</li>
+                </ol>
+            </nav>
+            <h2 class="h3 fw-bold mb-0 text-dark">
+                <i class="bi bi-wallet2 text-success me-2"></i>Record Customer Payment Voucher
+            </h2>
+            <p class="text-muted small mb-0">Post atomic payment against an approved GST invoice with automatic balance reconciliation.</p>
+        </div>
+        <div class="col-md-5 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'finance:payments_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Payment Ledger
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert / Validation Errors -->
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger border-0 shadow-sm mb-4">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        {% for error in form.non_field_errors %}
+            <span>{{ error }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Form Column -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="h6 fw-bold mb-0 text-dark">
+                        <i class="bi bi-pencil-square text-primary me-2"></i>Payment Voucher Entry
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" id="payment-form">
+                        {% csrf_token %}
+
+                        <!-- Invoice Select -->
+                        <div class="mb-3">
+                            <label for="id_invoice" class="form-label fw-semibold">Select GST Invoice <span class="text-danger">*</span></label>
+                            {{ form.invoice }}
+                            {% if form.invoice.errors %}
+                            <div class="text-danger small mt-1">{{ form.invoice.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text small">Showing approved invoices with outstanding balances.</div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <!-- Payment Date -->
+                            <div class="col-md-6">
+                                <label for="id_payment_date" class="form-label fw-semibold">Payment Date <span class="text-danger">*</span></label>
+                                {{ form.payment_date }}
+                                {% if form.payment_date.errors %}
+                                <div class="text-danger small mt-1">{{ form.payment_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Amount -->
+                            <div class="col-md-6">
+                                <label for="id_amount" class="form-label fw-semibold">Amount Received (₹) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">₹</span>
+                                    {{ form.amount }}
+                                </div>
+                                {% if form.amount.errors %}
+                                <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small text-danger fw-semibold">Cannot exceed invoice balance due.</div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <!-- Payment Mode -->
+                            <div class="col-md-6">
+                                <label for="id_payment_mode" class="form-label fw-semibold">Payment Mode <span class="text-danger">*</span></label>
+                                {{ form.payment_mode }}
+                                {% if form.payment_mode.errors %}
+                                <div class="text-danger small mt-1">{{ form.payment_mode.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Reference Number -->
+                            <div class="col-md-6">
+                                <label for="id_transaction_reference" class="form-label fw-semibold">UTR / Cheque / Ref #</label>
+                                {{ form.transaction_reference }}
+                                {% if form.transaction_reference.errors %}
+                                <div class="text-danger small mt-1">{{ form.transaction_reference.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="mb-4">
+                            <label for="id_notes" class="form-label fw-semibold">Remittance Notes</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success px-4 shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i> Post Payment Voucher
+                            </button>
+                            <a href="{% url 'finance:payments_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Context Sidebar -->
+        <div class="col-lg-5">
+            {% if selected_invoice %}
+            <div class="card border-0 shadow-sm rounded-3 mb-3">
+                <div class="card-header bg-primary bg-opacity-10 border-0 py-3">
+                    <h5 class="h6 fw-bold mb-0 text-primary">
+                        <i class="bi bi-receipt me-2"></i>Invoice Details: {{ selected_invoice.invoice_number }}
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Customer:</span>
+                        <span class="fw-bold text-dark">{{ selected_invoice.customer.name }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Invoice Date:</span>
+                        <span>{{ selected_invoice.invoice_date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Due Date:</span>
+                        <span class="{% if selected_invoice.is_overdue %}text-danger fw-bold{% endif %}">
+                            {{ selected_invoice.due_date|date:"d M Y" }}
+                            {% if selected_invoice.is_overdue %}(Overdue){% endif %}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Invoice Total:</span>
+                        <span class="font-monospace fw-bold">₹{{ selected_invoice.grand_total|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Amount Paid So Far:</span>
+                        <span class="font-monospace text-success fw-bold">₹{{ selected_invoice.amount_paid|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom bg-light p-2 rounded">
+                        <span class="fw-bold text-dark">Remaining Balance:</span>
+                        <span class="font-monospace text-danger fw-bold fs-5">₹{{ selected_invoice.balance_due|floatformat:2 }}</span>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge {% if selected_invoice.payment_status == 'PAID' %}bg-success{% elif selected_invoice.payment_status == 'PARTIAL' %}bg-warning text-dark{% else %}bg-secondary{% endif %} w-100 py-2">
+                            Status: {{ selected_invoice.get_payment_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card border-0 shadow-sm rounded-3 bg-light">
+                <div class="card-body p-3">
+                    <h6 class="fw-bold text-dark mb-2">
+                        <i class="bi bi-shield-lock text-primary me-2"></i>Audit Integrity Rules
+                    </h6>
+                    <ul class="small text-muted ps-3 mb-0">
+                        <li class="mb-1"><strong>Atomic Locking:</strong> Each payment voucher updates invoice paid amounts inside a database transaction (`select_for_update`).</li>
+                        <li class="mb-1"><strong>Overpayment Guard:</strong> Rejects payments strictly if entered amount &gt; invoice balance due.</li>
+                        <li class="mb-1"><strong>Automatic Status Transition:</strong> Invoices automatically transition from <code>PENDING</code> &rarr; <code>PARTIAL</code> &rarr; <code>PAID</code> upon settlement.</li>
+                        <li><strong>Reversibility:</strong> Vouchers are recorded chronologically with unique voucher IDs (e.g. <code>PAY-20261118-0001</code>).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

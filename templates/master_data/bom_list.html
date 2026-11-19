@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'master_data_hub' %}" class="text-decoration-none small text-muted">&larr; Master Data Hub</a>
+            </div>
+            <h2 class="fw-bold mb-0">Bill of Materials (BOM) Formulations</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                <a href="{% url 'bom_create' %}" class="btn btn-dark fw-medium">
+                    <i class="bi bi-diagram-3-fill me-1"></i> New BOM Formulation
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ query }}" class="form-control border-start-0" placeholder="Search by BOM code, formulation title, or product...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="product" class="form-select">
+                    <option value="">All Finished Products</option>
+                    {% for p in products %}
+                        <option value="{{ p.id }}" {% if product_id == p.id|stringformat:"s" %}selected{% endif %}>{{ p.name }} ({{ p.code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Revisions</option>
+                    <option value="active" {% if status == 'active' %}selected{% endif %}>Active Revision</option>
+                    <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Archived / Historical</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{% url 'bom_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>BOM Code & Title</th>
+                        <th>Finished Product</th>
+                        <th>Batch Size</th>
+                        <th>Expected Yield</th>
+                        <th>Net Output Qty</th>
+                        <th>Estimated Batch Cost</th>
+                        <th>Revision</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'bom_detail' b.pk %}" class="fw-bold text-dark text-decoration-none">
+                                {{ b.bom_code }}
+                            </a>
+                            <div class="small text-muted">{{ b.name }}</div>
+                        </td>
+                        <td>
+                            <a href="{% url 'product_detail' b.product.pk %}" class="fw-semibold text-primary text-decoration-none">
+                                {{ b.product.name }}
+                            </a>
+                            <div class="small text-muted font-monospace">{{ b.product.code }}</div>
+                        </td>
+                        <td><span class="font-monospace fw-bold text-dark">{{ b.batch_size }} {{ b.output_uom.code }}</span></td>
+                        <td>
+                            <span class="badge bg-success-subtle text-success fs-6 fw-bold">
+                                {{ b.expected_yield_pct }}%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="font-monospace fw-semibold text-secondary">
+                                {{ b.expected_output_quantity }} {{ b.output_uom.code }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">₹ {{ b.total_estimated_cost }}</div>
+                            <small class="text-muted">₹ {{ b.cost_per_unit_output }}/{{ b.output_uom.code }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-secondary border font-monospace">{{ b.version }}</span>
+                            {% if b.is_active_version %}
+                                <span class="badge bg-success-subtle text-success ms-1">Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'bom_detail' b.pk %}" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-eye"></i> Specs</a>
+                            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                                <a href="{% url 'bom_update' b.pk %}" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'bom_delete' b.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            No Bill of Materials (BOM) found matching criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&product={{ product_id }}&status={{ status }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&product={{ product_id }}&status={{ status }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold mb-0">Audit Record #{{ entry.id }}</h3>
+                <a href="{% url 'audit_trail' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Audit Trail
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Timestamp</span>
+                            <strong class="font-monospace">{{ entry.timestamp|date:"Y-m-d H:i:s" }}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Operator User</span>
+                            <strong>{{ entry.user_email|default:"System" }}</strong> ({{ entry.user_role|default:"N/A" }})
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Module</span>
+                            <span class="badge bg-primary-subtle text-primary">{{ entry.get_module_display }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Action</span>
+                            <span class="badge bg-light text-dark border">{{ entry.get_action_display }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Target Object</span>
+                            <strong>{{ entry.object_repr }}</strong>
+                        </div>
+                        {% if entry.reference_number %}
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Reference Number</span>
+                            <span class="badge bg-dark font-monospace">{{ entry.reference_number }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">IP Address</span>
+                            <span class="font-monospace text-secondary">{{ entry.ip_address|default:"127.0.0.1" }}</span>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-2">Audit Payload / Captured Details</h5>
+                    {% if entry.details %}
+                    <div class="bg-light p-3 rounded-3 border">
+                        <pre class="mb-0 font-monospace small" style="white-space: pre-wrap; word-break: break-all;">{{ entry.details }}</pre>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small fst-italic">No additional payload attributes recorded.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-3">
+    <div class="row justify-content-center">
+        <div class="col-xl-11">
+            <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+                <div class="p-4 bg-light border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold mb-1">{{ page_title|default:"Bill of Materials Formulation" }}</h4>
+                        <p class="text-muted small mb-0">Define production batch size, expected yield, and multi-ingredient recipe lines</p>
+                    </div>
+                    {% if back_url %}
+                        {% if back_pk %}
+                            <a href="{% url back_url back_pk %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i> Back
+                            </a>
+                        {% else %}
+                            <a href="{% url back_url %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i> Back
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 px-3 small rounded-3 mb-4">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% if formset.non_form_errors %}
+                        <div class="alert alert-danger py-2 px-3 small rounded-3 mb-4">
+                            {% for error in formset.non_form_errors %}
+                                <div><i class="bi bi-exclamation-circle me-1"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" id="bomForm" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Header Specs -->
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">1. Master Batch Specification</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="{{ form.product.id_for_label }}" class="form-label fw-semibold small">Finished Product <span class="text-danger">*</span></label>
+                                {{ form.product }}
+                                {% if form.product.errors %}<div class="text-danger small">{{ form.product.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ form.bom_code.id_for_label }}" class="form-label fw-semibold small">BOM Code <span class="text-danger">*</span></label>
+                                {{ form.bom_code }}
+                                {% if form.bom_code.errors %}<div class="text-danger small">{{ form.bom_code.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold small">Formulation Name <span class="text-danger">*</span></label>
+                                {{ form.name }}
+                                {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-2">
+                                <label for="{{ form.version.id_for_label }}" class="form-label fw-semibold small">Revision Version</label>
+                                {{ form.version }}
+                                {% if form.version.errors %}<div class="text-danger small">{{ form.version.errors.0 }}</div>{% endif %}
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="{{ form.batch_size.id_for_label }}" class="form-label fw-semibold small">Standard Batch Size <span class="text-danger">*</span></label>
+                                {{ form.batch_size }}
+                                {% if form.batch_size.errors %}<div class="text-danger small">{{ form.batch_size.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ form.output_uom.id_for_label }}" class="form-label fw-semibold small">Batch Output Unit <span class="text-danger">*</span></label>
+                                {{ form.output_uom }}
+                                {% if form.output_uom.errors %}<div class="text-danger small">{{ form.output_uom.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label for="{{ form.expected_yield_pct.id_for_label }}" class="form-label fw-semibold small">Expected Yield (%) <span class="text-danger">*</span></label>
+                                {{ form.expected_yield_pct }}
+                                {% if form.expected_yield_pct.errors %}<div class="text-danger small">{{ form.expected_yield_pct.errors.0 }}</div>{% endif %}
+                                <small class="text-muted">Standard process recovery % (e.g. 98.50%)</small>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold small d-block">Revision Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    {{ form.is_active_version }}
+                                    <label class="form-check-label fw-semibold" for="{{ form.is_active_version.id_for_label }}">
+                                        Active Standard Revision
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ingredients Section -->
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 mt-4">
+                            <div>
+                                <h5 class="fw-bold mb-0">2. Formulation Ingredients & Packaging Components</h5>
+                                <small class="text-muted">Specify the constituent raw materials or packaging items, quantities, and allowable scrap margin</small>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="addIngredientBtn">
+                                <i class="bi bi-plus-circle me-1"></i> Add Another Ingredient
+                            </button>
+                        </div>
+
+                        {{ formset.management_form }}
+
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered align-middle" id="ingredientsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 15%;">Component Type</th>
+                                        <th style="width: 25%;">Raw Material Item</th>
+                                        <th style="width: 25%;">Packaging Item</th>
+                                        <th style="width: 12%;">Qty Required</th>
+                                        <th style="width: 10%;">Unit</th>
+                                        <th style="width: 8%;">Scrap %</th>
+                                        <th style="width: 5%;" class="text-center">Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="formsetTbody">
+                                    {% for item_form in formset %}
+                                        <tr class="formset-row">
+                                            {% for hidden in item_form.hidden_fields %}
+                                                {{ hidden }}
+                                            {% endfor %}
+                                            <td>
+                                                {{ item_form.item_type }}
+                                                {% if item_form.item_type.errors %}<div class="text-danger small">{{ item_form.item_type.errors.0 }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="raw-material-wrapper">
+                                                    {{ item_form.raw_material }}
+                                                    {% if item_form.raw_material.errors %}<div class="text-danger small">{{ item_form.raw_material.errors.0 }}</div>{% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="packaging-material-wrapper">
+                                                    {{ item_form.packaging_material }}
+                                                    {% if item_form.packaging_material.errors %}<div class="text-danger small">{{ item_form.packaging_material.errors.0 }}</div>{% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{ item_form.quantity }}
+                                                {% if item_form.quantity.errors %}<div class="text-danger small">{{ item_form.quantity.errors.0 }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ item_form.uom }}
+                                                {% if item_form.uom.errors %}<div class="text-danger small">{{ item_form.uom.errors.0 }}</div>{% endif %}
+                                            </td>
+                                            <td>
+                                                {{ item_form.scrap_tolerance_pct }}
+                                                {% if item_form.scrap_tolerance_pct.errors %}<div class="text-danger small">{{ item_form.scrap_tolerance_pct.errors.0 }}</div>{% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if item_form.instance.pk %}
+                                                    <div class="form-check d-inline-block">
+                                                        {{ item_form.DELETE }}
+                                                    </div>
+                                                {% else %}
+                                                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mixing instructions notes -->
+                        <div class="mb-4">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label fw-semibold small">SOP, Process & Mixing Instructions</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex justify-content-end gap-2 border-top pt-4">
+                            {% if back_url %}
+                                {% if back_pk %}
+                                    <a href="{% url back_url back_pk %}" class="btn btn-outline-secondary">Cancel</a>
+                                {% else %}
+                                    <a href="{% url back_url %}" class="btn btn-outline-secondary">Cancel</a>
+                                {% endif %}
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                                <i class="bi bi-check2-circle me-1"></i> Save Bill of Materials (BOM)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function toggleMaterialDropdowns(row) {
+        const typeSelect = row.querySelector('select[name$="-item_type"]');
+        const rawWrapper = row.querySelector('.raw-material-wrapper');
+        const pkgWrapper = row.querySelector('.packaging-material-wrapper');
+
+        if (!typeSelect || !rawWrapper || !pkgWrapper) return;
+
+        if (typeSelect.value === 'RAW_MATERIAL') {
+            rawWrapper.style.display = 'block';
+            pkgWrapper.style.display = 'none';
+            const pkgSelect = pkgWrapper.querySelector('select');
+            if (pkgSelect) pkgSelect.value = '';
+        } else if (typeSelect.value === 'PACKAGING_MATERIAL') {
+            rawWrapper.style.display = 'none';
+            pkgWrapper.style.display = 'block';
+            const rawSelect = rawWrapper.querySelector('select');
+            if (rawSelect) rawSelect.value = '';
+        }
+    }
+
+    document.querySelectorAll('.formset-row').forEach(row => {
+        toggleMaterialDropdowns(row);
+        const typeSelect = row.querySelector('select[name$="-item_type"]');
+        if (typeSelect) {
+            typeSelect.addEventListener('change', () => toggleMaterialDropdowns(row));
+        }
+    });
+
+    const addBtn = document.getElementById('addIngredientBtn');
+    const tbody = document.getElementById('formsetTbody');
+    const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+
+    if (addBtn && tbody && totalForms) {
+        addBtn.addEventListener('click', function() {
+            const formCount = parseInt(totalForms.value, 10);
+            const rows = tbody.querySelectorAll('.formset-row');
+            if (rows.length === 0) return;
+
+            const newRow = rows[0].cloneNode(true);
+            const regex = new RegExp('items-0-', 'g');
+
+            newRow.innerHTML = newRow.innerHTML.replace(regex, `items-${formCount}-`);
+            newRow.querySelectorAll('input, select').forEach(input => {
+                if (input.type !== 'hidden' || input.name.includes('-id')) {
+                    if (input.type === 'checkbox') {
+                        input.checked = false;
+                    } else if (input.name.includes('-id')) {
+                        input.value = '';
+                    } else if (input.name.includes('-scrap_tolerance_pct')) {
+                        input.value = '0.00';
+                    } else {
+                        input.value = '';
+                    }
+                }
+            });
+
+            tbody.appendChild(newRow);
+            totalForms.value = formCount + 1;
+
+            toggleMaterialDropdowns(newRow);
+            const newTypeSelect = newRow.querySelector('select[name$="-item_type"]');
+            if (newTypeSelect) {
+                newTypeSelect.addEventListener('change', () => toggleMaterialDropdowns(newRow));
+            }
+
+            const removeBtn = newRow.querySelector('.btn-remove-row');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => newRow.remove());
+            }
+        });
+    }
+
+    tbody.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-remove-row')) {
+            const row = e.target.closest('.formset-row');
+            if (tbody.querySelectorAll('.formset-row').length > 1) {
+                row.remove();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

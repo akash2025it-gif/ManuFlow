@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Breadcrumb & Top Bar -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'production_hub' %}">Production</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'production_run_list' %}">Work Orders</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ run.run_number }}</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">Production Work Order: {{ run.run_number }}</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if not run.is_posted and user.role == 'PRODUCTION' or not run.is_posted and user.role == 'ADMIN' %}
+                <a href="{% url 'production_run_execute' run.pk %}" class="btn btn-primary fw-medium">
+                    <i class="bi bi-play-circle me-1"></i> Record Floor Measurements
+                </a>
+                <form method="post" action="{% url 'production_run_post' run.pk %}" class="d-inline" onsubmit="return confirm('Complete and post this production run to the stock ledger? This will deduct materials and add finished goods stock.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success fw-medium">
+                        <i class="bi bi-check2-all me-1"></i> Post to Stock Ledger
+                    </button>
+                </form>
+            {% endif %}
+            <a href="{% url 'production_run_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Banner if Variance Alert Triggered -->
+    {% if run.has_any_variance_alert %}
+        <div class="alert alert-danger border-danger shadow-sm mb-4 d-flex align-items-center gap-3">
+            <i class="bi bi-exclamation-triangle-fill fs-2 text-danger"></i>
+            <div>
+                <h5 class="alert-heading fw-bold mb-1">Variance Threshold Exceeded (> {{ run.variance_alert_threshold_pct }}%)</h5>
+                <div>
+                    {% if run.is_yield_alert_triggered %}
+                        <span class="fw-bold">Yield Variance Alert:</span> Actual output yield of {{ run.actual_output_quantity }} units differs from expected {{ run.expected_output_quantity }} units by <strong>{{ run.yield_variance_pct }}%</strong>.
+                    {% endif %}
+                    {% for mat in run.material_variance_alerts %}
+                        <div class="mt-1">
+                            <span class="fw-bold">{{ mat.item_name }} Variance Alert:</span> Actual {{ mat.actual_quantity }} {{ mat.uom.code }} vs Planned {{ mat.planned_quantity }} {{ mat.uom.code }} (<strong>{{ mat.variance_pct }}%</strong>).
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Top Metadata Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Batch Status</div>
+                    <div class="mt-2">
+                        {% if run.status == 'COMPLETED' %}
+                            <span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i> Completed & Posted</span>
+                        {% elif run.status == 'IN_PROGRESS' %}
+                            <span class="badge bg-warning text-dark fs-6"><i class="bi bi-play-circle me-1"></i> In Progress</span>
+                        {% elif run.status == 'DRAFT' %}
+                            <span class="badge bg-secondary fs-6"><i class="bi bi-pencil me-1"></i> Draft / Planned</span>
+                        {% else %}
+                            <span class="badge bg-danger fs-6">Cancelled</span>
+                        {% endif %}
+                    </div>
+                    <div class="small text-muted mt-2">
+                        {% if run.is_posted %}
+                            <i class="bi bi-shield-check text-success"></i> Posted {{ run.posted_at|date:"d M Y H:i" }}
+                        {% else %}
+                            <i class="bi bi-clock text-warning"></i> Pending Stock Posting
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Finished Product & SKU</div>
+                    <div class="fw-bold fs-5 mt-1">{{ run.product.name }}</div>
+                    <div class="text-muted small">{{ run.product_pack_size.pack_name }}</div>
+                    <div class="small font-monospace mt-1">Batch: <strong>{{ run.batch_number }}</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100 border-start border-4 border-primary">
+                <div class="card-body">
+                    <div class="text-muted small">Output Performance</div>
+                    <div class="d-flex justify-content-between align-items-baseline mt-1">
+                        <div>
+                            <span class="fs-4 fw-bold text-success">{{ run.actual_output_quantity }}</span>
+                            <span class="text-muted small">/ {{ run.expected_output_quantity }} pkts</span>
+                        </div>
+                        <span class="badge {% if run.is_yield_alert_triggered %}bg-danger{% else %}bg-success-subtle text-success{% endif %} fs-6">
+                            {{ run.yield_variance_pct }}%
+                        </span>
+                    </div>
+                    <div class="small text-muted mt-2">
+                        Shortfall: <strong>{{ run.yield_variance_quantity }}</strong> pkts | Scrap: <strong>{{ run.damaged_quantity }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100 border-start border-4 border-success">
+                <div class="card-body">
+                    <div class="text-muted small">Batch Manufacturing Cost</div>
+                    <div class="fs-4 fw-bold text-dark mt-1 font-monospace">₹ {{ run.total_production_cost }}</div>
+                    <div class="d-flex justify-content-between align-items-center mt-2 small text-muted">
+                        <span>Unit Output Cost:</span>
+                        <strong class="text-primary font-monospace">₹ {{ run.unit_cost_per_output }} / pkt</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Material Consumption Variance Table -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-receipt-cutoff text-primary me-2"></i>Raw Material & Packaging Consumption (Planned vs Actual)
+            </h5>
+            <span class="badge bg-light text-dark border">BOM: {{ run.bill_of_materials.bom_code }}</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Classification</th>
+                            <th>Material Description</th>
+                            <th class="text-end">Planned Qty</th>
+                            <th class="text-end">Actual Consumed</th>
+                            <th class="text-end">Scrap / Damaged</th>
+                            <th class="text-end">Variance (Qty)</th>
+                            <th class="text-center">Variance (%)</th>
+                            <th class="text-end">WAC Unit Cost (₹)</th>
+                            <th class="text-end">Total Line Cost (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mat in materials %}
+                            <tr>
+                                <td>
+                                    {% if mat.item_type == 'RAW_MATERIAL' %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis">Raw Material</span>
+                                    {% else %}
+                                        <span class="badge bg-info-subtle text-info-emphasis">Packaging</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ mat.item_name }}</div>
+                                    <div class="text-muted small font-monospace">{{ mat.item_code }} &bull; Source Batch: {{ mat.source_batch_number|default:"FIFO Default" }}</div>
+                                </td>
+                                <td class="text-end font-monospace">{{ mat.planned_quantity }} {{ mat.uom.code }}</td>
+                                <td class="text-end font-monospace fw-bold">{{ mat.actual_quantity }} {{ mat.uom.code }}</td>
+                                <td class="text-end font-monospace text-muted">{{ mat.damaged_quantity }} {{ mat.uom.code }}</td>
+                                <td class="text-end font-monospace {% if mat.variance_quantity > 0 %}text-danger fw-bold{% elif mat.variance_quantity < 0 %}text-success{% endif %}">
+                                    {{ mat.variance_quantity }}
+                                </td>
+                                <td class="text-center">
+                                    {% if mat.is_variance_alert_triggered %}
+                                        <span class="badge bg-danger text-white">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ mat.variance_pct }}%
+                                        </span>
+                                    {% elif mat.variance_pct == 0 %}
+                                        <span class="badge bg-light text-muted border">0.00%</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">{{ mat.variance_pct }}%</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end font-monospace text-muted">₹ {{ mat.unit_cost }}</td>
+                                <td class="text-end font-monospace fw-bold">₹ {{ mat.total_cost }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center py-4 text-muted">No material consumption lines configured.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light border-top">
+                        <tr>
+                            <th colspan="8" class="text-end fw-bold">Total Material Cost:</th>
+                            <th class="text-end font-monospace fw-bold text-dark fs-6">₹ {{ run.total_material_cost }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overheads & Total Production Costing -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-cash-coin text-success me-2"></i>Labour & Utility Overhead Allocations</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted"><i class="bi bi-people me-2"></i>Direct Labour Overhead:</td>
+                                <td class="text-end font-monospace fw-bold">₹ {{ run.labour_cost }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="bi bi-fire me-2"></i>Gas, Power & Fuel Utilities:</td>
+                                <td class="text-end font-monospace fw-bold">₹ {{ run.power_gas_cost }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="bi bi-tools me-2"></i>Other Factory Overheads:</td>
+                                <td class="text-end font-monospace fw-bold">₹ {{ run.other_overhead_cost }}</td>
+                            </tr>
+                            <tr class="table-light">
+                                <td class="fw-bold">Total Overhead Allocation:</td>
+                                <td class="text-end font-monospace fw-bold text-success fs-6">₹ {{ run.total_overhead_cost }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-calculator text-primary me-2"></i>Batch Production Cost Summary</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted">Total Material Cost:</td>
+                                <td class="text-end font-monospace fw-semibold">₹ {{ run.total_material_cost }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Total Overheads Allocated:</td>
+                                <td class="text-end font-monospace fw-semibold">₹ {{ run.total_overhead_cost }}</td>
+                            </tr>
+                            <tr class="table-primary border-primary">
+                                <td class="fw-bold fs-6">Total Batch Manufacturing Cost:</td>
+                                <td class="text-end font-monospace fw-bold fs-6 text-primary">₹ {{ run.total_production_cost }}</td>
+                            </tr>
+                            <tr class="table-success border-success">
+                                <td class="fw-bold">Finished Good Unit Cost:</td>
+                                <td class="text-end font-monospace fw-bold text-success fs-5">
+                                    ₹ {{ run.unit_cost_per_output }} <span class="small fw-normal text-muted">/ packet</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Traceable Stock Movements Logged in StockLedgerEntry -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-journal-check text-dark me-2"></i>Perpetual Inventory Ledger Movements</h5>
+            <span class="badge bg-secondary-subtle text-secondary">{{ ledger_entries.count }} Movements Logged</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Entry #</th>
+                            <th>Timestamp</th>
+                            <th>Movement Type</th>
+                            <th>Item Description</th>
+                            <th>Batch #</th>
+                            <th class="text-end">Change</th>
+                            <th class="text-end">Unit Cost (₹)</th>
+                            <th class="text-end">Total Value (₹)</th>
+                            <th>Performed By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in ledger_entries %}
+                            <tr>
+                                <td class="font-monospace fw-bold small">{{ entry.entry_number }}</td>
+                                <td class="small">{{ entry.timestamp|date:"d M Y H:i" }}</td>
+                                <td>
+                                    {% if entry.movement_type == 'PRODUCTION_RECEIPT' %}
+                                        <span class="badge bg-success-subtle text-success">Finished Receipt</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger">Material Consumption</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ entry.item_name }}</div>
+                                    <div class="text-muted small">{{ entry.item_code }}</div>
+                                </td>
+                                <td class="font-monospace small">{{ entry.batch_number }}</td>
+                                <td class="text-end font-monospace fw-bold {% if entry.quantity_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ entry.quantity_change }} {{ entry.uom.code }}
+                                </td>
+                                <td class="text-end font-monospace">₹ {{ entry.unit_cost }}</td>
+                                <td class="text-end font-monospace">₹ {{ entry.total_value }}</td>
+                                <td class="small">{{ entry.performed_by.username }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center py-4 text-muted">
+                                    No stock movements posted yet. Material deductions and finished receipts will appear once posted.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

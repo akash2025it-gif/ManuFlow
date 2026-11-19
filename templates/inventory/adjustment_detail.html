@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Breadcrumb -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% url 'stock_adjustment_list' %}" class="text-decoration-none small text-muted">&larr; Stock Adjustments</a>
+                <span class="text-muted small">/</span>
+                <span class="badge bg-light text-secondary border font-monospace">{{ adjustment.adjustment_number }}</span>
+            </div>
+            <h2 class="fw-bold mb-0">Stock Adjustment: {{ adjustment.adjustment_number }}</h2>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            {% if can_manage and not adjustment.is_posted and adjustment.status != 'CANCELLED' %}
+                <form method="post" action="{% url 'stock_adjustment_post' adjustment.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning text-dark fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i> Post Variance to Stock Ledger
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Audit & Reconciliation Overview</h5>
+        <div class="row g-3">
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">AUDIT DATE</label>
+                <div class="fw-bold text-dark fs-5">{{ adjustment.adjustment_date|date:"M d, Y" }}</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">REASON / DISCREPANCY TYPE</label>
+                <div class="fw-bold text-dark fs-6">{{ adjustment.get_reason_display }}</div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">POSTING STATUS</label>
+                <div>
+                    {% if adjustment.is_posted %}
+                        <span class="badge bg-success-subtle text-success fs-6 border border-success-subtle">
+                            <i class="bi bi-check-circle-fill me-1"></i> Posted to Stock Ledger
+                        </span>
+                        <div class="small text-muted mt-1">{{ adjustment.posted_at|date:"M d, Y H:i" }}</div>
+                    {% else %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis fs-6 border border-warning-subtle">
+                            <i class="bi bi-clock-history me-1"></i> Pending Ledger Approval
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <label class="small text-muted fw-semibold">AUDITOR / OPERATOR</label>
+                <div class="fw-bold text-dark">@{{ adjustment.created_by.username }}</div>
+                {% if adjustment.approved_by %}
+                    <small class="text-success">Approved by @{{ adjustment.approved_by.username }}</small>
+                {% endif %}
+            </div>
+            {% if adjustment.notes %}
+            <div class="col-12 mt-2">
+                <label class="small text-muted fw-semibold">AUDIT OBSERVATIONS & ACTION PLAN</label>
+                <div class="text-secondary">{{ adjustment.notes }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Discrepancy Variance Items Table -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-0">Physical Count vs Recorded System Inventory</h5>
+                <small class="text-muted">Exact quantity reconciliation per item and batch</small>
+            </div>
+            <span class="badge bg-dark-subtle text-dark">{{ items.count }} Items Audited</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Classification</th>
+                        <th>Item Description</th>
+                        <th>Batch / Lot</th>
+                        <th>System Recorded Qty</th>
+                        <th>Physical Counted Qty</th>
+                        <th>Stock Variance</th>
+                        <th>Unit Rate (₹)</th>
+                        <th>Variance Explanation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="font-monospace text-muted">{{ forloop.counter }}</td>
+                        <td>
+                            {% if item.item_type == 'RAW_MATERIAL' %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Raw Material</span>
+                            {% elif item.item_type == 'PACKAGING_MATERIAL' %}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Packaging</span>
+                            {% else %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Finished Goods</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong class="text-dark">{{ item.item_name }}</strong>
+                            <div class="small text-muted font-monospace">{{ item.item_code }}</div>
+                        </td>
+                        <td><span class="font-monospace text-dark">{{ item.batch_number|default:"-" }}</span></td>
+                        <td><span class="font-monospace text-secondary">{{ item.system_quantity }} {{ item.uom.code }}</span></td>
+                        <td><span class="font-monospace fw-bold text-dark">{{ item.counted_quantity }} {{ item.uom.code }}</span></td>
+                        <td>
+                            {% if item.variance_quantity > 0 %}
+                                <span class="badge bg-success-subtle text-success fs-6 font-monospace">
+                                    +{{ item.variance_quantity }} {{ item.uom.code }} (Surplus)
+                                </span>
+                            {% elif item.variance_quantity < 0 %}
+                                <span class="badge bg-danger-subtle text-danger fs-6 font-monospace">
+                                    {{ item.variance_quantity }} {{ item.uom.code }} (Deficit)
+                                </span>
+                            {% else %}
+                                <span class="badge bg-light text-muted border font-monospace">0.0000 (Matched)</span>
+                            {% endif %}
+                        </td>
+                        <td>₹ {{ item.unit_cost }}</td>
+                        <td class="small text-secondary">{{ item.remarks|default:"Standard audit count" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">No line items in this stock adjustment.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

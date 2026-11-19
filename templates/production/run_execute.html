@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'production_hub' %}">Production</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'production_run_list' %}">Work Orders</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'production_run_detail' run.pk %}">{{ run.run_number }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Record Floor Execution</li>
+        </ol>
+    </nav>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-0">Record Floor Execution: {{ run.run_number }}</h2>
+                <div class="text-muted">{{ run.product.name }} &bull; Target: {{ run.planned_quantity }} pkts &bull; Batch: {{ run.batch_number }}</div>
+            </div>
+            <div class="d-flex gap-2 mt-3 mt-md-0">
+                <a href="{% url 'production_run_detail' run.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" name="save_draft" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i> Save Measurements
+                </button>
+                <button type="submit" name="post_to_inventory" class="btn btn-success fw-medium" onclick="return confirm('Complete this batch and post all material deductions & finished stock receipt directly to the inventory ledger?');">
+                    <i class="bi bi-check2-all me-1"></i> Save & Post to Inventory
+                </button>
+            </div>
+        </div>
+
+        {% if form.errors or formset.errors %}
+            <div class="alert alert-danger mb-4">
+                <strong>Please correct the following errors:</strong>
+                {{ form.errors }}
+                {{ formset.errors }}
+            </div>
+        {% endif %}
+
+        <!-- Actual Output & Overhead Allocations -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-box-seam text-primary me-2"></i>Actual Finished Goods Output</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Actual Good Output Produced <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                {{ form.actual_output_quantity }}
+                                <span class="input-group-text">Packets</span>
+                            </div>
+                            <div class="form-text">Planned: {{ run.planned_quantity }} &bull; Expected Yield: {{ run.expected_output_quantity }} packets</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Damaged / Rejected Output</label>
+                            <div class="input-group">
+                                {{ form.damaged_quantity }}
+                                <span class="input-group-text">Units</span>
+                            </div>
+                            <div class="form-text">Defective packets rejected at QA packaging checkpoint</div>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label fw-bold">Floor Notes</label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-cash-stack text-success me-2"></i>Labour & Utility Overhead Costs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Direct Labour Overhead (₹)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                {{ form.labour_cost }}
+                            </div>
+                            <div class="form-text">Dedicated operator / worker wages allocated to batch (e.g. ₹1,200.00)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Gas, Fuel & Power Overhead (₹)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                {{ form.power_gas_cost }}
+                            </div>
+                            <div class="form-text">Frying gas, burner fuel, electricity consumption (e.g. ₹600.00)</div>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label fw-bold">Other Factory Overheads (₹)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                {{ form.other_overhead_cost }}
+                            </div>
+                            <div class="form-text">Maintenance, tooling wear, depreciation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Material Consumption Formset -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-list-check text-dark me-2"></i>Actual Raw Material & Packaging Consumption</h5>
+            </div>
+            <div class="card-body p-0">
+                {{ formset.management_form }}
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item Description</th>
+                                <th>Type</th>
+                                <th class="text-end">Planned Qty</th>
+                                <th style="width: 180px;" class="text-end">Actual Consumed <span class="text-danger">*</span></th>
+                                <th style="width: 150px;" class="text-end">Damaged / Scrap</th>
+                                <th style="width: 200px;">Source Batch</th>
+                                <th>Floor Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mform in formset %}
+                                <tr>
+                                    {{ mform.id }}
+                                    <td>
+                                        <div class="fw-semibold">{{ mform.instance.item_name }}</div>
+                                        <div class="text-muted small">{{ mform.instance.item_code }}</div>
+                                    </td>
+                                    <td>
+                                        {% if mform.instance.item_type == 'RAW_MATERIAL' %}
+                                            <span class="badge bg-warning-subtle text-warning-emphasis">Raw Material</span>
+                                        {% else %}
+                                            <span class="badge bg-info-subtle text-info-emphasis">Packaging</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end font-monospace">
+                                        {{ mform.instance.planned_quantity }} {{ mform.instance.uom.code }}
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            {{ mform.actual_quantity }}
+                                            <span class="input-group-text">{{ mform.instance.uom.code }}</span>
+                                        </div>
+                                        {% if mform.actual_quantity.errors %}
+                                            <div class="text-danger small">{{ mform.actual_quantity.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            {{ mform.damaged_quantity }}
+                                            <span class="input-group-text">{{ mform.instance.uom.code }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {{ mform.source_batch_number }}
+                                    </td>
+                                    <td>
+                                        {{ mform.notes }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-light p-3 text-end">
+                <button type="submit" name="save_draft" class="btn btn-primary me-2">
+                    <i class="bi bi-save me-1"></i> Save Measurements
+                </button>
+                <button type="submit" name="post_to_inventory" class="btn btn-success fw-medium">
+                    <i class="bi bi-check2-all me-1"></i> Save & Post to Inventory
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
