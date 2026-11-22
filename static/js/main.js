@@ -74,7 +74,64 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // 7. Initialize Animated KPI Counters
+    initKpiCounters();
 });
+
+/**
+ * Smooth Animated KPI Number Counters
+ * Interpolates values on page load using easeOutQuart easing
+ */
+function initKpiCounters() {
+    const counterElements = document.querySelectorAll('[data-counter]');
+    if (!counterElements.length) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        counterElements.forEach(el => {
+            const target = el.getAttribute('data-counter');
+            const prefix = el.getAttribute('data-prefix') || '';
+            const suffix = el.getAttribute('data-suffix') || '';
+            el.textContent = `${prefix}${target}${suffix}`;
+        });
+        return;
+    }
+
+    counterElements.forEach(el => {
+        const rawTarget = el.getAttribute('data-counter');
+        const prefix = el.getAttribute('data-prefix') || '';
+        const suffix = el.getAttribute('data-suffix') || '';
+        const isDecimal = rawTarget.includes('.');
+        const targetVal = parseFloat(rawTarget);
+        if (isNaN(targetVal)) return;
+
+        const duration = 1000;
+        const startTime = performance.now();
+
+        function updateCounter(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easeOutProgress = 1 - Math.pow(1 - progress, 4);
+            const currentVal = targetVal * easeOutProgress;
+
+            let formattedVal = isDecimal
+                ? currentVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                : Math.round(currentVal).toLocaleString('en-IN');
+
+            el.textContent = `${prefix}${formattedVal}${suffix}`;
+
+            if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+            } else {
+                let finalVal = isDecimal
+                    ? targetVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    : Math.round(targetVal).toLocaleString('en-IN');
+                el.textContent = `${prefix}${finalVal}${suffix}`;
+            }
+        }
+        requestAnimationFrame(updateCounter);
+    });
+}
 
 /**
  * Helper to auto-fill demo credentials on the login screen

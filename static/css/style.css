@@ -1511,9 +1511,317 @@ body.mf-sidebar-collapsed .mf-main-wrapper {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .mf-login-submit {
-        transition: none;
+/* =============================================================================
+   POST-LOGIN WELCOME EXPERIENCE & MANUFACTURING ANIMATIONS
+   ============================================================================= */
+
+/* Page entrance animation */
+.mf-fade-in-up {
+    animation: mfFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes mfFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
+
+/* Premium Welcome Command Center Hero Card */
+.mf-welcome-hero {
+    background: linear-gradient(135deg, #091124 0%, #0c1833 45%, #132752 100%);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: var(--mf-radius-md);
+    color: #ffffff;
+    box-shadow: 0 10px 25px -5px rgba(9, 17, 36, 0.35), 0 4px 10px -2px rgba(9, 17, 36, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.mf-welcome-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(9, 17, 36, 0) 70%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.mf-welcome-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.mf-welcome-title {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.02em;
+}
+
+.mf-welcome-subtitle {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    max-width: 620px;
+}
+
+/* Operational Status Tag Strip */
+.mf-status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.73rem;
+    color: #cbd5e1;
+    font-family: var(--mf-font-mono);
+}
+
+.mf-status-tag i {
+    color: #38bdf8;
+}
+
+/* Manufacturing Plant Animated SVG Illustration */
+.mf-plant-animation-container {
+    width: 100%;
+    max-width: 440px;
+    height: 190px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Plant SVG Animation Keyframes */
+@keyframes mfConveyorMotion {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(36px); }
+}
+
+@keyframes mfRobotOscillate {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-8deg); }
+}
+
+@keyframes mfLaserScanVertical {
+    0%, 100% { opacity: 0.3; transform: translateY(-4px); }
+    50% { opacity: 0.95; transform: translateY(16px); }
+}
+
+@keyframes mfBeaconPulseGlow {
+    0%, 100% { opacity: 0.4; r: 3; }
+    50% { opacity: 1; r: 5; }
+}
+
+@keyframes mfGearSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.mf-anim-conveyor-track {
+    stroke-dasharray: 6 6;
+    animation: mfConveyorMotion 1.4s linear infinite;
+}
+
+.mf-anim-robot-arm {
+    transform-origin: 310px 50px;
+    animation: mfRobotOscillate 2.8s ease-in-out infinite;
+}
+
+.mf-anim-laser {
+    animation: mfLaserScanVertical 2s ease-in-out infinite;
+}
+
+.mf-anim-beacon {
+    animation: mfBeaconPulseGlow 1.8s ease-in-out infinite;
+}
+
+.mf-anim-gear {
+    transform-origin: 85px 85px;
+    animation: mfGearSpin 8s linear infinite;
+}
+
+/* Interactive End-to-End Manufacturing Workflow Component */
+.mf-workflow-card {
+    background: #ffffff;
+    border: 1px solid var(--mf-border-subtle);
+    border-radius: var(--mf-radius-md);
+    box-shadow: var(--mf-shadow-sm);
+    padding: 1.15rem 1.25rem;
+}
+
+.mf-workflow-track {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 0.4rem;
+    position: relative;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.mf-workflow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0.65rem 0.35rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--mf-radius-sm);
+    text-decoration: none !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    min-width: 96px;
+}
+
+.mf-workflow-step:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px -2px rgba(29, 78, 216, 0.12);
+}
+
+.mf-workflow-step-num {
+    font-family: var(--mf-font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 0.2rem;
+}
+
+.mf-workflow-icon-wrap {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    margin-bottom: 0.35rem;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #1e3a8a;
+    transition: all 0.2s ease;
+}
+
+.mf-workflow-step:hover .mf-workflow-icon-wrap {
+    background: #1d4ed8;
+    color: #ffffff;
+    border-color: #1d4ed8;
+}
+
+.mf-workflow-step-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.mf-workflow-step-status {
+    font-family: var(--mf-font-mono);
+    font-size: 0.62rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+/* Status variants for workflow steps */
+.mf-workflow-step.status-completed .mf-workflow-icon-wrap {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #059669;
+}
+
+.mf-workflow-step.status-completed .mf-workflow-step-status {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.mf-workflow-step.status-active .mf-workflow-icon-wrap {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.mf-workflow-step.status-active .mf-workflow-step-status {
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+.mf-workflow-step.status-alert .mf-workflow-icon-wrap {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+.mf-workflow-step.status-alert .mf-workflow-step-status {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+/* Clickable Interactive KPI Stat Box */
+.mf-stat-box.clickable {
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    text-decoration: none !important;
+    display: block;
+}
+
+.mf-stat-box.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px -2px rgba(9, 17, 36, 0.08), 0 2px 4px -1px rgba(9, 17, 36, 0.04);
+    border-color: #bfdbfe;
+}
+
+.mf-stat-box.clickable .mf-stat-label i {
+    transition: transform 0.18s ease;
+}
+
+.mf-stat-box.clickable:hover .mf-stat-label i {
+    transform: translateX(2px);
+    color: #1d4ed8 !important;
+}
+
+/* Skeleton Loading State for Data Tables */
+.mf-skeleton {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: mfSkeletonShimmer 1.5s infinite;
+    border-radius: var(--mf-radius-xs);
+    display: inline-block;
+}
+
+@keyframes mfSkeletonShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mf-login-submit,
+    .mf-fade-in-up,
+    .mf-workflow-step,
+    .mf-anim-conveyor-track,
+    .mf-anim-robot-arm,
+    .mf-anim-laser,
+    .mf-anim-beacon,
+    .mf-anim-gear,
+    .mf-skeleton {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
 

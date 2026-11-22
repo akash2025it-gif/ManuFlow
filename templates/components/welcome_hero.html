@@ -1,0 +1,306 @@
+<!-- =========================================================================
+     ManuFlow — Post-Login Welcome Experience & Manufacturing Workflow Hero
+     ========================================================================= -->
+<div class="mf-welcome-hero p-3 p-lg-4 mb-4 mf-fade-in-up">
+    <div class="row align-items-center g-4 mf-welcome-hero-content">
+        <!-- Left Column: Personalised Operational Welcome -->
+        <div class="col-lg-7">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="badge bg-primary text-white font-mono px-2.5 py-1" style="font-size: 0.72rem; letter-spacing: 0.04em;">
+                    <i class="bi bi-shield-check me-1"></i>{{ user.get_role_display|upper }} SUITE
+                </span>
+                <span class="mf-status-tag">
+                    <span class="mf-status-dot mf-status-dot-active" style="width: 7px; height: 7px;"></span>
+                    <span>NIT Trichy Smart Factory</span>
+                </span>
+                <span class="mf-status-tag d-none d-sm-inline-flex">
+                    <i class="bi bi-clock-history"></i>
+                    <span>CY 2026 Shift A</span>
+                </span>
+            </div>
+
+            <h1 class="mf-welcome-title mb-2">
+                Welcome back, {{ user.get_full_name|default:user.username }}
+            </h1>
+
+            <p class="mf-welcome-subtitle mb-3">
+                {% if user.role == 'OWNER' %}
+                    Executive Command Center: Revenue velocity, working capital liquidity, and manufacturing throughput are synchronized in real time with our Neon PostgreSQL ledger.
+                {% elif user.role == 'ADMIN' %}
+                    Administrative Governance: Sales approval queues, staff credentials, and Section 31 dual GST compliance workflows ready for verification.
+                {% elif user.role == 'SALESMAN' %}
+                    Commercial Pipeline: Ingest customer orders, track retailer credit terms, and verify finished goods stock availability before dispatch.
+                {% elif user.role == 'PRODUCTION' %}
+                    Shop Floor Operations: Monitor recipe BOM allocations, active extruder/frying runs, and yield variance deviations against the 3% tolerance benchmark.
+                {% elif user.role == 'ACCOUNTANT' %}
+                    Statutory Accounting Suite: Section 31 intra-state vs inter-state GST sales tax registers, customer remittances, and receivables aging tracking.
+                {% elif user.role == 'AUDITOR' %}
+                    Governance Observatory: Immutable system audit logs, consumption variance tracking, and overdue invoice alerts across the entire factory lifecycle.
+                {% else %}
+                    Enterprise Manufacturing Command Center: Traceable Order-to-Audit ERP management for food processing operations.
+                {% endif %}
+            </p>
+
+            <!-- Quick Action Shortcuts -->
+            <div class="d-flex flex-wrap gap-2 pt-1">
+                <a href="#kpi-section" class="btn btn-primary btn-sm px-3 shadow-sm fw-medium">
+                    <i class="bi bi-speedometer2 me-1"></i> Factory KPIs &darr;
+                </a>
+                {% if user.role != 'PRODUCTION' %}
+                <a href="{% url 'sales_order_list' %}" class="btn btn-sm btn-outline-light text-nowrap" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18);">
+                    <i class="bi bi-bag-check me-1 text-info"></i> Sales Pipeline
+                </a>
+                {% endif %}
+                {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
+                <a href="{% url 'sales_order_list' %}?status=SUBMITTED" class="btn btn-sm btn-outline-light text-nowrap" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18);">
+                    <i class="bi bi-clock-history me-1 text-warning"></i> Approval Queue
+                </a>
+                {% endif %}
+                {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                <a href="{% url 'production_run_list' %}" class="btn btn-sm btn-outline-light text-nowrap" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18);">
+                    <i class="bi bi-gear-wide-connected me-1 text-primary"></i> Production Runs
+                </a>
+                {% endif %}
+                <a href="{% url 'stock_summary' %}" class="btn btn-sm btn-outline-light text-nowrap" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18);">
+                    <i class="bi bi-boxes me-1 text-success"></i> Stock Balances
+                </a>
+                {% if user.role == 'ACCOUNTANT' or user.role == 'AUDITOR' or user.role == 'OWNER' or user.role == 'ADMIN' or user.is_superuser %}
+                <a href="{% url 'finance:gst_sales_register' %}" class="btn btn-sm btn-outline-light text-nowrap" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18);">
+                    <i class="bi bi-receipt me-1 text-info"></i> GST Register
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: Animated Smart Manufacturing Plant Illustration -->
+        <div class="col-lg-5 text-center">
+            <div class="mf-plant-animation-container">
+                <svg viewBox="0 0 420 180" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; overflow: visible;" aria-label="Connected Smart Manufacturing Production Line">
+                    <defs>
+                        <!-- Gradients -->
+                        <linearGradient id="siloGrad" x1="0" y1="0" x2="0" y2="100%">
+                            <stop offset="0%" stop-color="#3b82f6"/>
+                            <stop offset="100%" stop-color="#1d4ed8"/>
+                        </linearGradient>
+                        <linearGradient id="conveyorGrad" x1="0" y1="0" x2="100%" y2="0">
+                            <stop offset="0%" stop-color="#1e293b"/>
+                            <stop offset="50%" stop-color="#334155"/>
+                            <stop offset="100%" stop-color="#1e293b"/>
+                        </linearGradient>
+                        <linearGradient id="scannerGrad" x1="0" y1="0" x2="0" y2="100%">
+                            <stop offset="0%" stop-color="rgba(14, 165, 233, 0.8)"/>
+                            <stop offset="100%" stop-color="rgba(14, 165, 233, 0.05)"/>
+                        </linearGradient>
+                        <linearGradient id="pouchGrad" x1="0" y1="0" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#0284c7"/>
+                            <stop offset="100%" stop-color="#0369a1"/>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Factory Grid Platform -->
+                    <line x1="20" y1="150" x2="400" y2="150" stroke="#334155" stroke-width="2"/>
+                    <line x1="20" y1="154" x2="400" y2="154" stroke="#1e293b" stroke-width="1" stroke-dasharray="4 4"/>
+
+                    <!-- 1. Raw Ingredient Silo / Hopper -->
+                    <g transform="translate(30, 35)">
+                        <!-- Hopper Tank -->
+                        <path d="M10 15 L50 15 L45 70 L35 90 L25 90 L15 70 Z" fill="url(#siloGrad)" stroke="#60a5fa" stroke-width="1.5"/>
+                        <rect x="8" y="10" width="44" height="6" rx="2" fill="#93c5fd"/>
+                        <!-- Pipe Feeder -->
+                        <path d="M30 90 L30 115 L60 115" stroke="#94a3b8" stroke-width="3" fill="none"/>
+                        <circle cx="30" cy="50" r="10" fill="#091124" opacity="0.4"/>
+                        <text x="30" y="53" fill="#ffffff" font-size="8" font-family="'IBM Plex Mono', monospace" text-anchor="middle">RM</text>
+                        <!-- Beacon -->
+                        <circle cx="30" cy="8" r="3" fill="#38bdf8" class="mf-anim-beacon"/>
+                    </g>
+
+                    <!-- 2. Rotating Processing Gears -->
+                    <g transform="translate(95, 80)">
+                        <circle cx="20" cy="20" r="14" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+                        <path d="M20 8 L20 32 M8 20 L32 20 M11 11 L29 29 M11 29 L29 11" stroke="#38bdf8" stroke-width="2" class="mf-anim-gear"/>
+                        <circle cx="20" cy="20" r="5" fill="#0ea5e9"/>
+                    </g>
+
+                    <!-- 3. Automated Conveyor Belt System -->
+                    <g transform="translate(135, 125)">
+                        <!-- Conveyor Legs -->
+                        <line x1="15" y1="15" x2="15" y2="25" stroke="#64748b" stroke-width="3"/>
+                        <line x1="85" y1="15" x2="85" y2="25" stroke="#64748b" stroke-width="3"/>
+                        <line x1="160" y1="15" x2="160" y2="25" stroke="#64748b" stroke-width="3"/>
+
+                        <!-- Belt Base -->
+                        <rect x="0" y="8" width="180" height="8" rx="4" fill="url(#conveyorGrad)" stroke="#475569" stroke-width="1"/>
+                        <!-- Belt Tread Motion -->
+                        <line x1="5" y1="12" x2="175" y2="12" stroke="#38bdf8" stroke-width="2" class="mf-anim-conveyor-track"/>
+
+                        <!-- Rollers -->
+                        <circle cx="6" cy="12" r="4" fill="#0f172a" stroke="#64748b"/>
+                        <circle cx="174" cy="12" r="4" fill="#0f172a" stroke="#64748b"/>
+
+                        <!-- Murukku Snack Pouches Moving Along Line -->
+                        <g transform="translate(20, -12)">
+                            <rect x="0" y="0" width="16" height="20" rx="2" fill="url(#pouchGrad)" stroke="#38bdf8" stroke-width="1"/>
+                            <line x1="3" y1="5" x2="13" y2="5" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
+                            <text x="8" y="14" fill="#ffffff" font-size="6" font-family="'IBM Plex Mono', monospace" font-weight="bold" text-anchor="middle">200g</text>
+                        </g>
+
+                        <g transform="translate(70, -12)">
+                            <rect x="0" y="0" width="16" height="20" rx="2" fill="url(#pouchGrad)" stroke="#38bdf8" stroke-width="1"/>
+                            <line x1="3" y1="5" x2="13" y2="5" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
+                            <text x="8" y="14" fill="#ffffff" font-size="6" font-family="'IBM Plex Mono', monospace" font-weight="bold" text-anchor="middle">200g</text>
+                        </g>
+
+                        <g transform="translate(125, -12)">
+                            <rect x="0" y="0" width="16" height="20" rx="2" fill="url(#pouchGrad)" stroke="#38bdf8" stroke-width="1"/>
+                            <line x1="3" y1="5" x2="13" y2="5" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
+                            <text x="8" y="14" fill="#ffffff" font-size="6" font-family="'IBM Plex Mono', monospace" font-weight="bold" text-anchor="middle">200g</text>
+                        </g>
+                    </g>
+
+                    <!-- 4. Optical Quality Control Scanner Beam -->
+                    <g transform="translate(200, 75)">
+                        <!-- Scanner Housing -->
+                        <rect x="0" y="0" width="26" height="12" rx="2" fill="#1e293b" stroke="#0ea5e9" stroke-width="1.5"/>
+                        <circle cx="13" cy="6" r="3" fill="#38bdf8" class="mf-anim-beacon"/>
+                        <!-- Cyan Laser Beam -->
+                        <polygon points="4,12 22,12 26,45 0,45" fill="url(#scannerGrad)" class="mf-anim-laser"/>
+                        <text x="13" y="-3" fill="#38bdf8" font-size="7" font-family="'IBM Plex Mono', monospace" text-anchor="middle">QC 100%</text>
+                    </g>
+
+                    <!-- 5. Robotic Packaging Arm -->
+                    <g class="mf-anim-robot-arm">
+                        <!-- Arm Base Support -->
+                        <rect x="300" y="25" width="20" height="25" rx="3" fill="#1e3a8a" stroke="#3b82f6" stroke-width="1.5"/>
+                        <!-- Pivot Joint -->
+                        <circle cx="310" cy="50" r="5" fill="#38bdf8"/>
+                        <!-- Joint 1 Arm -->
+                        <line x1="310" y1="50" x2="285" y2="85" stroke="#93c5fd" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="285" cy="85" r="4" fill="#1d4ed8"/>
+                        <!-- Joint 2 Arm -->
+                        <line x1="285" y1="85" x2="265" y2="115" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Vacuum Suction Gripper -->
+                        <path d="M258 115 L272 115 L268 120 L262 120 Z" fill="#38bdf8"/>
+                    </g>
+
+                    <!-- 6. Pallet Dispatch Master Carton -->
+                    <g transform="translate(345, 115)">
+                        <!-- Master Shipper Box (20 Packets) -->
+                        <rect x="0" y="0" width="45" height="32" rx="3" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+                        <path d="M0 8 L45 8" stroke="#334155" stroke-width="1"/>
+                        <text x="22" y="20" fill="#f8fafc" font-size="7.5" font-family="'IBM Plex Mono', monospace" font-weight="bold" text-anchor="middle">CARTON</text>
+                        <text x="22" y="27" fill="#38bdf8" font-size="6" font-family="'IBM Plex Mono', monospace" text-anchor="middle">20 PKTS</text>
+
+                        <!-- Pallet Base -->
+                        <rect x="-4" y="32" width="53" height="4" fill="#475569" rx="1"/>
+                        <rect x="4" y="36" width="7" height="3" fill="#334155"/>
+                        <rect x="34" y="36" width="7" height="3" fill="#334155"/>
+                    </g>
+                </svg>
+            </div>
+            <div class="small font-mono text-muted mt-1" style="font-size: 0.7rem; color: #64748b !important;">
+                Automated Packaging Line &bull; Continuous PLC Sensor Stream &bull; NIT Trichy Benchmarked
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     Interactive End-to-End Manufacturing Workflow Navigator
+     ========================================================================= -->
+<div class="mf-workflow-card mb-4 mf-fade-in-up">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div>
+            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-diagram-3-fill text-primary"></i>
+                <span>End-to-End Manufacturing Lifecycle Navigator</span>
+            </h6>
+            <span class="text-muted small">Live synchronisation of physical factory operations and statutory accounting records.</span>
+        </div>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-mono small">
+            Order-to-Audit Journey
+        </span>
+    </div>
+
+    <!-- 10-Stage Horizontal Progression Track -->
+    <div class="mf-workflow-track">
+        <!-- 1. Sales Order -->
+        <a href="{% url 'sales_order_list' %}" class="mf-workflow-step status-completed" data-bs-toggle="tooltip" title="Sales Order Ingestion & Multi-Tier Pricing">
+            <span class="mf-workflow-step-num">01</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-bag-check"></i></div>
+            <span class="mf-workflow-step-title">Sales Order</span>
+            <span class="mf-workflow-step-status">Active (5)</span>
+        </a>
+
+        <!-- 2. Admin Approval -->
+        <a href="{% url 'sales_order_list' %}?status=SUBMITTED" class="mf-workflow-step status-active" data-bs-toggle="tooltip" title="Admin Commercial Verification & Shortage Check">
+            <span class="mf-workflow-step-num">02</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-shield-check"></i></div>
+            <span class="mf-workflow-step-title">Approval</span>
+            <span class="mf-workflow-step-status">Queue (2)</span>
+        </a>
+
+        <!-- 3. GST Invoice -->
+        <a href="{% url 'invoice_list' %}" class="mf-workflow-step status-completed" data-bs-toggle="tooltip" title="Section 31 Dual GST Tax Invoices">
+            <span class="mf-workflow-step-num">03</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-file-earmark-pdf"></i></div>
+            <span class="mf-workflow-step-title">GST Invoice</span>
+            <span class="mf-workflow-step-status">Generated (3)</span>
+        </a>
+
+        <!-- 4. Material Stock -->
+        <a href="{% url 'stock_summary' %}" class="mf-workflow-step status-completed" data-bs-toggle="tooltip" title="Raw & Packaging Material Availability">
+            <span class="mf-workflow-step-num">04</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-boxes"></i></div>
+            <span class="mf-workflow-step-title">Materials</span>
+            <span class="mf-workflow-step-status">Sufficient</span>
+        </a>
+
+        <!-- 5. Production Run -->
+        <a href="{% url 'production_run_list' %}" class="mf-workflow-step status-completed" data-bs-toggle="tooltip" title="Batch Execution & BOM Formulation">
+            <span class="mf-workflow-step-num">05</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-gear-wide-connected"></i></div>
+            <span class="mf-workflow-step-title">Production</span>
+            <span class="mf-workflow-step-status">3 Batches</span>
+        </a>
+
+        <!-- 6. Quality Check -->
+        <a href="{% url 'stock_adjustment_list' %}?reason=DAMAGED" class="mf-workflow-step status-completed" data-bs-toggle="tooltip" title="Line Inspection & Damaged Pouch Scrapping">
+            <span class="mf-workflow-step-num">06</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-patch-check"></i></div>
+            <span class="mf-workflow-step-title">QC &amp; Scrap</span>
+            <span class="mf-workflow-step-status">6 Dmg Logged</span>
+        </a>
+
+        <!-- 7. Finished Stock -->
+        <a href="{% url 'stock_summary' %}?type=FG" class="mf-workflow-step status-completed" data-bs-toggle="tooltip" title="Finished Goods Inventory (Murukku 200g Packets)">
+            <span class="mf-workflow-step-num">07</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-box2-heart"></i></div>
+            <span class="mf-workflow-step-title">FG Stock</span>
+            <span class="mf-workflow-step-status">88 pkts</span>
+        </a>
+
+        <!-- 8. Dispatch Order -->
+        <a href="{% url 'dispatch_list' %}" class="mf-workflow-step status-completed" data-bs-toggle="tooltip" title="Carrier Waybill & Finished Stock Deduction">
+            <span class="mf-workflow-step-num">08</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-truck"></i></div>
+            <span class="mf-workflow-step-title">Dispatch</span>
+            <span class="mf-workflow-step-status">150 Dispatched</span>
+        </a>
+
+        <!-- 9. Payment Collection -->
+        <a href="{% url 'finance:payments_list' %}" class="mf-workflow-step status-completed" data-bs-toggle="tooltip" title="Customer Remittance Vouchers & Bank Reconciliations">
+            <span class="mf-workflow-step-num">09</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-wallet2"></i></div>
+            <span class="mf-workflow-step-title">Collections</span>
+            <span class="mf-workflow-step-status">₹8,875 Recv</span>
+        </a>
+
+        <!-- 10. System Audit -->
+        <a href="{% url 'audit_trail' %}" class="mf-workflow-step status-completed" data-bs-toggle="tooltip" title="Immutable Multi-User System Audit Observatory">
+            <span class="mf-workflow-step-num">10</span>
+            <div class="mf-workflow-icon-wrap"><i class="bi bi-shield-check"></i></div>
+            <span class="mf-workflow-step-title">Audit Trail</span>
+            <span class="mf-workflow-step-status">Immutable</span>
+        </a>
+    </div>
+</div>

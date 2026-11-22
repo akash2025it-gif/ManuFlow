@@ -15,6 +15,9 @@
 
 {% block content %}
 <div class="py-2">
+    <!-- Post-Login Welcome Experience & Manufacturing Workflow Hero -->
+    {% include 'components/welcome_hero.html' %}
+
     <!-- Page Header -->
     <div class="mf-page-header">
         <div>
@@ -48,58 +51,58 @@
         </div>
     </div>
 
-    <!-- Receivables Metrics Strip -->
-    <div class="row g-3 mb-4">
+    <!-- Receivables Metrics Strip with Clickable Routes -->
+    <div class="row g-3 mb-4" id="kpi-section">
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'invoice_list' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view tax invoices">
                 <div class="mf-stat-label">
                     <span>Total Invoiced</span>
-                    <i class="bi bi-receipt text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value text-primary font-mono">₹{{ kpis.total_invoiced|floatformat:2 }}</div>
+                <div class="mf-stat-value text-primary font-mono" data-counter="{{ kpis.total_invoiced }}" data-prefix="₹">₹{{ kpis.total_invoiced|floatformat:2 }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>{{ kpis.total_invoices_count }} total tax invoices</span>
+                    <span>{{ kpis.total_invoices_count }} total tax invoices &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'finance:payments_list' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view payment receipts">
                 <div class="mf-stat-label">
                     <span>Realized Remittances</span>
-                    <i class="bi bi-cash-stack text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value text-success font-mono">₹{{ kpis.total_received|floatformat:2 }}</div>
+                <div class="mf-stat-value text-success font-mono" data-counter="{{ kpis.total_received }}" data-prefix="₹">₹{{ kpis.total_received|floatformat:2 }}</div>
                 <div class="mf-stat-meta text-success">
                     <i class="bi bi-check2"></i>
-                    <span>{{ kpis.fully_paid_count }} fully paid · {{ kpis.partially_paid_count }} partial</span>
+                    <span>{{ kpis.fully_paid_count }} fully paid · {{ kpis.partially_paid_count }} partial &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'finance:receivables_summary' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view receivables aging">
                 <div class="mf-stat-label">
                     <span>Outstanding Receivables</span>
-                    <i class="bi bi-hourglass-split text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value font-mono">₹{{ kpis.total_outstanding|floatformat:2 }}</div>
+                <div class="mf-stat-value font-mono" data-counter="{{ kpis.total_outstanding }}" data-prefix="₹">₹{{ kpis.total_outstanding|floatformat:2 }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>{{ kpis.unpaid_count }} uncollected invoices</span>
+                    <span>{{ kpis.unpaid_count }} uncollected invoices &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'finance:receivables_summary' %}?status=overdue" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to inspect overdue accounts">
                 <div class="mf-stat-label">
                     <span>Overdue Balances</span>
-                    <i class="bi bi-exclamation-circle text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value {% if kpis.overdue_amount > 0 %}text-danger{% else %}text-muted{% endif %} font-mono">
+                <div class="mf-stat-value {% if kpis.overdue_amount > 0 %}text-danger{% else %}text-muted{% endif %} font-mono" data-counter="{{ kpis.overdue_amount }}" data-prefix="₹">
                     ₹{{ kpis.overdue_amount|floatformat:2 }}
                 </div>
                 <div class="mf-stat-meta text-muted">
-                    <span>{{ kpis.overdue_count }} invoices past credit term</span>
+                    <span>{{ kpis.overdue_count }} invoices past credit term &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

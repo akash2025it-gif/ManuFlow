@@ -15,14 +15,17 @@
 
 {% block content %}
 <div class="py-2">
-    <!-- Page Header -->
+    <!-- Post-Login Welcome Experience & Manufacturing Workflow Hero -->
+    {% include 'components/welcome_hero.html' %}
+
+    <!-- Page Header & Executive Quick Actions -->
     <div class="mf-page-header">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <span class="mf-badge badge-role-owner font-mono">EXECUTIVE SUITE</span>
                 <span class="text-muted small">Organization-Wide Financial Health &amp; Inventory Assets</span>
             </div>
-            <h1 class="mf-page-header-title">Executive Command Center</h1>
+            <h2 class="mf-page-header-title">Executive Performance &amp; Asset Command</h2>
             <p class="mf-page-header-subtitle">Real-time overview of revenue, cash collections, inventory asset valuation, and operational throughput.</p>
         </div>
         <div class="mf-page-header-actions">
@@ -41,56 +44,56 @@
         </div>
     </div>
 
-    <!-- Executive Financial Strip -->
-    <div class="row g-3 mb-4">
+    <!-- Executive Financial Strip with Animated Counters & Clickable Routes -->
+    <div class="row g-3 mb-4" id="kpi-section">
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'invoice_list' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view all tax invoices">
                 <div class="mf-stat-label">
                     <span>Total Invoiced Sales</span>
-                    <i class="bi bi-receipt text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value text-primary font-mono">₹{{ total_invoiced|floatformat:2 }}</div>
+                <div class="mf-stat-value text-primary font-mono" data-counter="{{ total_invoiced|floatformat:2 }}" data-prefix="₹">₹{{ total_invoiced|floatformat:2 }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>{{ total_invoices_count }} Total Tax Invoices</span>
+                    <span>{{ total_invoices_count }} Total Tax Invoices &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'finance:payments_list' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view payment vouchers">
                 <div class="mf-stat-label">
                     <span>Cash Collected</span>
-                    <i class="bi bi-cash-stack text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value text-success font-mono">₹{{ total_collected|floatformat:2 }}</div>
+                <div class="mf-stat-value text-success font-mono" data-counter="{{ total_collected|floatformat:2 }}" data-prefix="₹">₹{{ total_collected|floatformat:2 }}</div>
                 <div class="mf-stat-meta text-success">
                     <i class="bi bi-check2"></i>
-                    <span>Realized Remittances</span>
+                    <span>Realized Remittances &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'finance:receivables_summary' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view receivables aging">
                 <div class="mf-stat-label">
                     <span>Outstanding AR</span>
-                    <i class="bi bi-hourglass-split text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value font-mono">₹{{ total_outstanding|floatformat:2 }}</div>
+                <div class="mf-stat-value font-mono" data-counter="{{ total_outstanding|floatformat:2 }}" data-prefix="₹">₹{{ total_outstanding|floatformat:2 }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>{% if overdue_count == 0 %}Zero Overdue Invoices{% else %}{{ overdue_count }} Overdue{% endif %}</span>
+                    <span>{% if overdue_count == 0 %}Zero Overdue Invoices{% else %}{{ overdue_count }} Overdue{% endif %} &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'stock_summary' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view stock balances">
                 <div class="mf-stat-label">
                     <span>Total Inventory Assets</span>
-                    <i class="bi bi-boxes text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value font-mono">₹{{ grand_total_stock_valuation|floatformat:2 }}</div>
+                <div class="mf-stat-value font-mono" data-counter="{{ grand_total_stock_valuation|default:total_inventory_valuation|floatformat:2 }}" data-prefix="₹">₹{{ grand_total_stock_valuation|default:total_inventory_valuation|floatformat:2 }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>FIFO Valuation</span>
+                    <span>FIFO Valuation &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

@@ -442,6 +442,20 @@ def dispatch_list_view(request):
         'sales_order', 'invoice', 'dispatched_by'
     ).all()
 
+    has_shortage = request.GET.get('has_shortage') == 'true'
+    shortage_orders = []
+    if has_shortage:
+        all_pending = SalesOrder.objects.filter(status__in=[SalesOrder.Status.SUBMITTED, SalesOrder.Status.APPROVED])
+        for so in all_pending:
+            can_fulfill, item, on_hand, req = check_order_stock_availability(so)
+            if not can_fulfill:
+                shortage_orders.append({
+                    'order': so,
+                    'shortage_qty': req - on_hand,
+                    'available_qty': on_hand,
+                    'required_qty': req,
+                })
+
     q = request.GET.get('q', '').strip()
     if q:
         dispatches_qs = dispatches_qs.filter(
@@ -460,6 +474,9 @@ def dispatch_list_view(request):
         'page_obj': page_obj,
         'dispatches': page_obj.object_list,
         'search_query': q,
+        'has_shortage': has_shortage,
+        'shortage_orders': shortage_orders,
+        'page_title': 'Deliveries & Inventory Shortages' if has_shortage else 'Material Dispatch Orders',
     }
     return render(request, 'sales/dispatch_list.html', context)
 

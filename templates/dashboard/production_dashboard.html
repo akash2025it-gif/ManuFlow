@@ -15,6 +15,9 @@
 
 {% block content %}
 <div class="py-2">
+    <!-- Post-Login Welcome Experience & Manufacturing Workflow Hero -->
+    {% include 'components/welcome_hero.html' %}
+
     <!-- Page Header -->
     <div class="mf-page-header">
         <div>
@@ -22,7 +25,7 @@
                 <span class="mf-badge badge-role-production font-mono">SHOP FLOOR &amp; BATCH CONTROL</span>
                 <span class="text-muted small">Recipe-Driven Batch Manufacturing &amp; Conformance</span>
             </div>
-            <h1 class="mf-page-header-title">Production Operations & Batch Control</h1>
+            <h2 class="mf-page-header-title">Production Operations & Batch Control</h2>
             <p class="mf-page-header-subtitle">Execute BOM formulations, reconcile raw material consumption, and monitor yield variance tolerances.</p>
         </div>
         <div class="mf-page-header-actions">
@@ -41,59 +44,59 @@
         </div>
     </div>
 
-    <!-- Shop Floor Yield Metrics Strip -->
-    <div class="row g-3 mb-4">
+    <!-- Shop Floor Yield Metrics Strip with Clickable Routes -->
+    <div class="row g-3 mb-4" id="kpi-section">
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'production_run_list' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view all production runs">
                 <div class="mf-stat-label">
                     <span>Total Good Output</span>
-                    <i class="bi bi-boxes text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value font-mono">{{ total_good_output|floatformat:0 }} <span style="font-size: 0.85rem; color: #64748b;">pkts</span></div>
+                <div class="mf-stat-value font-mono" data-counter="{{ total_good_output|floatformat:0 }}" data-suffix=" pkts">{{ total_good_output|floatformat:0 }} pkts</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>Target: {{ total_planned|floatformat:0 }} pkts</span>
+                    <span>Target: {{ total_planned|floatformat:0 }} pkts &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'production_run_list' %}?status=COMPLETED" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view completed batches">
                 <div class="mf-stat-label">
                     <span>Batches Completed</span>
-                    <i class="bi bi-check2-circle text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value text-success">{{ completed_runs_count }}</div>
+                <div class="mf-stat-value text-success font-mono" data-counter="{{ completed_runs_count }}">{{ completed_runs_count }}</div>
                 <div class="mf-stat-meta text-success">
                     <i class="bi bi-check2"></i>
-                    <span>BOM Reconciled</span>
+                    <span>BOM Reconciled &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'production_run_list' %}?status=IN_PROGRESS" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view active WIP on floor">
                 <div class="mf-stat-label">
                     <span>Active WIP Runs</span>
-                    <i class="bi bi-hourglass-split text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value">{{ active_runs_count }}</div>
+                <div class="mf-stat-value font-mono" data-counter="{{ active_runs_count }}">{{ active_runs_count }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>In progress on floor</span>
+                    <span>In progress on floor &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'finance:production_variance_report' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view yield variance report">
                 <div class="mf-stat-label">
                     <span>Yield Variance Alerts</span>
-                    <i class="bi bi-exclamation-triangle text-danger"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value {% if yield_alerts_count > 0 %}text-danger{% else %}text-muted{% endif %}">
+                <div class="mf-stat-value font-mono {% if yield_alerts_count > 0 %}text-danger{% else %}text-muted{% endif %}" data-counter="{{ yield_alerts_count }}">
                     {{ yield_alerts_count }}
                 </div>
                 <div class="mf-stat-meta {% if yield_alerts_count > 0 %}text-danger{% else %}text-muted{% endif %}">
                     <i class="bi bi-flag"></i>
-                    <span>Deviations &ge; 3% from BOM</span>
+                    <span>Deviations &ge; 3% from BOM &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

@@ -21,16 +21,33 @@
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <a href="{% url 'inventory_dashboard' %}" class="text-decoration-none small text-muted">&larr; Inventory Dashboard</a>
+                {% if reason_filter %}
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-mono small">{{ reason_filter }}</span>
+                {% endif %}
             </div>
-            <h2 class="fw-bold mb-0">Stock Adjustments & Physical Inventory Audits</h2>
+            <h2 class="fw-bold mb-0 text-dark">{{ page_title|default:"Stock Adjustments & Physical Inventory Audits" }}</h2>
+            <p class="text-muted small mb-0">Traceable stock adjustments, physical inventory verifications, and quality scrap write-offs.</p>
         </div>
         <div class="d-flex gap-2 mt-3 mt-md-0">
             {% if can_manage %}
-                <a href="{% url 'stock_adjustment_create' %}" class="btn btn-warning text-dark fw-medium">
-                    <i class="bi bi-sliders2 me-1"></i> New Physical Count Audit
+                <a href="{% url 'stock_adjustment_create' %}" class="btn btn-primary fw-medium">
+                    <i class="bi bi-plus-lg me-1"></i> New Physical Count Audit
                 </a>
             {% endif %}
         </div>
+    </div>
+
+    <!-- Filter Pills -->
+    <div class="d-flex gap-2 mb-3">
+        <a href="{% url 'stock_adjustment_list' %}" class="btn btn-sm {% if not reason_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+            All Adjustments
+        </a>
+        <a href="{% url 'stock_adjustment_list' %}?reason=DAMAGED" class="btn btn-sm {% if reason_filter == 'DAMAGED' or reason_filter == 'DAMAGE_EXPIRY' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+            <i class="bi bi-shield-exclamation me-1"></i> Damaged Goods &amp; Write-Offs
+        </a>
+        <a href="{% url 'stock_adjustment_list' %}?reason=PHYSICAL_AUDIT" class="btn btn-sm {% if reason_filter == 'PHYSICAL_AUDIT' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+            <i class="bi bi-clipboard-check me-1"></i> Physical Count Audits
+        </a>
     </div>
 
     <!-- Table -->

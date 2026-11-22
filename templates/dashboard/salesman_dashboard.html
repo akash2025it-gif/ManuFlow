@@ -15,6 +15,9 @@
 
 {% block content %}
 <div class="py-2">
+    <!-- Post-Login Welcome Experience & Manufacturing Workflow Hero -->
+    {% include 'components/welcome_hero.html' %}
+
     <!-- Page Header -->
     <div class="mf-page-header">
         <div>
@@ -22,7 +25,7 @@
                 <span class="mf-badge badge-role-salesman font-mono">COMMERCIAL PIPELINE</span>
                 <span class="text-muted small">Client Order Fulfillment &amp; Invoicing Funnel</span>
             </div>
-            <h1 class="mf-page-header-title">Sales & Quotation Dashboard</h1>
+            <h2 class="mf-page-header-title">Sales & Quotation Dashboard</h2>
             <p class="mf-page-header-subtitle">Manage customer demand, verify stock reservation, issue commercial orders, and track fulfillment.</p>
         </div>
         <div class="mf-page-header-actions">
@@ -38,56 +41,56 @@
         </div>
     </div>
 
-    <!-- Commercial Pipeline Metrics Strip -->
-    <div class="row g-3 mb-4">
+    <!-- Commercial Pipeline Metrics Strip with Clickable Routes -->
+    <div class="row g-3 mb-4" id="kpi-section">
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'sales_order_list' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view all commercial orders">
                 <div class="mf-stat-label">
                     <span>Booked Pipeline Value</span>
-                    <i class="bi bi-currency-rupee text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value text-primary">₹{{ pipeline_value|floatformat:2 }}</div>
+                <div class="mf-stat-value text-primary font-mono" data-counter="{{ pipeline_value|floatformat:2 }}" data-prefix="₹">₹{{ pipeline_value|floatformat:2 }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>Cumulative client commitments</span>
+                    <span>Cumulative client commitments &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'sales_order_list' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view all sales orders">
                 <div class="mf-stat-label">
                     <span>Total Client Orders</span>
-                    <i class="bi bi-bag-check text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value">{{ orders_booked_count }}</div>
+                <div class="mf-stat-value font-mono" data-counter="{{ orders_booked_count }}">{{ orders_booked_count }}</div>
                 <div class="mf-stat-meta text-success">
                     <i class="bi bi-check-circle"></i>
-                    <span>Active commercial records</span>
+                    <span>Active commercial records &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'sales_order_list' %}?status=DRAFT" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view draft orders">
                 <div class="mf-stat-label">
                     <span>Quotes In Preparation</span>
-                    <i class="bi bi-hourglass-split text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value">{{ pending_quotes }}</div>
+                <div class="mf-stat-value font-mono" data-counter="{{ pending_quotes }}">{{ pending_quotes }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>Draft stage quotes</span>
+                    <span>Draft stage quotes &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'invoice_list' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view invoices">
                 <div class="mf-stat-label">
                     <span>Fulfilled / Invoiced</span>
-                    <i class="bi bi-truck text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value text-success">{{ approved_count }}</div>
+                <div class="mf-stat-value text-success font-mono" data-counter="{{ approved_count }}">{{ approved_count }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>Invoiced or dispatched</span>
+                    <span>Invoiced or dispatched &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

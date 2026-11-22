@@ -479,7 +479,23 @@ def stock_ledger_list_view(request):
 @login_required
 def stock_adjustment_list_view(request):
     query = request.GET.get('q', '').strip()
+    reason_param = request.GET.get('reason', '').strip()
+    status_param = request.GET.get('status', '').strip()
     adjustments = StockAdjustment.objects.select_related('created_by', 'approved_by')
+
+    title = 'Stock Adjustments & Physical Inventory Audits'
+    if reason_param:
+        if reason_param.upper() in ['DAMAGED', 'DAMAGE_EXPIRY', 'SPOILAGE']:
+            adjustments = adjustments.filter(reason=StockAdjustment.Reason.DAMAGE_EXPIRY)
+            title = 'Damaged Goods & Scrap Write-Offs'
+        elif reason_param.upper() in ['PHYSICAL_AUDIT', 'AUDIT', 'COUNT']:
+            adjustments = adjustments.filter(reason=StockAdjustment.Reason.PHYSICAL_AUDIT)
+            title = 'Physical Inventory Audits & Counts'
+        else:
+            adjustments = adjustments.filter(reason=reason_param)
+
+    if status_param:
+        adjustments = adjustments.filter(status=status_param)
 
     if query:
         adjustments = adjustments.filter(
@@ -490,9 +506,11 @@ def stock_adjustment_list_view(request):
     page_obj = paginator.get_page(request.GET.get('page'))
 
     return render(request, 'inventory/adjustment_list.html', {
-        'page_title': 'Stock Adjustments & Physical Inventory Audits',
+        'page_title': title,
         'page_obj': page_obj,
         'query': query,
+        'reason_filter': reason_param,
+        'status_filter': status_param,
         'can_manage': can_manage_inventory(request.user),
     })
 

@@ -15,6 +15,9 @@
 
 {% block content %}
 <div class="py-2">
+    <!-- Post-Login Welcome Experience & Manufacturing Workflow Hero -->
+    {% include 'components/welcome_hero.html' %}
+
     <!-- Page Header -->
     <div class="mf-page-header">
         <div>
@@ -22,7 +25,7 @@
                 <span class="mf-badge badge-role-admin font-mono">GOVERNANCE CONSOLE</span>
                 <span class="text-muted small">Multi-Role Security &amp; Infrastructure Management</span>
             </div>
-            <h1 class="mf-page-header-title">Administrator Command Center</h1>
+            <h2 class="mf-page-header-title">Administrator Command Center</h2>
             <p class="mf-page-header-subtitle">Enforce role segregation boundaries, manage institutional staff credentials, and inspect runtime health.</p>
         </div>
         <div class="mf-page-header-actions">
@@ -38,20 +41,20 @@
         </div>
     </div>
 
-    <!-- Infrastructure Metrics Strip -->
-    <div class="row g-3 mb-4">
+    <!-- Infrastructure Metrics Strip with Clickable Routes -->
+    <div class="row g-3 mb-4" id="kpi-section">
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'user_list' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view staff accounts directory">
                 <div class="mf-stat-label">
                     <span>Total Staff Accounts</span>
-                    <i class="bi bi-people text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value">{{ total_users }}</div>
+                <div class="mf-stat-value" data-counter="{{ total_users }}">{{ total_users }}</div>
                 <div class="mf-stat-meta text-success">
                     <i class="bi bi-check-circle-fill"></i>
-                    <span>{{ active_users }} Active &amp; Verified</span>
+                    <span>{{ active_users }} Active &amp; Verified &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
             <div class="mf-stat-box">
@@ -67,32 +70,32 @@
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'admin:index' %}" target="_blank" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view Django RBAC permissions">
                 <div class="mf-stat-label">
                     <span>Role Segregation</span>
-                    <i class="bi bi-diagram-3 text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
                 <div class="mf-stat-value">6 Roles</div>
                 <div class="mf-stat-meta text-info">
                     <i class="bi bi-shield-lock"></i>
-                    <span>Strict RBAC Active</span>
+                    <span>Strict RBAC Active &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'audit_trail' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view immutable system audit trail">
                 <div class="mf-stat-label">
                     <span>Security Posture</span>
-                    <i class="bi bi-lock text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
                 <div class="mf-stat-value" style="font-size: 1.35rem;">
                     {% if debug_mode %}DEV (DEBUG){% else %}PRODUCTION{% endif %}
                 </div>
                 <div class="mf-stat-meta text-muted">
                     <i class="bi bi-shield-check"></i>
-                    <span>CSRF &amp; Sessions Enforced</span>
+                    <span>Audit Trail Logged &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

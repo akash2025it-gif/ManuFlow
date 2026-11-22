@@ -15,6 +15,9 @@
 
 {% block content %}
 <div class="py-2">
+    <!-- Post-Login Welcome Experience & Manufacturing Workflow Hero -->
+    {% include 'components/welcome_hero.html' %}
+
     <!-- Page Header -->
     <div class="mf-page-header">
         <div>
@@ -41,59 +44,59 @@
         </div>
     </div>
 
-    <!-- Compliance Metrics Strip -->
-    <div class="row g-3 mb-4">
+    <!-- Compliance Metrics Strip with Clickable Routes -->
+    <div class="row g-3 mb-4" id="kpi-section">
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'audit_trail' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to view complete audit trail">
                 <div class="mf-stat-label">
                     <span>Total Audit Trail Events</span>
-                    <i class="bi bi-journal-check text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value font-mono">{{ total_audit_events }}</div>
+                <div class="mf-stat-value font-mono" data-counter="{{ total_audit_events }}">{{ total_audit_events }}</div>
                 <div class="mf-stat-meta text-success">
                     <i class="bi bi-check-circle"></i>
-                    <span>Complete traceability</span>
+                    <span>Complete traceability &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'audit_trail' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to inspect today's events">
                 <div class="mf-stat-label">
                     <span>Events Today</span>
-                    <i class="bi bi-clock-history text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value text-primary font-mono">{{ today_audit_events }}</div>
+                <div class="mf-stat-value text-primary font-mono" data-counter="{{ today_audit_events }}">{{ today_audit_events }}</div>
                 <div class="mf-stat-meta text-muted">
-                    <span>Real-time capture</span>
+                    <span>Real-time capture &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'finance:production_variance_report' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to inspect production yield variances">
                 <div class="mf-stat-label">
                     <span>Yield Variance Alerts</span>
-                    <i class="bi bi-exclamation-triangle text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value {% if yield_alerts %}text-danger{% else %}text-muted{% endif %} font-mono">
+                <div class="mf-stat-value {% if yield_alerts %}text-danger{% else %}text-muted{% endif %} font-mono" data-counter="{{ yield_alerts|length }}">
                     {{ yield_alerts|length }}
                 </div>
                 <div class="mf-stat-meta {% if yield_alerts %}text-danger{% else %}text-muted{% endif %}">
-                    <span>Deviations &ge; 3% from BOM</span>
+                    <span>Deviations &ge; 3% from BOM &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="mf-stat-box">
+            <a href="{% url 'finance:receivables_summary' %}" class="mf-stat-box clickable" data-bs-toggle="tooltip" title="Click to inspect receivables aging">
                 <div class="mf-stat-label">
                     <span>Overdue Invoices</span>
-                    <i class="bi bi-receipt text-muted"></i>
+                    <i class="bi bi-arrow-up-right text-muted"></i>
                 </div>
-                <div class="mf-stat-value font-mono">{{ overdue_invoices|length }}</div>
+                <div class="mf-stat-value font-mono" data-counter="{{ overdue_invoices|length }}">{{ overdue_invoices|length }}</div>
                 <div class="mf-stat-meta text-success">
                     <i class="bi bi-check2"></i>
-                    <span>Receivables within terms</span>
+                    <span>Receivables aging report &rarr;</span>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

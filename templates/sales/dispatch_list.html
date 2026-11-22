@@ -20,7 +20,7 @@
     <div class="row align-items-center mb-4">
         <div class="col-md-7">
             <h2 class="h3 fw-bold mb-0 text-dark">
-                <i class="bi bi-truck text-info me-2"></i>Material Dispatch Challans
+                <i class="bi bi-truck text-info me-2"></i>{{ page_title|default:"Material Dispatch Challans" }}
             </h2>
             <p class="text-muted small mb-0">Traceable logistics dispatches deducting finished goods stock via ledger entries.</p>
         </div>
@@ -28,8 +28,62 @@
             <a href="{% url 'sales_order_list' %}?status=APPROVED" class="btn btn-primary shadow-sm">
                 <i class="bi bi-box-seam me-1"></i> Orders Ready to Dispatch
             </a>
+            {% if not has_shortage %}
+            <a href="{% url 'dispatch_list' %}?has_shortage=true" class="btn btn-outline-danger btn-sm shadow-sm ms-2">
+                <i class="bi bi-exclamation-octagon me-1"></i> View Shortages
+            </a>
+            {% else %}
+            <a href="{% url 'dispatch_list' %}" class="btn btn-outline-secondary btn-sm shadow-sm ms-2">
+                <i class="bi bi-truck me-1"></i> All Dispatches
+            </a>
+            {% endif %}
         </div>
     </div>
+
+    {% if has_shortage %}
+    <!-- Shortage & Negative Dispatch Guard Panel -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4 border-start border-4 border-danger">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle font-mono">BENCHMARK SHORTAGE GUARD</span>
+                <span class="fw-bold text-dark">Pending Orders Blocked Due to Stock Shortage</span>
+            </div>
+            <p class="text-muted small mb-3">
+                In strict compliance with the NIT Trichy Benchmark Problem Statement, negative dispatch is mathematically prohibited. Orders exceeding finished goods balance on hand are held in the queue until additional batch production completes.
+            </p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle mb-0 font-mono" style="font-size: 0.825rem;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Required Qty</th>
+                            <th>Available On Hand</th>
+                            <th>Shortage Quantity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in shortage_orders %}
+                        <tr>
+                            <td><a href="{% url 'sales_order_detail' item.order.pk %}" class="fw-bold">{{ item.order.order_number }}</a></td>
+                            <td>{{ item.order.customer.name }} ({{ item.order.customer.state }})</td>
+                            <td>{{ item.required_qty|floatformat:0 }} pkts</td>
+                            <td class="text-info">{{ item.available_qty|floatformat:0 }} pkts</td>
+                            <td class="text-danger fw-bold">-{{ item.shortage_qty|floatformat:0 }} pkts</td>
+                            <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle">BLOCKED (SHORTAGE)</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-2">No orders currently experiencing finished goods stock shortages.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Filter Card -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
