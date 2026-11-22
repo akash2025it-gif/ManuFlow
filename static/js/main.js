@@ -87,3 +87,23 @@ function togglePasswordVisibility(inputId, btnEl) {
         if (btnEl) btnEl.setAttribute('aria-label', 'Show password');
     }
 }
+
+// 5. Back-Forward Cache (bfcache) Guard
+// Ensures authenticated pages cannot be restored from browser back cache after logout
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+
+/**
+ * 1-Click One-Touch Demo Sign In
+ * Fills demo credentials and submits the authentication form immediately
+ */
+function oneClickDemoLogin(email = 'demo@manuflow.app', password = 'ManuFlow@Demo2026!') {
+    fillDemoCredentials(email, password);
+    const form = document.querySelector('form[action*="login"]');
+    if (form) {
+        form.submit();
+    }
+}

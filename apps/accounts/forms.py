@@ -12,7 +12,7 @@ class LoginForm(forms.Form):
         label="Email or Username",
         widget=forms.TextInput(attrs={
             'class': 'form-control form-control-lg',
-            'placeholder': 'name@nit.edu or username',
+            'placeholder': 'demo@manuflow.app or staff ID',
             'autocomplete': 'username',
             'autofocus': True,
         })

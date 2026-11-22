@@ -23,8 +23,20 @@ if env_file.exists():
                 key, val = line.split('=', 1)
                 os.environ.setdefault(key.strip(), val.strip().strip("'\""))
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't', 'yes')
+# Vercel and Render deployments must never inherit the local development
+# defaults, even if the hosting environment omits DEBUG.
+DEPLOYED = bool(
+    os.environ.get('VERCEL')
+    or os.environ.get('VERCEL_ENV')
+    or os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+)
+DEBUG = os.environ.get('DEBUG', 'False' if DEPLOYED else 'True').lower() in (
+    'true', '1', 't', 'yes'
+)
+
+if DEPLOYED and DEBUG:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured('DEBUG must be disabled on deployed environments.')
 
 # A deployment must provide its own persistent key.  Local development remains
 # zero-configuration, while avoiding a committed fallback that could otherwise
@@ -105,6 +117,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.core.middleware.NoCacheForAuthenticatedMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -151,11 +164,27 @@ if not DEBUG and not DATABASE_URL:
 USE_SQLITE = os.environ.get('USE_SQLITE', str(DEBUG)).lower() in ('true', '1', 't', 'yes')
 
 if DATABASE_URL:
+    parsed_database_url = urllib.parse.urlparse(DATABASE_URL)
+    if not DEBUG and parsed_database_url.scheme not in ('postgres', 'postgresql', 'pgsql'):
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured(
+            'Production DATABASE_URL must use PostgreSQL; SQLite is not supported in production.'
+        )
+    if not DEBUG and USE_SQLITE:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured('USE_SQLITE must be disabled in production.')
+
     try:
         import dj_database_url
-        DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)}
+        DATABASES = {
+            'default': dj_database_url.parse(
+                DATABASE_URL,
+                conn_max_age=0 if os.environ.get('VERCEL') else 600,
+                conn_health_checks=True,
+            )
+        }
     except ImportError:
-        parsed_db = urllib.parse.urlparse(DATABASE_URL)
+        parsed_db = parsed_database_url
         if parsed_db.scheme in ('postgres', 'postgresql', 'pgsql'):
             db_engine = 'django.db.backends.postgresql'
             default_port = '5432'
@@ -186,7 +215,7 @@ if DATABASE_URL:
                     'PASSWORD': urllib.parse.unquote(parsed_db.password or ''),
                     'HOST': parsed_db.hostname or 'localhost',
                     'PORT': str(parsed_db.port) if parsed_db.port else default_port,
-                    'CONN_MAX_AGE': 600,
+                    'CONN_MAX_AGE': 0 if os.environ.get('VERCEL') else 600,
                     'CONN_HEALTH_CHECKS': True,
                     'OPTIONS': db_options,
                 }
@@ -262,7 +291,7 @@ try:
             "BACKEND": "django.core.files.storage.FileSystemStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage" if DEBUG else "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
 except ImportError:

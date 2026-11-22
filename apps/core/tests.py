@@ -11,6 +11,23 @@ from apps.core.audit import log_audit_event, sanitize_audit_details
 User = get_user_model()
 
 
+class ApplicationEntryPointTests(TestCase):
+    def test_anonymous_root_redirects_to_login(self):
+        response = self.client.get(reverse('home'))
+        self.assertRedirects(response, reverse('login'))
+
+    def test_authenticated_root_redirects_to_role_dashboard(self):
+        user = User.objects.create_user(
+            username='entry_sales_u',
+            email='entry_sales@nit.edu',
+            password='TestPassword123!',
+            role=CustomUser.Role.SALESMAN,
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse('home'))
+        self.assertRedirects(response, reverse('salesman_dashboard'))
+
+
 class AuditTrailModelSecurityTests(TestCase):
     """
     Tests ensuring that the audit trail is permanently immutable and protected

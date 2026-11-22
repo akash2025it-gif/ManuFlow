@@ -13,14 +13,14 @@ from .models import AuditLogEntry
 
 def home_view(request):
     """
-    Public landing page for NIT Trichy Order-to-Audit Management System.
-    If user is authenticated, provides direct jump to their role dashboard.
+    Entry point for the application.
+
+    All unauthenticated traffic begins at the authentication portal; active
+    sessions continue directly to the user's role-based workspace.
     """
     if request.user.is_authenticated:
-        return redirect('dashboard_home')
-    return render(request, 'core/home.html', {
-        'page_title': 'ManuFlow | Manufacturing & Order Management System',
-    })
+        return redirect(request.user.get_dashboard_name())
+    return redirect('login')
 
 
 @login_required

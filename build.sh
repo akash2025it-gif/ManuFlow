@@ -5,8 +5,11 @@ set -o errexit
 # Install production dependencies
 pip install -r requirements.txt
 
-# Collect static files for WhiteNoise
-python manage.py collectstatic --no-input
-
 # Apply database migrations
 python manage.py migrate --no-input
+
+# Seed or verify the official ManuFlow demonstration account
+python manage.py seed_demo_account
+
+# Collect static files for WhiteNoise
+python manage.py collectstatic --no-input

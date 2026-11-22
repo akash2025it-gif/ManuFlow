@@ -1,4 +1,4 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from apps.accounts.models import CustomUser
 
@@ -80,6 +80,25 @@ class AuthenticationTests(TestCase):
         self.client.login(username='salesuser', password=self.password)
         response = self.client.get(reverse('logout'))
         self.assertEqual(response.status_code, 405)
+
+    def test_authenticated_session_persists_until_logout(self):
+        response = self.client.post(reverse('login'), {
+            'username': 'salesman@nit.edu',
+            'password': self.password,
+            'remember_me': 'on',
+        })
+        self.assertRedirects(response, reverse('salesman_dashboard'))
+        self.assertEqual(self.client.get(reverse('profile')).status_code, 200)
+
+        self.client.post(reverse('logout'))
+        response = self.client.get(reverse('profile'))
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('profile')}")
+
+    @override_settings(DEBUG=False, DEMO_MODE=False)
+    def test_demo_role_query_does_not_authenticate_in_production(self):
+        response = self.client.get(reverse('login'), {'role': 'admin'})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
 
 
 class RoleBasedAccessTests(TestCase):
@@ -186,3 +205,44 @@ class RoleBasedAccessTests(TestCase):
         self.client.login(username='prod_u', password=self.password)
         response = self.client.get(reverse('owner_dashboard'))
         self.assertEqual(response.status_code, 403)
+
+
+class DemoAccountTests(TestCase):
+    def test_seed_demo_account_management_command(self):
+        from django.core.management import call_command
+        call_command('seed_demo_account')
+
+        demo_user = CustomUser.objects.filter(email='demo@manuflow.app').first()
+        self.assertIsNotNone(demo_user)
+        self.assertEqual(demo_user.username, 'demo_user')
+        self.assertEqual(demo_user.role, CustomUser.Role.OWNER)
+        self.assertTrue(demo_user.is_active)
+        self.assertFalse(demo_user.is_staff)
+        self.assertFalse(demo_user.is_superuser)
+        self.assertTrue(demo_user.check_password('ManuFlow@Demo2026!'))
+
+        # Verify authentication and redirection
+        response = self.client.post(reverse('login'), {
+            'username': 'demo@manuflow.app',
+            'password': 'ManuFlow@Demo2026!',
+        })
+        self.assertRedirects(response, reverse('owner_dashboard'))
+
+        # Verify idempotency
+        call_command('seed_demo_account')
+        demo_count = CustomUser.objects.filter(email='demo@manuflow.app').count()
+        self.assertEqual(demo_count, 1)
+
+    def test_authenticated_response_has_no_cache_headers(self):
+        user = CustomUser.objects.create_user(
+            username='cache_u',
+            email='cache_u@nit.edu',
+            password='TestPassword123!',
+            role=CustomUser.Role.SALESMAN
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse('salesman_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('no-cache', response.headers.get('Cache-Control', ''))
+        self.assertIn('no-store', response.headers.get('Cache-Control', ''))
+
