@@ -1,146 +1,200 @@
 {% extends 'base.html' %}
 
+{% block title %}Sales Operations & Orders Portal | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 py-0 small">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Sales Operations</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid px-lg-4 py-3">
-    <!-- Role Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+<div class="py-2">
+    <!-- Page Header -->
+    <div class="mf-page-header">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge badge-role-salesman px-3 py-1.5 rounded-pill font-monospace">
-                    <i class="bi bi-cart-check-fill me-1"></i> SALES PORTAL
-                </span>
-                <span class="text-muted small">Order Booking & Client Management</span>
+                <span class="mf-badge badge-role-salesman font-mono">COMMERCIAL PIPELINE</span>
+                <span class="text-muted small">Client Order Fulfillment &amp; Invoicing Funnel</span>
             </div>
-            <h2 class="fw-bold mb-0">Sales & Quotation Dashboard</h2>
+            <h1 class="mf-page-header-title">Sales & Quotation Dashboard</h1>
+            <p class="mf-page-header-subtitle">Manage customer demand, verify stock reservation, issue commercial orders, and track fulfillment.</p>
         </div>
-        <div class="d-flex gap-2 mt-3 mt-md-0">
-            <a href="{% url 'sales_order_create' %}" class="btn btn-primary fw-medium">
-                <i class="bi bi-plus-circle me-1"></i> New Sales Order (SO)
+        <div class="mf-page-header-actions">
+            <a href="{% url 'sales_order_create' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Sales Order
             </a>
-            <a href="{% url 'sales_order_list' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-list-check me-1"></i> Order Queue
+            <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-people me-1"></i> Customers Directory
+            </a>
+            <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-file-earmark-pdf me-1"></i> GST Invoices
             </a>
         </div>
     </div>
 
-    <!-- Sales Pipeline Metric Cards -->
+    <!-- Commercial Pipeline Metrics Strip -->
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Booked Pipeline Value</div>
-                        <div class="stat-value text-success fs-3">₹ {{ pipeline_value|floatformat:2 }}</div>
-                    </div>
-                    <div class="stat-icon bg-success-subtle text-success">
-                        <i class="bi bi-currency-rupee"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Booked Pipeline Value</span>
+                    <i class="bi bi-currency-rupee text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">
-                    <i class="bi bi-bag-check"></i> Across all commercial orders
+                <div class="mf-stat-value text-primary">₹{{ pipeline_value|floatformat:2 }}</div>
+                <div class="mf-stat-meta text-muted">
+                    <span>Cumulative client commitments</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Total Orders Booked</div>
-                        <div class="stat-value text-dark fs-3">{{ orders_booked_count }}</div>
-                    </div>
-                    <div class="stat-icon bg-primary-subtle text-primary">
-                        <i class="bi bi-cart4"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Total Client Orders</span>
+                    <i class="bi bi-bag-check text-muted"></i>
                 </div>
-                <div class="small text-primary mt-2">
-                    <i class="bi bi-check-circle"></i> Active client engagements
+                <div class="mf-stat-value">{{ orders_booked_count }}</div>
+                <div class="mf-stat-meta text-success">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Active commercial records</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Awaiting Admin Approval</div>
-                        <div class="stat-value text-warning fs-3">{{ pending_approval_count }}</div>
-                    </div>
-                    <div class="stat-icon bg-warning-subtle text-warning">
-                        <i class="bi bi-hourglass-split"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Quotes In Preparation</span>
+                    <i class="bi bi-hourglass-split text-muted"></i>
                 </div>
-                <div class="small text-warning mt-2">
-                    <i class="bi bi-clock"></i> Stock validation & verification
+                <div class="mf-stat-value">{{ pending_quotes }}</div>
+                <div class="mf-stat-meta text-muted">
+                    <span>Draft stage quotes</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Approved & Dispatched</div>
-                        <div class="stat-value text-dark fs-3">{{ approved_count }}</div>
-                    </div>
-                    <div class="stat-icon bg-info-subtle text-info">
-                        <i class="bi bi-truck"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Fulfilled / Invoiced</span>
+                    <i class="bi bi-truck text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">
-                    <i class="bi bi-check2-all"></i> Ready or fulfilled
+                <div class="mf-stat-value text-success">{{ approved_count }}</div>
+                <div class="mf-stat-meta text-muted">
+                    <span>Invoiced or dispatched</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Sales Orders Table -->
-    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
-        <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
-            <div>
-                <h5 class="fw-bold mb-0">My Recent Sales Orders</h5>
-                <small class="text-muted">Live order processing, approvals and dispatch milestones</small>
-            </div>
-            <a href="{% url 'sales_order_list' %}" class="btn btn-sm btn-outline-primary">View All Orders &rarr;</a>
+    <!-- 5-Stage Commercial Order Pipeline Flow -->
+    <div class="mf-card mb-4 p-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="small fw-semibold text-uppercase font-mono text-muted" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                Standard 5-Stage Order-to-Fulfillment Pipeline
+            </span>
+            <span class="badge bg-light text-secondary border font-mono small">FIFO Inventory Allocation</span>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover table-custom mb-0 align-middle">
+        <div class="mf-pipeline mb-0">
+            <div class="mf-pipeline-stage {% if pending_quotes > 0 %}active{% endif %}">
+                <span class="mf-pipeline-num">1</span>
+                <div>
+                    <div>1. DRAFT</div>
+                    <small class="text-muted" style="font-size: 0.65rem;">Quotation Created</small>
+                </div>
+            </div>
+            <div class="mf-pipeline-stage {% if pending_approval_count > 0 %}active{% endif %}">
+                <span class="mf-pipeline-num">2</span>
+                <div>
+                    <div>2. SUBMITTED</div>
+                    <small class="text-muted" style="font-size: 0.65rem;">Stock Checked</small>
+                </div>
+            </div>
+            <div class="mf-pipeline-stage">
+                <span class="mf-pipeline-num">3</span>
+                <div>
+                    <div>3. APPROVED</div>
+                    <small class="text-muted" style="font-size: 0.65rem;">Inventory Reserved</small>
+                </div>
+            </div>
+            <div class="mf-pipeline-stage active">
+                <span class="mf-pipeline-num">4</span>
+                <div>
+                    <div>4. INVOICED</div>
+                    <small class="text-muted" style="font-size: 0.65rem;">Section 31 Tax</small>
+                </div>
+            </div>
+            <div class="mf-pipeline-stage completed">
+                <span class="mf-pipeline-num">5</span>
+                <div>
+                    <div>5. DISPATCHED</div>
+                    <small class="text-muted" style="font-size: 0.65rem;">Stock Handover</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Commercial Orders Table -->
+    <div class="mf-card">
+        <div class="mf-card-header">
+            <div>
+                <h6 class="mf-card-title"><i class="bi bi-receipt me-1 text-primary"></i> Commercial Sales Orders Directory</h6>
+                <span class="mf-card-subtitle">Live order fulfillment, credit verification, and dispatch tracking</span>
+            </div>
+            <a href="{% url 'sales_order_list' %}" class="small text-decoration-none">View All Orders &rarr;</a>
+        </div>
+        <div class="table-responsive border-0">
+            <table class="mf-table">
                 <thead>
                     <tr>
                         <th>Order #</th>
-                        <th>Order Date</th>
-                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Customer / Destination</th>
                         <th>Delivery Destination</th>
-                        <th>Total Amount</th>
-                        <th>Status</th>
-                        <th class="text-end">Action</th>
+                        <th class="numeric">Total (₹)</th>
+                        <th>Fulfillment Status</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for order in recent_orders %}
                     <tr>
-                        <td class="font-monospace fw-bold text-dark">{{ order.order_number }}</td>
-                        <td>{{ order.order_date|date:"d M Y" }}</td>
-                        <td class="fw-semibold text-dark">{{ order.customer.name }}</td>
-                        <td>{{ order.delivery_city }}, {{ order.delivery_state }}</td>
-                        <td class="font-monospace fw-bold">₹ {{ order.total_amount|floatformat:2 }}</td>
+                        <td class="code-cell">
+                            <a href="{% url 'sales_order_detail' order.id %}">{{ order.order_number }}</a>
+                        </td>
+                        <td class="small text-muted font-mono">{{ order.order_date|date:"d M Y" }}</td>
                         <td>
-                            <span class="badge {% if order.status == 'DISPATCHED' %}bg-info-subtle text-info border border-info-subtle{% elif order.status == 'INVOICED' %}bg-primary-subtle text-primary border border-primary-subtle{% elif order.status == 'APPROVED' %}bg-success-subtle text-success border border-success-subtle{% elif order.status == 'SUBMITTED' %}bg-warning-subtle text-warning border border-warning-subtle{% elif order.status == 'REJECTED' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %} rounded-pill">
+                            <div class="fw-semibold text-dark small">{{ order.customer.name }}</div>
+                            <div class="text-muted" style="font-size: 0.72rem;">{{ order.customer.payment_terms|default:"Standard Terms" }}</div>
+                        </td>
+                        <td class="small text-muted">
+                            {{ order.delivery_address|truncatechars:35|default:order.customer.state }}
+                        </td>
+                        <td class="numeric fw-semibold">₹{{ order.total_amount|floatformat:2 }}</td>
+                        <td>
+                            <span class="mf-badge 
+                                {% if order.status == 'DRAFT' %}mf-badge-neutral
+                                {% elif order.status == 'SUBMITTED' %}mf-badge-warning
+                                {% elif order.status == 'APPROVED' %}mf-badge-info
+                                {% elif order.status == 'INVOICED' %}mf-badge-info
+                                {% elif order.status == 'DISPATCHED' %}mf-badge-success
+                                {% else %}mf-badge-neutral{% endif %} font-mono">
                                 {{ order.get_status_display }}
                             </span>
                         </td>
                         <td class="text-end">
-                            <a href="{% url 'sales_order_detail' pk=order.pk %}" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'sales_order_detail' order.id %}" class="btn btn-outline-secondary btn-sm py-0.5 px-2" style="font-size: 0.72rem;">
                                 <i class="bi bi-eye me-1"></i> View
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
-                            <i class="bi bi-cart-x fs-3 d-block mb-1 text-secondary opacity-50"></i>
-                            No sales orders booked yet. <a href="{% url 'sales_order_create' %}">Create your first order</a>.
-                        </td>
+                        <td colspan="7" class="text-center text-muted py-4">No active commercial orders found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

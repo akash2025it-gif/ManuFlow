@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Production Variance & Costing Report - ManuFlow{% endblock %}
+{% block title %}BOM Production Variance Report | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Production Variance</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-4 py-4">
-    <!-- Breadcrumb & Header -->
+    <!-- Header -->
     <div class="row align-items-center mb-4">
         <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Production Variance</li>
-                </ol>
-            </nav>
             <h2 class="h3 fw-bold mb-0 text-dark">
                 <i class="bi bi-graph-up text-warning me-2"></i>BOM Consumption & Yield Variance Report
             </h2>
@@ -63,65 +68,71 @@
             </h5>
             <span class="badge bg-warning bg-opacity-10 text-dark border border-warning">Alert Threshold: &ge; 3.00% Variance</span>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-uppercase text-muted">
-                    <tr>
-                        <th>Run #</th>
-                        <th>Mfg Date</th>
-                        <th>Product SKU</th>
-                        <th class="text-end">Planned (Pkts)</th>
-                        <th class="text-end">Actual (Pkts)</th>
-                        <th class="text-end">Wastage</th>
-                        <th class="text-center">Yield Var %</th>
-                        <th class="text-end">Material Cost (₹)</th>
-                        <th class="text-end">Overhead (₹)</th>
-                        <th class="text-end">Total Cost (₹)</th>
-                        <th class="text-end">Cost / Pkt (₹)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r in runs %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'production_run_detail' r.id %}" class="fw-bold font-monospace text-primary text-decoration-none">
-                                {{ r.run_number }}
-                            </a>
-                        </td>
-                        <td class="font-monospace small text-nowrap">{{ r.manufacture_date|date:"d M Y" }}</td>
-                        <td>
-                            <div class="fw-medium text-dark">{{ r.product.name }}</div>
-                            <span class="text-muted small">{{ r.product_pack_size.pack_size_display }}</span>
-                        </td>
-                        <td class="text-end font-monospace">{{ r.planned_quantity|floatformat:0 }}</td>
-                        <td class="text-end font-monospace fw-bold text-dark">{{ r.actual_output_quantity|floatformat:0 }}</td>
-                        <td class="text-end font-monospace text-muted">{{ r.damaged_quantity|floatformat:0 }}</td>
-                        <td class="text-center">
-                            <span class="badge {% if r.is_yield_alert_triggered %}bg-danger{% elif r.yield_variance_pct < 0 %}bg-warning text-dark{% else %}bg-success{% endif %}">
-                                {{ r.yield_variance_pct|floatformat:2 }}%
-                            </span>
-                            {% if r.is_yield_alert_triggered %}
-                            <i class="bi bi-exclamation-triangle-fill text-danger ms-1" title="Yield deviation &ge; 3%"></i>
-                            {% endif %}
-                        </td>
-                        <td class="text-end font-monospace">₹{{ r.total_material_cost|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-muted">₹{{ r.total_overhead_cost|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-bold text-dark">₹{{ r.total_production_cost|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-bold text-success fs-6">
-                            ₹{{ r.unit_cost_per_output|floatformat:2 }}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="11" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                            <h6 class="fw-bold">No Production Runs Found</h6>
-                            <p class="small text-muted mb-0">Record completed production runs to audit material and yield variances.</p>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase text-muted">
+                        <tr>
+                            <th>Run #</th>
+                            <th>Mfg Date</th>
+                            <th>Product SKU</th>
+                            <th class="text-end">Planned (Pkts)</th>
+                            <th class="text-end">Actual (Pkts)</th>
+                            <th class="text-end">Wastage</th>
+                            <th class="text-center">Yield Var %</th>
+                            <th class="text-end">Material Cost (₹)</th>
+                            <th class="text-end">Overhead (₹)</th>
+                            <th class="text-end">Total Cost (₹)</th>
+                            <th class="text-end">Cost / Pkt (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in runs %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'production_run_detail' r.id %}" class="fw-bold font-monospace text-primary text-decoration-none">
+                                    {{ r.run_number }}
+                                </a>
+                            </td>
+                            <td class="font-monospace small text-nowrap">{{ r.manufacture_date|date:"d M Y" }}</td>
+                            <td>
+                                <div class="fw-medium text-dark">{{ r.product.name }}</div>
+                                <span class="text-muted small">{{ r.product_pack_size.pack_size_display }}</span>
+                            </td>
+                            <td class="text-end font-monospace">{{ r.planned_quantity|floatformat:0 }}</td>
+                            <td class="text-end font-monospace fw-bold text-dark">{{ r.actual_output_quantity|floatformat:0 }}</td>
+                            <td class="text-end font-monospace text-muted">{{ r.damaged_quantity|floatformat:0 }}</td>
+                            <td class="text-center">
+                                <span class="badge {% if r.is_yield_alert_triggered %}bg-danger{% elif r.yield_variance_pct < 0 %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                    {{ r.yield_variance_pct|floatformat:2 }}%
+                                </span>
+                                {% if r.is_yield_alert_triggered %}
+                                <i class="bi bi-exclamation-triangle-fill text-danger ms-1" title="Yield deviation &ge; 3%"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-end font-monospace">₹{{ r.total_material_cost|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-muted">₹{{ r.total_overhead_cost|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-bold text-dark">₹{{ r.total_production_cost|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-bold text-success fs-6">
+                                ₹{{ r.unit_cost_per_output|floatformat:2 }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11">
+                                <div class="mf-empty-state py-5">
+                                    <div class="mf-empty-state-icon">
+                                        <i class="bi bi-kanban"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-1">No Production Runs Found</h6>
+                                    <p class="text-muted small mb-0">Record completed production runs to audit material and yield variances.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

@@ -1,121 +1,139 @@
 {% extends 'base.html' %}
 
+{% block title %}Production Operations & Control | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 py-0 small">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Production Floor</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid px-lg-4 py-3">
-    <!-- Role Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+<div class="py-2">
+    <!-- Page Header -->
+    <div class="mf-page-header">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge badge-role-production px-3 py-1.5 rounded-pill font-monospace">
-                    <i class="bi bi-gear-wide-connected me-1"></i> PRODUCTION FLOOR
-                </span>
-                <span class="text-muted small">BOM Execution, Batch Variance & Costing</span>
+                <span class="mf-badge badge-role-production font-mono">SHOP FLOOR &amp; BATCH CONTROL</span>
+                <span class="text-muted small">Recipe-Driven Batch Manufacturing &amp; Conformance</span>
             </div>
-            <h2 class="fw-bold mb-0">Production Operations & Batch Control</h2>
+            <h1 class="mf-page-header-title">Production Operations & Batch Control</h1>
+            <p class="mf-page-header-subtitle">Execute BOM formulations, reconcile raw material consumption, and monitor yield variance tolerances.</p>
         </div>
-        <div class="d-flex gap-2 mt-3 mt-md-0">
-            <a href="{% url 'production_run_create' %}" class="btn btn-warning text-dark fw-medium">
-                <i class="bi bi-plus-circle me-1"></i> New Production Run
+        <div class="mf-page-header-actions">
+            <a href="{% url 'production_run_create' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> New Production Run
             </a>
-            <a href="{% url 'production_run_list' %}" class="btn btn-outline-secondary">
+            <a href="{% url 'production_run_list' %}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-kanban me-1"></i> Work Orders
             </a>
-            <a href="{% url 'stock_summary' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-box-seam me-1"></i> Stock Balances
+            <a href="{% url 'bom_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-diagram-3 me-1"></i> BOM Formulations
+            </a>
+            <a href="{% url 'stock_summary' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-boxes me-1"></i> Stock Balances
             </a>
         </div>
     </div>
 
-    <!-- Production Metric Cards -->
+    <!-- Shop Floor Yield Metrics Strip -->
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Total Good Output</div>
-                        <div class="stat-value text-dark fs-3">{{ total_good_output|floatformat:0 }} <span class="fs-6 text-muted">packets</span></div>
-                    </div>
-                    <div class="stat-icon bg-success-subtle text-success">
-                        <i class="bi bi-boxes"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Total Good Output</span>
+                    <i class="bi bi-boxes text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">
-                    Planned target: {{ total_planned|floatformat:0 }} pkts
+                <div class="mf-stat-value font-mono">{{ total_good_output|floatformat:0 }} <span style="font-size: 0.85rem; color: #64748b;">pkts</span></div>
+                <div class="mf-stat-meta text-muted">
+                    <span>Target: {{ total_planned|floatformat:0 }} pkts</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Batches Completed</div>
-                        <div class="stat-value text-dark fs-3">{{ completed_runs_count }}</div>
-                    </div>
-                    <div class="stat-icon bg-primary-subtle text-primary">
-                        <i class="bi bi-check2-circle"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Batches Completed</span>
+                    <i class="bi bi-check2-circle text-muted"></i>
                 </div>
-                <div class="small text-success mt-2">
-                    <i class="bi bi-check-circle"></i> Finished stock posted
+                <div class="mf-stat-value text-success">{{ completed_runs_count }}</div>
+                <div class="mf-stat-meta text-success">
+                    <i class="bi bi-check2"></i>
+                    <span>BOM Reconciled</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Active / Scheduled Runs</div>
-                        <div class="stat-value text-dark fs-3">{{ active_runs_count }}</div>
-                    </div>
-                    <div class="stat-icon bg-warning-subtle text-warning">
-                        <i class="bi bi-hourglass-split"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Active WIP Runs</span>
+                    <i class="bi bi-hourglass-split text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">
-                    In preparation / planned
+                <div class="mf-stat-value">{{ active_runs_count }}</div>
+                <div class="mf-stat-meta text-muted">
+                    <span>In progress on floor</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Yield Variance Alerts</div>
-                        <div class="stat-value text-danger fs-3">{{ yield_alerts_count }}</div>
-                    </div>
-                    <div class="stat-icon bg-danger-subtle text-danger">
-                        <i class="bi bi-exclamation-triangle"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Yield Variance Alerts</span>
+                    <i class="bi bi-exclamation-triangle text-danger"></i>
                 </div>
-                <div class="small text-danger mt-2">
-                    <i class="bi bi-bell"></i> Deviations &ge; 3% from BOM
+                <div class="mf-stat-value {% if yield_alerts_count > 0 %}text-danger{% else %}text-muted{% endif %}">
+                    {{ yield_alerts_count }}
+                </div>
+                <div class="mf-stat-meta {% if yield_alerts_count > 0 %}text-danger{% else %}text-muted{% endif %}">
+                    <i class="bi bi-flag"></i>
+                    <span>Deviations &ge; 3% from BOM</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Production Runs Table -->
-    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
-        <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+    <!-- Non-Conformance Intelligence Alert -->
+    {% if yield_alerts_count > 0 %}
+    <div class="alert alert-warning d-flex align-items-center justify-content-between p-3 mb-4 shadow-xs">
+        <div class="d-flex align-items-center gap-2.5">
+            <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
             <div>
-                <h5 class="fw-bold mb-0">Production Runs & BOM Tracking</h5>
-                <small class="text-muted">Batch execution, raw material consumption and yield monitoring</small>
+                <span class="fw-semibold text-dark">Manufacturing Non-Conformance Alert (&ge; 3% Variance Detected):</span>
+                <span class="text-secondary small d-block">
+                    1 or more completed batches registered material consumption deviations exceeding standard 3% tolerance.
+                </span>
             </div>
-            <a href="{% url 'production_run_list' %}" class="btn btn-sm btn-outline-primary">All Runs &rarr;</a>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover table-custom mb-0 align-middle">
+        <a href="{% url 'finance:production_variance_report' %}" class="btn btn-outline-secondary btn-sm bg-white flex-shrink-0">
+            <i class="bi bi-graph-down me-1"></i> Review Variance Report &rarr;
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Production Runs & Work Orders Table -->
+    <div class="mf-card">
+        <div class="mf-card-header">
+            <div>
+                <h6 class="mf-card-title"><i class="bi bi-kanban me-1 text-primary"></i> Production Run Execution Registry</h6>
+                <span class="mf-card-subtitle">Batch lifecycle, raw material consumption, and yield monitoring</span>
+            </div>
+            <a href="{% url 'production_run_list' %}" class="small text-decoration-none">View All Runs &rarr;</a>
+        </div>
+        <div class="table-responsive border-0">
+            <table class="mf-table">
                 <thead>
                     <tr>
                         <th>Run #</th>
-                        <th>Product / BOM</th>
+                        <th>Product / Recipe BOM</th>
                         <th>Batch Lot</th>
-                        <th>Planned Qty</th>
-                        <th>Good Output</th>
-                        <th>Yield Variance</th>
+                        <th class="numeric">Planned Qty</th>
+                        <th class="numeric">Good Output</th>
+                        <th class="numeric">Yield Variance</th>
                         <th>Status</th>
                         <th class="text-end">Action</th>
                     </tr>
@@ -123,40 +141,43 @@
                 <tbody>
                     {% for run in recent_runs %}
                     <tr>
-                        <td class="font-monospace fw-bold text-dark">{{ run.run_number }}</td>
-                        <td>
-                            <div class="fw-semibold text-dark">{{ run.bill_of_materials.product.name }}</div>
-                            <span class="font-monospace text-muted small">{{ run.bill_of_materials.code }}</span>
+                        <td class="code-cell">
+                            <a href="{% url 'production_run_detail' run.id %}">{{ run.run_number }}</a>
                         </td>
-                        <td class="font-monospace small">{{ run.batch_number }}</td>
-                        <td class="font-monospace">{{ run.planned_quantity|floatformat:0 }} pkts</td>
-                        <td class="font-monospace fw-bold">{{ run.actual_output_quantity|floatformat:0 }} pkts</td>
                         <td>
-                            {% if run.is_posted %}
-                            <span class="badge {% if run.is_yield_alert_triggered %}bg-danger{% else %}bg-success-subtle text-success{% endif %} font-monospace">
-                                {{ run.yield_variance_pct|floatformat:2 }}%
-                            </span>
+                            <div class="fw-semibold text-dark small">{{ run.bill_of_materials.product.name }}</div>
+                            <div class="text-muted font-mono" style="font-size: 0.72rem;">{{ run.bill_of_materials.bom_code }}</div>
+                        </td>
+                        <td class="font-mono small text-muted">{{ run.batch_lot_number|default:"-" }}</td>
+                        <td class="numeric">{{ run.planned_quantity|floatformat:0 }} pkts</td>
+                        <td class="numeric fw-semibold">{{ run.actual_output_quantity|default:0|floatformat:0 }} pkts</td>
+                        <td class="numeric">
+                            {% if run.yield_variance_percentage is not None %}
+                                <span class="mf-badge {% if run.is_yield_alert_triggered %}mf-badge-danger{% else %}mf-badge-success{% endif %} font-mono">
+                                    {{ run.yield_variance_percentage|floatformat:2 }}%
+                                </span>
                             {% else %}
-                            <span class="badge bg-light text-dark border">Pending Execution</span>
+                                <span class="text-muted small">-</span>
                             {% endif %}
                         </td>
                         <td>
-                            <span class="badge {% if run.status == 'COMPLETED' %}bg-success-subtle text-success border border-success-subtle{% elif run.status == 'IN_PROGRESS' %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %} rounded-pill">
+                            <span class="mf-badge 
+                                {% if run.status == 'COMPLETED' %}mf-badge-success
+                                {% elif run.status == 'IN_PROGRESS' %}mf-badge-warning
+                                {% elif run.status == 'DRAFT' %}mf-badge-neutral
+                                {% else %}mf-badge-neutral{% endif %} font-mono">
                                 {{ run.get_status_display }}
                             </span>
                         </td>
                         <td class="text-end">
-                            <a href="{% url 'production_run_detail' pk=run.pk %}" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'production_run_detail' run.id %}" class="btn btn-outline-secondary btn-sm py-0.5 px-2" style="font-size: 0.72rem;">
                                 <i class="bi bi-eye me-1"></i> View
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">
-                            <i class="bi bi-gear fs-3 d-block mb-1 text-secondary opacity-50"></i>
-                            No production runs scheduled. <a href="{% url 'production_run_create' %}">Launch a new run</a>.
-                        </td>
+                        <td colspan="8" class="text-center text-muted py-4">No production runs recorded.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

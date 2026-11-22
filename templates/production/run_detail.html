@@ -1,17 +1,25 @@
 {% extends 'base.html' %}
 
+{% block title %}{{ run.run_number }} | Production Work Order | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'production_hub' %}">Production</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'production_run_list' %}">Work Orders</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ run.run_number }}</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-4">
-    <!-- Breadcrumb & Top Bar -->
+    <!-- Header & Top Bar -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'production_hub' %}">Production</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'production_run_list' %}">Work Orders</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ run.run_number }}</li>
-                </ol>
-            </nav>
             <h2 class="fw-bold mb-0">Production Work Order: {{ run.run_number }}</h2>
         </div>
         <div class="d-flex gap-2 mt-3 mt-md-0">

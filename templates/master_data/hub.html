@@ -1,200 +1,198 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block title %}Master Data Hub | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
 <div class="container-fluid px-lg-4">
-    <!-- Hub Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 py-0 small">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Master Data</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Page Header -->
+    <div class="mf-page-header">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill font-monospace">
-                    <i class="bi bi-database me-1"></i> ENTERPRISE MASTER DATA
-                </span>
-                <span class="text-muted small">Central Repository & Specifications</span>
+                <span class="mf-badge mf-badge-info font-mono">CENTRAL REPOSITORY</span>
+                <span class="text-muted small">Standard Products, Entities &amp; Formulations</span>
             </div>
-            <h2 class="fw-bold mb-0">Master Data Management Suite</h2>
+            <h1 class="mf-page-header-title">Master Data Management Suite</h1>
+            <p class="mf-page-header-subtitle">Centralized catalog of commercial products, approved vendors, raw materials, packaging, and recipe BOM specifications.</p>
         </div>
-        <div class="d-flex gap-2 mt-3 mt-md-0">
-            <a href="{% url 'dashboard_home' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-speedometer2 me-1"></i> Return to Dashboard
+        <div class="mf-page-header-actions">
+            <a href="{% url 'dashboard_home' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
             </a>
         </div>
     </div>
 
-    <!-- 7 Master Data Pillars -->
-    <div class="row g-3 mb-5">
+    <!-- 7 Master Data Entities Grid -->
+    <div class="row g-3 mb-4">
         <!-- 1. Finished Products & Pack Sizes -->
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card h-100 d-flex flex-column justify-content-between border-top border-4 border-primary">
+        <div class="col-sm-6 col-lg-3">
+            <div class="mf-card h-100 p-3.5 d-flex flex-column justify-content-between">
                 <div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="stat-label">Products & Pack Sizes</div>
-                        <div class="stat-icon bg-primary-subtle text-primary">
-                            <i class="bi bi-boxes"></i>
-                        </div>
+                        <span class="mf-stat-label">Products &amp; Packs</span>
+                        <i class="bi bi-boxes text-muted"></i>
                     </div>
-                    <div class="stat-value text-dark">{{ counts.products }} <small class="fs-6 text-muted fw-normal">Products</small></div>
-                    <div class="small text-muted mt-1">{{ counts.pack_sizes }} Active Pack SKUs</div>
+                    <div class="mf-stat-value font-mono">{{ counts.products }}</div>
+                    <div class="text-muted small mt-1">{{ counts.pack_sizes }} Active Pack SKUs</div>
                 </div>
-                <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                    <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-primary">Manage Products</a>
+                <div class="mt-3 pt-2.5 border-top d-flex justify-content-between align-items-center">
+                    <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-secondary">Manage Products</a>
                     {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
-                        <a href="{% url 'product_create' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i></a>
+                        <a href="{% url 'product_create' %}" class="btn btn-sm btn-primary py-1 px-2" title="New Product"><i class="bi bi-plus-lg"></i></a>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- 2. Customers -->
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card h-100 d-flex flex-column justify-content-between border-top border-4 border-info">
+        <div class="col-sm-6 col-lg-3">
+            <div class="mf-card h-100 p-3.5 d-flex flex-column justify-content-between">
                 <div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="stat-label">Customers Directory</div>
-                        <div class="stat-icon bg-info-subtle text-info">
-                            <i class="bi bi-people"></i>
-                        </div>
+                        <span class="mf-stat-label">Customers Directory</span>
+                        <i class="bi bi-people text-muted"></i>
                     </div>
-                    <div class="stat-value text-dark">{{ counts.customers }}</div>
-                    <div class="small text-muted mt-1">Retailers & Distributors</div>
+                    <div class="mf-stat-value font-mono">{{ counts.customers }}</div>
+                    <div class="text-muted small mt-1">Retailers &amp; Distributors</div>
                 </div>
-                <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                    <a href="{% url 'customer_list' %}" class="btn btn-sm btn-outline-info text-dark">View Clients</a>
+                <div class="mt-3 pt-2.5 border-top d-flex justify-content-between align-items-center">
+                    <a href="{% url 'customer_list' %}" class="btn btn-sm btn-outline-secondary">View Clients</a>
                     {% if user.role != 'AUDITOR' and user.role != 'PRODUCTION' %}
-                        <a href="{% url 'customer_create' %}" class="btn btn-sm btn-info text-dark"><i class="bi bi-plus-lg"></i></a>
+                        <a href="{% url 'customer_create' %}" class="btn btn-sm btn-primary py-1 px-2" title="New Customer"><i class="bi bi-plus-lg"></i></a>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- 3. Suppliers -->
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card h-100 d-flex flex-column justify-content-between border-top border-4 border-success">
+        <div class="col-sm-6 col-lg-3">
+            <div class="mf-card h-100 p-3.5 d-flex flex-column justify-content-between">
                 <div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="stat-label">Approved Suppliers</div>
-                        <div class="stat-icon bg-success-subtle text-success">
-                            <i class="bi bi-truck"></i>
-                        </div>
+                        <span class="mf-stat-label">Approved Suppliers</span>
+                        <i class="bi bi-truck text-muted"></i>
                     </div>
-                    <div class="stat-value text-dark">{{ counts.suppliers }}</div>
-                    <div class="small text-muted mt-1">Chemical & Packaging Vendors</div>
+                    <div class="mf-stat-value font-mono">{{ counts.suppliers }}</div>
+                    <div class="text-muted small mt-1">Chemical &amp; Packaging Vendors</div>
                 </div>
-                <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                    <a href="{% url 'supplier_list' %}" class="btn btn-sm btn-outline-success">View Vendors</a>
+                <div class="mt-3 pt-2.5 border-top d-flex justify-content-between align-items-center">
+                    <a href="{% url 'supplier_list' %}" class="btn btn-sm btn-outline-secondary">View Vendors</a>
                     {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
-                        <a href="{% url 'supplier_create' %}" class="btn btn-sm btn-success"><i class="bi bi-plus-lg"></i></a>
+                        <a href="{% url 'supplier_create' %}" class="btn btn-sm btn-primary py-1 px-2" title="New Supplier"><i class="bi bi-plus-lg"></i></a>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- 4. Raw Materials -->
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card h-100 d-flex flex-column justify-content-between border-top border-4 border-warning">
+        <div class="col-sm-6 col-lg-3">
+            <div class="mf-card h-100 p-3.5 d-flex flex-column justify-content-between">
                 <div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="stat-label">Raw Materials</div>
-                        <div class="stat-icon bg-warning-subtle text-warning">
-                            <i class="bi bi-droplet-half"></i>
-                        </div>
+                        <span class="mf-stat-label">Raw Materials</span>
+                        <i class="bi bi-droplet-half text-muted"></i>
                     </div>
-                    <div class="stat-value text-dark">{{ counts.raw_materials }}</div>
-                    <div class="small text-muted mt-1">Chemicals, Actives & Bases</div>
+                    <div class="mf-stat-value font-mono">{{ counts.raw_materials }}</div>
+                    <div class="text-muted small mt-1">Chemicals &amp; Food Bases</div>
                 </div>
-                <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                    <a href="{% url 'raw_material_list' %}" class="btn btn-sm btn-outline-warning text-dark">Material Items</a>
+                <div class="mt-3 pt-2.5 border-top d-flex justify-content-between align-items-center">
+                    <a href="{% url 'raw_material_list' %}" class="btn btn-sm btn-outline-secondary">Material Items</a>
                     {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
-                        <a href="{% url 'raw_material_create' %}" class="btn btn-sm btn-warning text-dark"><i class="bi bi-plus-lg"></i></a>
+                        <a href="{% url 'raw_material_create' %}" class="btn btn-sm btn-primary py-1 px-2" title="New Raw Material"><i class="bi bi-plus-lg"></i></a>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- 5. Packaging Materials -->
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card h-100 d-flex flex-column justify-content-between border-top border-4 border-secondary">
+        <div class="col-sm-6 col-lg-3">
+            <div class="mf-card h-100 p-3.5 d-flex flex-column justify-content-between">
                 <div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="stat-label">Packaging Materials</div>
-                        <div class="stat-icon bg-secondary-subtle text-secondary">
-                            <i class="bi bi-box-seam"></i>
-                        </div>
+                        <span class="mf-stat-label">Packaging Materials</span>
+                        <i class="bi bi-box-seam text-muted"></i>
                     </div>
-                    <div class="stat-value text-dark">{{ counts.packaging_materials }}</div>
-                    <div class="small text-muted mt-1">Bottles, Cans, Caps, Cartons</div>
+                    <div class="mf-stat-value font-mono">{{ counts.packaging_materials }}</div>
+                    <div class="text-muted small mt-1">Pouches, Cartons, Shippers</div>
                 </div>
-                <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                <div class="mt-3 pt-2.5 border-top d-flex justify-content-between align-items-center">
                     <a href="{% url 'packaging_material_list' %}" class="btn btn-sm btn-outline-secondary">Packaging Items</a>
                     {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
-                        <a href="{% url 'packaging_material_create' %}" class="btn btn-sm btn-secondary"><i class="bi bi-plus-lg"></i></a>
+                        <a href="{% url 'packaging_material_create' %}" class="btn btn-sm btn-primary py-1 px-2" title="New Packaging Item"><i class="bi bi-plus-lg"></i></a>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- 6. UOM & Conversions -->
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card h-100 d-flex flex-column justify-content-between border-top border-4 border-danger">
+        <div class="col-sm-6 col-lg-3">
+            <div class="mf-card h-100 p-3.5 d-flex flex-column justify-content-between">
                 <div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="stat-label">UOM & Conversions</div>
-                        <div class="stat-icon bg-danger-subtle text-danger">
-                            <i class="bi bi-rulers"></i>
-                        </div>
+                        <span class="mf-stat-label">Units of Measure</span>
+                        <i class="bi bi-rulers text-muted"></i>
                     </div>
-                    <div class="stat-value text-dark">{{ counts.uoms }}</div>
-                    <div class="small text-muted mt-1">Units & Conversion Factors</div>
+                    <div class="mf-stat-value font-mono">{{ counts.uoms }}</div>
+                    <div class="text-muted small mt-1">Units &amp; Conversion Factors</div>
                 </div>
-                <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                    <a href="{% url 'uom_list' %}" class="btn btn-sm btn-outline-danger">Units Ledger</a>
+                <div class="mt-3 pt-2.5 border-top d-flex justify-content-between align-items-center">
+                    <a href="{% url 'uom_list' %}" class="btn btn-sm btn-outline-secondary">Units Ledger</a>
                     {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
-                        <a href="{% url 'uom_create' %}" class="btn btn-sm btn-danger"><i class="bi bi-plus-lg"></i></a>
+                        <a href="{% url 'uom_create' %}" class="btn btn-sm btn-primary py-1 px-2" title="New UOM"><i class="bi bi-plus-lg"></i></a>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- 7. Bill of Materials (BOM) -->
-        <div class="col-sm-12 col-xl-6">
-            <div class="stat-card h-100 d-flex flex-column justify-content-between border-top border-4 border-dark">
+        <div class="col-sm-12 col-lg-6">
+            <div class="mf-card h-100 p-3.5 d-flex flex-column justify-content-between">
                 <div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <div class="stat-label">Bill of Materials (BOM)</div>
-                            <div class="stat-value text-dark">{{ counts.boms }} <small class="fs-6 text-muted fw-normal">Formulations</small></div>
-                        </div>
-                        <div class="stat-icon bg-dark-subtle text-dark">
-                            <i class="bi bi-diagram-3"></i>
-                        </div>
+                        <span class="mf-stat-label">Bill of Materials (BOM) Formulations</span>
+                        <i class="bi bi-diagram-3 text-muted"></i>
                     </div>
-                    <div class="small text-muted mt-1">
-                        Formulations with multi-ingredient quantities, standard batch size, and expected process yield %.
-                    </div>
+                    <div class="mf-stat-value font-mono">{{ counts.boms }} <span style="font-size: 0.85rem; color: #64748b; font-weight: 400;">Standard Recipes</span></div>
+                    <div class="text-muted small mt-1">Formulations with multi-ingredient ratios, standard batch sizes, and expected process yields.</div>
                 </div>
-                <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                    <a href="{% url 'bom_list' %}" class="btn btn-sm btn-dark">View All BOMs</a>
+                <div class="mt-3 pt-2.5 border-top d-flex justify-content-between align-items-center">
+                    <a href="{% url 'bom_list' %}" class="btn btn-sm btn-outline-secondary">View All BOMs</a>
                     {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
-                        <a href="{% url 'bom_create' %}" class="btn btn-sm btn-outline-dark"><i class="bi bi-plus-lg me-1"></i> New Formulation</a>
+                        <a href="{% url 'bom_create' %}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i> New Formulation
+                        </a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Overview Tables Row -->
-    <div class="row g-4">
-        <!-- Recent Products -->
+    <!-- Active Catalog & BOM Formulations -->
+    <div class="row g-3">
+        <!-- Products -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
-                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">Active Product Catalog</h5>
-                    <a href="{% url 'product_list' %}" class="small text-primary text-decoration-none fw-semibold">View All &rarr;</a>
+            <div class="mf-card h-100">
+                <div class="mf-card-header">
+                    <div>
+                        <h6 class="mf-card-title"><i class="bi bi-boxes me-1 text-primary"></i> Active Finished Product Catalog</h6>
+                    </div>
+                    <a href="{% url 'product_list' %}" class="small text-decoration-none">View All &rarr;</a>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover table-custom mb-0 align-middle">
+                <div class="table-responsive border-0">
+                    <table class="mf-table">
                         <thead>
                             <tr>
-                                <th>Code & Name</th>
+                                <th>Code &amp; Name</th>
                                 <th>Family</th>
                                 <th>Bulk UOM</th>
                                 <th class="text-end">Action</th>
@@ -204,17 +202,19 @@
                             {% for p in recent_products %}
                             <tr>
                                 <td>
-                                    <div class="fw-bold text-dark">{{ p.name }}</div>
-                                    <small class="text-muted font-monospace">{{ p.code }}</small>
+                                    <div class="fw-semibold text-dark small">{{ p.name }}</div>
+                                    <div class="text-muted font-mono" style="font-size: 0.72rem;">{{ p.code }}</div>
                                 </td>
-                                <td><span class="badge bg-light text-secondary border">{{ p.category }}</span></td>
-                                <td><span class="font-monospace text-primary">{{ p.base_uom.code }}</span></td>
+                                <td class="small"><span class="mf-badge mf-badge-neutral">{{ p.category|default:"General" }}</span></td>
+                                <td class="small font-mono text-muted">{{ p.bulk_uom.code }}</td>
                                 <td class="text-end">
-                                    <a href="{% url 'product_detail' p.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+                                    <a href="{% url 'product_detail' p.id %}" class="btn btn-outline-secondary btn-sm py-0.5 px-2" style="font-size: 0.72rem;">View</a>
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="4" class="text-center py-3 text-muted">No products defined yet.</td></tr>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">No products configured.</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -222,37 +222,43 @@
             </div>
         </div>
 
-        <!-- Active BOMs -->
+        <!-- BOMs -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
-                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">Production Formulations (BOM)</h5>
-                    <a href="{% url 'bom_list' %}" class="small text-primary text-decoration-none fw-semibold">View All &rarr;</a>
+            <div class="mf-card h-100">
+                <div class="mf-card-header">
+                    <div>
+                        <h6 class="mf-card-title"><i class="bi bi-diagram-3 me-1 text-primary"></i> Production Formulations (BOM)</h6>
+                    </div>
+                    <a href="{% url 'bom_list' %}" class="small text-decoration-none">View All &rarr;</a>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover table-custom mb-0 align-middle">
+                <div class="table-responsive border-0">
+                    <table class="mf-table">
                         <thead>
                             <tr>
                                 <th>BOM Code</th>
                                 <th>Product</th>
-                                <th>Batch Size</th>
-                                <th>Yield</th>
+                                <th class="numeric">Batch Size</th>
+                                <th class="numeric">Yield</th>
                                 <th class="text-end">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for b in recent_boms %}
                             <tr>
-                                <td><span class="font-monospace fw-bold text-dark">{{ b.bom_code }}</span></td>
-                                <td class="fw-semibold text-secondary">{{ b.product.name }}</td>
-                                <td><span class="font-monospace">{{ b.batch_size }} {{ b.output_uom.code }}</span></td>
-                                <td><span class="badge bg-success-subtle text-success">{{ b.expected_yield_pct }}%</span></td>
+                                <td class="code-cell">{{ b.bom_code }}</td>
+                                <td class="small">{{ b.product.name }}</td>
+                                <td class="numeric font-mono small">{{ b.batch_size }} {{ b.output_uom.code }}</td>
+                                <td class="numeric">
+                                    <span class="mf-badge mf-badge-success font-mono">{{ b.expected_yield_percentage|floatformat:2 }}%</span>
+                                </td>
                                 <td class="text-end">
-                                    <a href="{% url 'bom_detail' b.pk %}" class="btn btn-sm btn-outline-secondary">Specs</a>
+                                    <a href="{% url 'bom_detail' b.id %}" class="btn btn-outline-secondary btn-sm py-0.5 px-2" style="font-size: 0.72rem;">Specs</a>
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="5" class="text-center py-3 text-muted">No BOM recipes defined yet.</td></tr>
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">No BOM formulations configured.</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>

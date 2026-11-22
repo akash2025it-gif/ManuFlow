@@ -9,7 +9,7 @@ class EmailOrUsernameBackend(ModelBackend):
     Authenticate against CustomUser using either email or username.
     Prevents shared demo passwords from being used in production.
     """
-    DEMO_PASSWORDS = {'nit@12345', 'TestPassword123!'}
+    DEMO_PASSWORDS = {'nit@12345'}
 
     def authenticate(self, request, username=None, password=None, **kwargs):
         UserModel = get_user_model()

@@ -1,20 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}{{ title }} - ManuFlow{% endblock %}
+{% block title %}{{ title }} | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'sales_hub' %}">Sales Hub</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'sales_order_list' %}">Sales Orders</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-4 py-4">
-    <!-- Breadcrumb & Header -->
+    <!-- Header -->
     <div class="row align-items-center mb-4">
         <div class="col-md-8">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'sales_hub' %}">Sales Hub</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'sales_order_list' %}">Sales Orders</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
-                </ol>
-            </nav>
             <h2 class="h3 fw-bold mb-0 text-dark">
                 <i class="bi bi-cart-plus text-primary me-2"></i>{{ title }}
             </h2>
@@ -27,7 +32,7 @@
         </div>
     </div>
 
-    <form method="post" id="salesOrderForm" novalidate>
+    <form method="post" id="salesOrderForm" data-submit-once novalidate>
         {% csrf_token %}
 
         {% if form.non_field_errors %}
@@ -155,8 +160,9 @@
             </div>
             <div class="card-body p-0">
                 {{ formset.management_form }}
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle mb-0" id="orderItemsTable">
+                <div class="table-responsive-wrapper">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle mb-0" id="orderItemsTable">
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 35%;">Finished Goods SKU <span class="text-danger">*</span></th>
@@ -215,6 +221,7 @@
                     </table>
                 </div>
             </div>
+        </div>
             <div class="card-footer bg-light p-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="small text-muted">

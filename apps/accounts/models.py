@@ -122,5 +122,5 @@ class CustomUser(AbstractUser):
         elif self.role == self.Role.OWNER:
             return 'owner_dashboard'
         elif self.role == self.Role.ACCOUNTANT:
-            return 'finance_dashboard'
+            return 'finance:dashboard'
         return 'login'

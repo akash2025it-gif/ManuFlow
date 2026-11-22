@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Stock Balances & Valuation Report - ManuFlow{% endblock %}
+{% block title %}Inventory Valuation Report | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Stock Valuation Report</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-4 py-4">
-    <!-- Breadcrumb & Header -->
+    <!-- Header -->
     <div class="row align-items-center mb-4">
         <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Stock Valuation</li>
-                </ol>
-            </nav>
             <h2 class="h3 fw-bold mb-0 text-dark">
                 <i class="bi bi-boxes text-primary me-2"></i>Current Stock Balances & Valuation Report
             </h2>
@@ -102,45 +107,55 @@
                 <i class="bi bi-box2 me-2"></i>Finished Goods Inventory (Saleable SKUs)
             </h5>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-uppercase text-muted">
-                    <tr>
-                        <th>SKU Code</th>
-                        <th>Product & Pack</th>
-                        <th>Batch #</th>
-                        <th class="text-end">Qty on Hand</th>
-                        <th>UOM</th>
-                        <th class="text-end">Unit Cost (₹)</th>
-                        <th class="text-end">Total Valuation (₹)</th>
-                        <th class="text-center">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in stock_data.finished_goods %}
-                    <tr>
-                        <td class="font-monospace small fw-bold">{{ item.code }}</td>
-                        <td>{{ item.name }}</td>
-                        <td class="font-monospace small">{{ item.batch_number }}</td>
-                        <td class="text-end font-monospace fw-bold text-dark fs-6">{{ item.quantity_on_hand|floatformat:2 }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ item.uom }}</span></td>
-                        <td class="text-end font-monospace">₹{{ item.unit_cost|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-bold text-success">₹{{ item.total_valuation|floatformat:2 }}</td>
-                        <td class="text-center">
-                            {% if item.is_low_stock %}
-                            <span class="badge bg-danger">Low Stock (&le; {{ item.reorder_level }})</span>
-                            {% else %}
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success">In Stock</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">No finished goods found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase text-muted">
+                        <tr>
+                            <th>SKU Code</th>
+                            <th>Product & Pack</th>
+                            <th>Batch #</th>
+                            <th class="text-end">Qty on Hand</th>
+                            <th>UOM</th>
+                            <th class="text-end">Unit Cost (₹)</th>
+                            <th class="text-end">Total Valuation (₹)</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in stock_data.finished_goods %}
+                        <tr>
+                            <td class="font-monospace small fw-bold">{{ item.code }}</td>
+                            <td>{{ item.name }}</td>
+                            <td class="font-monospace small">{{ item.batch_number }}</td>
+                            <td class="text-end font-monospace fw-bold text-dark fs-6">{{ item.quantity_on_hand|floatformat:2 }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ item.uom }}</span></td>
+                            <td class="text-end font-monospace">₹{{ item.unit_cost|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-bold text-success">₹{{ item.total_valuation|floatformat:2 }}</td>
+                            <td class="text-center">
+                                {% if item.is_low_stock %}
+                                <span class="badge bg-danger">Low Stock (&le; {{ item.reorder_level }})</span>
+                                {% else %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">In Stock</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="mf-empty-state py-4">
+                                    <div class="mf-empty-state-icon">
+                                        <i class="bi bi-box2"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-1">No Finished Goods Found</h6>
+                                    <p class="text-muted small mb-0">No manufactured finished products recorded in stock.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -153,45 +168,55 @@
                 <i class="bi bi-droplet-half me-2"></i>Raw Materials Inventory
             </h5>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-uppercase text-muted">
-                    <tr>
-                        <th>Material Code</th>
-                        <th>Material Name</th>
-                        <th>Batch #</th>
-                        <th class="text-end">Qty on Hand</th>
-                        <th>UOM</th>
-                        <th class="text-end">Avg Unit Cost (₹)</th>
-                        <th class="text-end">Total Valuation (₹)</th>
-                        <th class="text-center">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in stock_data.raw_materials %}
-                    <tr>
-                        <td class="font-monospace small fw-bold">{{ item.code }}</td>
-                        <td>{{ item.name }}</td>
-                        <td class="font-monospace small">{{ item.batch_number }}</td>
-                        <td class="text-end font-monospace fw-bold text-dark fs-6">{{ item.quantity_on_hand|floatformat:2 }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ item.uom }}</span></td>
-                        <td class="text-end font-monospace">₹{{ item.unit_cost|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-bold text-primary">₹{{ item.total_valuation|floatformat:2 }}</td>
-                        <td class="text-center">
-                            {% if item.is_low_stock %}
-                            <span class="badge bg-danger">Low Stock (&le; {{ item.reorder_level }})</span>
-                            {% else %}
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success">In Stock</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">No raw materials found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase text-muted">
+                        <tr>
+                            <th>Material Code</th>
+                            <th>Material Name</th>
+                            <th>Batch #</th>
+                            <th class="text-end">Qty on Hand</th>
+                            <th>UOM</th>
+                            <th class="text-end">Avg Unit Cost (₹)</th>
+                            <th class="text-end">Total Valuation (₹)</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in stock_data.raw_materials %}
+                        <tr>
+                            <td class="font-monospace small fw-bold">{{ item.code }}</td>
+                            <td>{{ item.name }}</td>
+                            <td class="font-monospace small">{{ item.batch_number }}</td>
+                            <td class="text-end font-monospace fw-bold text-dark fs-6">{{ item.quantity_on_hand|floatformat:2 }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ item.uom }}</span></td>
+                            <td class="text-end font-monospace">₹{{ item.unit_cost|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-bold text-primary">₹{{ item.total_valuation|floatformat:2 }}</td>
+                            <td class="text-center">
+                                {% if item.is_low_stock %}
+                                <span class="badge bg-danger">Low Stock (&le; {{ item.reorder_level }})</span>
+                                {% else %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">In Stock</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="mf-empty-state py-4">
+                                    <div class="mf-empty-state-icon">
+                                        <i class="bi bi-droplet-half"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-1">No Raw Materials Found</h6>
+                                    <p class="text-muted small mb-0">No active raw material stock available.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     {% endif %}
@@ -204,45 +229,55 @@
                 <i class="bi bi-box-seam me-2"></i>Packaging Materials Inventory
             </h5>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-uppercase text-muted">
-                    <tr>
-                        <th>Pkg Code</th>
-                        <th>Packaging Item Name</th>
-                        <th>Batch #</th>
-                        <th class="text-end">Qty on Hand</th>
-                        <th>UOM</th>
-                        <th class="text-end">Unit Cost (₹)</th>
-                        <th class="text-end">Total Valuation (₹)</th>
-                        <th class="text-center">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in stock_data.packaging_materials %}
-                    <tr>
-                        <td class="font-monospace small fw-bold">{{ item.code }}</td>
-                        <td>{{ item.name }}</td>
-                        <td class="font-monospace small">{{ item.batch_number }}</td>
-                        <td class="text-end font-monospace fw-bold text-dark fs-6">{{ item.quantity_on_hand|floatformat:2 }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ item.uom }}</span></td>
-                        <td class="text-end font-monospace">₹{{ item.unit_cost|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-bold text-info">₹{{ item.total_valuation|floatformat:2 }}</td>
-                        <td class="text-center">
-                            {% if item.is_low_stock %}
-                            <span class="badge bg-danger">Low Stock (&le; {{ item.reorder_level }})</span>
-                            {% else %}
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success">In Stock</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">No packaging materials found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase text-muted">
+                        <tr>
+                            <th>Pkg Code</th>
+                            <th>Packaging Item Name</th>
+                            <th>Batch #</th>
+                            <th class="text-end">Qty on Hand</th>
+                            <th>UOM</th>
+                            <th class="text-end">Unit Cost (₹)</th>
+                            <th class="text-end">Total Valuation (₹)</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in stock_data.packaging_materials %}
+                        <tr>
+                            <td class="font-monospace small fw-bold">{{ item.code }}</td>
+                            <td>{{ item.name }}</td>
+                            <td class="font-monospace small">{{ item.batch_number }}</td>
+                            <td class="text-end font-monospace fw-bold text-dark fs-6">{{ item.quantity_on_hand|floatformat:2 }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ item.uom }}</span></td>
+                            <td class="text-end font-monospace">₹{{ item.unit_cost|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-bold text-info">₹{{ item.total_valuation|floatformat:2 }}</td>
+                            <td class="text-center">
+                                {% if item.is_low_stock %}
+                                <span class="badge bg-danger">Low Stock (&le; {{ item.reorder_level }})</span>
+                                {% else %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">In Stock</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="mf-empty-state py-4">
+                                    <div class="mf-empty-state-icon">
+                                        <i class="bi bi-box-seam"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-1">No Packaging Materials Found</h6>
+                                    <p class="text-muted small mb-0">No active packaging material stock available.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     {% endif %}

@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
 
+{% block title %}Units of Measurement (UOM) | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'master_data_hub' %}">Master Data</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Units of Measurement</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-4">
     <!-- Header -->
@@ -33,47 +47,57 @@
                     </div>
                     <span class="badge bg-primary-subtle text-primary">{{ uoms.count }} Units</span>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover table-custom mb-0 align-middle">
-                        <thead>
-                            <tr>
-                                <th>Code & Name</th>
-                                <th>Measurement Type</th>
-                                <th>Description</th>
-                                <th>Status</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for u in uoms %}
-                            <tr>
-                                <td>
-                                    <span class="font-monospace fw-bold text-dark fs-6">{{ u.code }}</span>
-                                    <div class="small text-secondary">{{ u.name }}</div>
-                                </td>
-                                <td><span class="badge bg-light text-secondary border">{{ u.get_uom_type_display }}</span></td>
-                                <td class="small text-muted">{{ u.description|default:"-" }}</td>
-                                <td>
-                                    {% if u.is_active %}
-                                        <span class="badge bg-success-subtle text-success">Active</span>
-                                    {% else %}
-                                        <span class="badge bg-danger-subtle text-danger">Inactive</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-end">
-                                    {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
-                                        <a href="{% url 'uom_update' u.pk %}" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>
-                                        <a href="{% url 'uom_delete' u.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></a>
-                                    {% else %}
-                                        <span class="text-muted small">View Only</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="5" class="text-center py-4 text-muted">No units of measurement configured.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="table-responsive-wrapper">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Code & Name</th>
+                                    <th>Measurement Type</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in uoms %}
+                                <tr>
+                                    <td>
+                                        <span class="font-monospace fw-bold text-dark fs-6">{{ u.code }}</span>
+                                        <div class="small text-secondary">{{ u.name }}</div>
+                                    </td>
+                                    <td><span class="badge bg-light text-secondary border">{{ u.get_uom_type_display }}</span></td>
+                                    <td class="small text-muted">{{ u.description|default:"-" }}</td>
+                                    <td>
+                                        {% if u.is_active %}
+                                            <span class="badge bg-success-subtle text-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                                            <a href="{% url 'uom_update' u.pk %}" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>
+                                            <a href="{% url 'uom_delete' u.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></a>
+                                        {% else %}
+                                            <span class="text-muted small">View Only</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="p-0 border-0">
+                                        <div class="mf-empty-state py-4">
+                                            <i class="bi bi-rulers mf-empty-state-icon"></i>
+                                            <div class="mf-empty-state-title">No Units Found</div>
+                                            <p class="mf-empty-state-text">No measurement units configured yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,38 +112,48 @@
                     </div>
                     <span class="badge bg-dark-subtle text-dark">{{ conversions.count }} Rules</span>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover table-custom mb-0 align-middle">
-                        <thead>
-                            <tr>
-                                <th>Conversion Formula</th>
-                                <th>Application Notes</th>
-                                <th class="text-end">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for c in conversions %}
-                            <tr>
-                                <td>
-                                    <div class="font-monospace fw-bold text-dark">
-                                        1 <span class="text-primary">{{ c.from_uom.code }}</span> = {{ c.multiplier }} <span class="text-success">{{ c.to_uom.code }}</span>
-                                    </div>
-                                    <small class="text-muted">1 {{ c.from_uom.name }} &rarr; {{ c.to_uom.name }}</small>
-                                </td>
-                                <td class="small text-secondary">{{ c.notes|default:"Direct factor" }}</td>
-                                <td class="text-end">
-                                    {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
-                                        <a href="{% url 'conversion_delete' c.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></a>
-                                    {% else %}
-                                        <span class="text-muted small">-</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="3" class="text-center py-4 text-muted">No conversion factors defined.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="table-responsive-wrapper">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Conversion Formula</th>
+                                    <th>Application Notes</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c in conversions %}
+                                <tr>
+                                    <td>
+                                        <div class="font-monospace fw-bold text-dark">
+                                            1 <span class="text-primary">{{ c.from_uom.code }}</span> = {{ c.multiplier }} <span class="text-success">{{ c.to_uom.code }}</span>
+                                        </div>
+                                        <small class="text-muted">1 {{ c.from_uom.name }} &rarr; {{ c.to_uom.name }}</small>
+                                    </td>
+                                    <td class="small text-secondary">{{ c.notes|default:"Direct factor" }}</td>
+                                    <td class="text-end">
+                                        {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                                            <a href="{% url 'conversion_delete' c.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></a>
+                                        {% else %}
+                                            <span class="text-muted small">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="p-0 border-0">
+                                        <div class="mf-empty-state py-4">
+                                            <i class="bi bi-arrow-left-right mf-empty-state-icon"></i>
+                                            <div class="mf-empty-state-title">No Conversions Defined</div>
+                                            <p class="mf-empty-state-text">No UOM conversion factors registered yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

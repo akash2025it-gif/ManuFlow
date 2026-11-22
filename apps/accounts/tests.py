@@ -75,6 +75,12 @@ class AuthenticationTests(TestCase):
         response = self.client.post(reverse('logout'))
         self.assertRedirects(response, reverse('login'))
 
+    def test_logout_rejects_get_requests(self):
+        """Logout is state-changing and must retain Django's CSRF protection."""
+        self.client.login(username='salesuser', password=self.password)
+        response = self.client.get(reverse('logout'))
+        self.assertEqual(response.status_code, 405)
+
 
 class RoleBasedAccessTests(TestCase):
     def setUp(self):

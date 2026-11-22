@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Dispatch Challans - ManuFlow{% endblock %}
+{% block title %}Material Dispatch Challans | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'sales_hub' %}">Sales Hub</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Dispatches</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-4 py-4">
-    <!-- Breadcrumb & Header -->
+    <!-- Header -->
     <div class="row align-items-center mb-4">
         <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'sales_hub' %}">Sales Hub</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Dispatch Challans</li>
-                </ol>
-            </nav>
             <h2 class="h3 fw-bold mb-0 text-dark">
                 <i class="bi bi-truck text-info me-2"></i>Material Dispatch Challans
             </h2>
@@ -48,8 +53,9 @@
 
     <!-- Dispatches Table -->
     <div class="card border-0 shadow-sm rounded-3">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
                         <th>Dispatch Ref</th>
@@ -99,15 +105,19 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-5">
-                            <i class="bi bi-truck fs-2 d-block mb-2 text-secondary"></i>
-                            No dispatch notes found matching your criteria.
+                        <td colspan="10" class="p-0 border-0">
+                            <div class="mf-empty-state py-5">
+                                <i class="bi bi-truck mf-empty-state-icon"></i>
+                                <div class="mf-empty-state-title">No Dispatches Found</div>
+                                <p class="mf-empty-state-text">No material dispatches recorded yet. Approve a sales order to prepare goods for dispatch.</p>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
 
         {% if page_obj.has_other_pages %}
         <div class="card-footer bg-white py-3 border-0">

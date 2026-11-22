@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
 
+{% block title %}Current Stock Balances & Valuation | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'inventory_dashboard' %}">Inventory</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Stock Balances</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-4">
     <!-- Header -->
@@ -56,8 +70,9 @@
 
     <!-- Inventory Table -->
     <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
-        <div class="table-responsive">
-            <table class="table table-hover table-custom mb-0 align-middle">
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover table-custom mb-0 align-middle">
                 <thead>
                     <tr>
                         <th>Item Description</th>
@@ -125,14 +140,19 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="10" class="text-center py-4 text-muted">
-                            No inventory records found matching your filters.
+                        <td colspan="10" class="p-0 border-0">
+                            <div class="mf-empty-state py-5">
+                                <i class="bi bi-boxes mf-empty-state-icon"></i>
+                                <div class="mf-empty-state-title">No Inventory Records Found</div>
+                                <p class="mf-empty-state-text">No stock items match your search or filter parameters.</p>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
 
         {% if page_obj.has_other_pages %}
         <div class="p-3 border-top d-flex justify-content-between align-items-center">

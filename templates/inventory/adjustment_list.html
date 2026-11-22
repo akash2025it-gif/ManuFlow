@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
 
+{% block title %}Stock Adjustments & Physical Audits | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'inventory_dashboard' %}">Inventory</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Stock Adjustments</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-4">
     <!-- Header -->
@@ -21,8 +35,9 @@
 
     <!-- Table -->
     <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
-        <div class="table-responsive">
-            <table class="table table-hover table-custom mb-0 align-middle">
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover table-custom mb-0 align-middle">
                 <thead>
                     <tr>
                         <th>Adjustment Ref</th>
@@ -73,12 +88,24 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">No stock adjustments recorded yet.</td>
+                        <td colspan="7" class="p-0 border-0">
+                            <div class="mf-empty-state py-5">
+                                <i class="bi bi-sliders2 mf-empty-state-icon"></i>
+                                <div class="mf-empty-state-title">No Stock Adjustments Recorded</div>
+                                <p class="mf-empty-state-text">Physical inventory counts and stock reconciliations will appear here.</p>
+                                {% if can_manage %}
+                                <a href="{% url 'stock_adjustment_create' %}" class="btn btn-warning text-dark btn-sm">
+                                    <i class="bi bi-sliders2 me-1"></i> New Physical Count Audit
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
 
         {% if page_obj.has_other_pages %}
         <div class="p-3 border-top d-flex justify-content-between align-items-center">

@@ -19,7 +19,7 @@ def home_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard_home')
     return render(request, 'core/home.html', {
-        'page_title': 'NIT Trichy | Order-to-Audit Management System',
+        'page_title': 'ManuFlow | Manufacturing & Order Management System',
     })
 
 

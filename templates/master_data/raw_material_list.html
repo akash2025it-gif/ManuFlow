@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
 
+{% block title %}Raw Materials Master Catalog | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'master_data_hub' %}">Master Data</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Raw Materials</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-4">
     <!-- Header -->
@@ -52,8 +66,9 @@
 
     <!-- Table -->
     <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
-        <div class="table-responsive">
-            <table class="table table-hover table-custom mb-0 align-middle">
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover table-custom mb-0 align-middle">
                 <thead>
                     <tr>
                         <th>Material Code & Name</th>
@@ -105,14 +120,24 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">
-                            No raw materials found matching filters.
+                        <td colspan="8" class="p-0 border-0">
+                            <div class="mf-empty-state py-5">
+                                <i class="bi bi-basket mf-empty-state-icon"></i>
+                                <div class="mf-empty-state-title">No Raw Materials Found</div>
+                                <p class="mf-empty-state-text">No raw materials match your filter or none have been registered yet.</p>
+                                {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                                <a href="{% url 'raw_material_create' %}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-circle me-1"></i> Add Raw Material
+                                </a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
 
         {% if page_obj.has_other_pages %}
         <div class="p-3 border-top d-flex justify-content-between align-items-center">

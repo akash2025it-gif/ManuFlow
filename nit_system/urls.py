@@ -8,8 +8,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 # Global System Administration branding
-admin.site.site_header = "NIT Trichy Order-to-Audit Administration"
-admin.site.site_title = "NIT O2A Admin"
+admin.site.site_header = "ManuFlow Administration"
+admin.site.site_title = "ManuFlow Admin"
 admin.site.index_title = "System Management & Auditing Portal"
 
 urlpatterns = [

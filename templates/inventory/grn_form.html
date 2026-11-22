@@ -1,5 +1,20 @@
 {% extends 'base.html' %}
 
+{% block title %}{{ page_title|default:"Inward Goods Receipt Note" }} | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'inventory_dashboard' %}">Inventory</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'grn_list' %}">Goods Receipt Notes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ page_title|default:"Inward Material Receipt" }}</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-4 py-3">
     <div class="row justify-content-center">
@@ -34,7 +49,7 @@
                         </div>
                     {% endif %}
 
-                    <form method="post" id="grnForm" novalidate>
+                    <form method="post" id="grnForm" data-submit-once novalidate>
                         {% csrf_token %}
 
                         <!-- GRN Header -->
@@ -89,8 +104,9 @@
 
                         {{ formset.management_form }}
 
-                        <div class="table-responsive mb-4">
-                            <table class="table table-bordered align-middle" id="grnItemsTable">
+                        <div class="table-responsive-wrapper">
+                            <div class="table-responsive mb-4">
+                                <table class="table table-bordered align-middle" id="grnItemsTable">
                                 <thead class="table-light">
                                     <tr>
                                         <th style="width: 12%;">Type</th>
@@ -162,6 +178,7 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
 
                         <!-- Submit Buttons -->
                         <div class="d-flex justify-content-end gap-2 border-top pt-4">

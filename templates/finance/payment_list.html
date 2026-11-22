@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Customer Payment Vouchers - ManuFlow{% endblock %}
+{% block title %}Customer Payment Vouchers | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Payment Vouchers</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-4 py-4">
-    <!-- Breadcrumb & Header -->
+    <!-- Header -->
     <div class="row align-items-center mb-4">
         <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Payment Vouchers</li>
-                </ol>
-            </nav>
             <h2 class="h3 fw-bold mb-0 text-dark">
                 <i class="bi bi-wallet2 text-success me-2"></i>Customer Payment Vouchers & Ledger
             </h2>
@@ -65,8 +70,9 @@
 
     <!-- Payment Records Table -->
     <div class="card border-0 shadow-sm rounded-3">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
                 <thead class="table-light small text-uppercase text-muted">
                     <tr>
                         <th>Voucher #</th>
@@ -119,10 +125,14 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="text-center py-5 text-muted">
-                            <i class="bi bi-receipt fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                            <h6 class="fw-bold">No Payment Vouchers Found</h6>
-                            <p class="small text-muted mb-0">Record payments against approved invoices to populate this ledger.</p>
+                        <td colspan="9">
+                            <div class="mf-empty-state py-5">
+                                <div class="mf-empty-state-icon">
+                                    <i class="bi bi-receipt"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1">No Payment Vouchers Found</h6>
+                                <p class="text-muted small mb-0">Record payments against approved invoices to populate this ledger.</p>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -130,5 +140,6 @@
             </table>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

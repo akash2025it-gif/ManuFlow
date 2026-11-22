@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
 
+{% block title %}Production Work Orders & Run Registry | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'production_hub' %}">Production</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Work Orders</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-4">
     <!-- Header -->
@@ -63,8 +77,9 @@
     <!-- Runs Table -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+            <div class="table-responsive-wrapper">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Run Number</th>
@@ -141,14 +156,24 @@
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="11" class="text-center py-5 text-muted">
-                                    No production runs match your criteria.
+                                <td colspan="11" class="p-0 border-0">
+                                    <div class="mf-empty-state py-5">
+                                        <i class="bi bi-gear mf-empty-state-icon"></i>
+                                        <div class="mf-empty-state-title">No Production Runs Found</div>
+                                        <p class="mf-empty-state-text">No manufacturing work orders match your search or filter parameters.</p>
+                                        {% if user.role == 'PRODUCTION' or user.role == 'ADMIN' or user.is_superuser %}
+                                        <a href="{% url 'production_run_create' %}" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-plus-circle me-1"></i> New Production Run
+                                        </a>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+        </div>
 
             <!-- Pagination -->
             {% if page_obj.has_other_pages %}

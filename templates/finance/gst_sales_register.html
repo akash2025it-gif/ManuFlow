@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}GST Sales Register - ManuFlow{% endblock %}
+{% block title %}GST Sales Register | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+            <li class="breadcrumb-item active" aria-current="page">GST Sales Register</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-4 py-4">
-    <!-- Breadcrumb & Header -->
+    <!-- Header -->
     <div class="row align-items-center mb-4">
         <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">GST Sales Register</li>
-                </ol>
-            </nav>
             <h2 class="h3 fw-bold mb-0 text-dark">
                 <i class="bi bi-receipt-cutoff text-primary me-2"></i>GST Sales Register & Tax Analysis
             </h2>
@@ -36,9 +41,9 @@
 
     <!-- Academic Disclaimer Banner -->
     <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4 py-2 px-3" role="alert">
-        <i class="bi bi-shield-exclamation fs-5 me-2 text-info"></i>
+        <i class="bi bi-info-circle fs-5 me-2 text-info"></i>
         <div class="small">
-            <strong>NIT Trichy Academic / Demonstration Notice:</strong> This GST Sales Register calculates intra-state (2.5% CGST + 2.5% SGST) and inter-state (5% IGST) taxes for ERP prototyping and academic auditing evaluation. It is <em>not</em> an official statutory GST filing (GSTR-1).
+            <strong>ManuFlow Academic Notice:</strong> This GST Sales Register calculates intra-state (2.5% CGST + 2.5% SGST) and inter-state (5% IGST) taxes for ERP prototyping and academic auditing evaluation. It is an educational demonstration ledger.
         </div>
     </div>
 
@@ -134,78 +139,84 @@
 
     <!-- Sales Invoices Table -->
     <div class="card border-0 shadow-sm rounded-3">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-uppercase text-muted">
-                    <tr>
-                        <th>Invoice #</th>
-                        <th>Date</th>
-                        <th>Customer / Destination</th>
-                        <th>Tax Type</th>
-                        <th class="text-end">Taxable (₹)</th>
-                        <th class="text-end">CGST (₹)</th>
-                        <th class="text-end">SGST (₹)</th>
-                        <th class="text-end">IGST (₹)</th>
-                        <th class="text-end">Total Tax (₹)</th>
-                        <th class="text-end">Invoice Total (₹)</th>
-                        <th class="text-center">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for inv in invoices %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'invoice_detail' inv.id %}" class="fw-bold text-primary font-monospace">
-                                {{ inv.invoice_number }}
-                            </a>
-                        </td>
-                        <td class="font-monospace small">{{ inv.invoice_date|date:"d M Y" }}</td>
-                        <td>
-                            <div class="fw-medium text-dark">{{ inv.customer.name }}</div>
-                            <span class="text-muted small">{{ inv.place_of_supply }}</span>
-                        </td>
-                        <td>
-                            {% if inv.is_interstate %}
-                            <span class="badge bg-info bg-opacity-10 text-info border border-info">Inter-State (IGST 5%)</span>
-                            {% else %}
-                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">Intra-State (CGST+SGST)</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end font-monospace">₹{{ inv.taxable_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-primary">₹{{ inv.cgst_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-primary">₹{{ inv.sgst_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-info">₹{{ inv.igst_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-semibold text-danger">₹{{ inv.total_tax|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-bold text-dark">₹{{ inv.grand_total|floatformat:2 }}</td>
-                        <td class="text-center">
-                            <span class="badge {% if inv.payment_status == 'PAID' %}bg-success{% elif inv.payment_status == 'PARTIAL' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
-                                {{ inv.get_payment_status_display }}
-                            </span>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="11" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                            <h6 class="fw-bold">No Invoices Match Current Filter</h6>
-                            <p class="small text-muted mb-0">Try clearing the date range or jurisdiction filter.</p>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot class="table-light fw-bold">
-                    <tr>
-                        <td colspan="4" class="text-uppercase">Total ({{ summary.total_count }} Invoices)</td>
-                        <td class="text-end font-monospace">₹{{ summary.total_taxable|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-primary">₹{{ summary.total_cgst|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-primary">₹{{ summary.total_sgst|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-info">₹{{ summary.total_igst|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-danger">₹{{ summary.total_tax|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-dark">₹{{ summary.grand_total|floatformat:2 }}</td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase text-muted">
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Date</th>
+                            <th>Customer / Destination</th>
+                            <th>Tax Type</th>
+                            <th class="text-end">Taxable (₹)</th>
+                            <th class="text-end">CGST (₹)</th>
+                            <th class="text-end">SGST (₹)</th>
+                            <th class="text-end">IGST (₹)</th>
+                            <th class="text-end">Total Tax (₹)</th>
+                            <th class="text-end">Invoice Total (₹)</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inv in invoices %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'invoice_detail' inv.id %}" class="fw-bold text-primary font-monospace">
+                                    {{ inv.invoice_number }}
+                                </a>
+                            </td>
+                            <td class="font-monospace small">{{ inv.invoice_date|date:"d M Y" }}</td>
+                            <td>
+                                <div class="fw-medium text-dark">{{ inv.customer.name }}</div>
+                                <span class="text-muted small">{{ inv.place_of_supply }}</span>
+                            </td>
+                            <td>
+                                {% if inv.is_interstate %}
+                                <span class="badge bg-info bg-opacity-10 text-info border border-info">Inter-State (IGST 5%)</span>
+                                {% else %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">Intra-State (CGST+SGST)</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end font-monospace">₹{{ inv.taxable_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-primary">₹{{ inv.cgst_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-primary">₹{{ inv.sgst_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-info">₹{{ inv.igst_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-semibold text-danger">₹{{ inv.total_tax|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-bold text-dark">₹{{ inv.grand_total|floatformat:2 }}</td>
+                            <td class="text-center">
+                                <span class="badge {% if inv.payment_status == 'PAID' %}bg-success{% elif inv.payment_status == 'PARTIAL' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ inv.get_payment_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11">
+                                <div class="mf-empty-state py-5">
+                                    <div class="mf-empty-state-icon">
+                                        <i class="bi bi-inbox"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-1">No Invoices Match Current Filter</h6>
+                                    <p class="text-muted small mb-0">Try clearing the date range or jurisdiction filter to view sales data.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="4" class="text-uppercase">Total ({{ summary.total_count }} Invoices)</td>
+                            <td class="text-end font-monospace">₹{{ summary.total_taxable|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-primary">₹{{ summary.total_cgst|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-primary">₹{{ summary.total_sgst|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-info">₹{{ summary.total_igst|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-danger">₹{{ summary.total_tax|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-dark">₹{{ summary.grand_total|floatformat:2 }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
 </div>

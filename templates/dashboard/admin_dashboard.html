@@ -1,164 +1,183 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block title %}System Administration Console | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
 <div class="container-fluid px-lg-4">
-    <!-- Role Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 py-0 small">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Admin Console</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="py-2">
+    <!-- Page Header -->
+    <div class="mf-page-header">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge badge-role-admin px-3 py-1.5 rounded-pill font-monospace">
-                    <i class="bi bi-shield-lock-fill me-1"></i> ADMIN PORTAL
-                </span>
-                <span class="text-muted small">System Security & Infrastructure</span>
+                <span class="mf-badge badge-role-admin font-mono">GOVERNANCE CONSOLE</span>
+                <span class="text-muted small">Multi-Role Security &amp; Infrastructure Management</span>
             </div>
-            <h2 class="fw-bold mb-0">Administrator Command Center</h2>
+            <h1 class="mf-page-header-title">Administrator Command Center</h1>
+            <p class="mf-page-header-subtitle">Enforce role segregation boundaries, manage institutional staff credentials, and inspect runtime health.</p>
         </div>
-        <div class="d-flex gap-2 mt-3 mt-md-0">
-            <a href="{% url 'user_list' %}" class="btn btn-outline-primary fw-medium">
-                <i class="bi bi-people-fill me-1"></i> Staff Directory
+        <div class="mf-page-header-actions">
+            <a href="{% url 'user_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-people me-1"></i> Staff Directory
             </a>
-            <a href="{% url 'admin:index' %}" target="_blank" class="btn btn-primary fw-medium">
+            <a href="{% url 'audit_trail' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-shield-check me-1"></i> Audit Trail
+            </a>
+            <a href="{% url 'admin:index' %}" target="_blank" class="btn btn-primary btn-sm">
                 <i class="bi bi-sliders me-1"></i> Django Admin Site
             </a>
         </div>
     </div>
 
-    <!-- Stat Cards Row -->
+    <!-- Infrastructure Metrics Strip -->
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Total Staff Accounts</div>
-                        <div class="stat-value text-dark">{{ total_users }}</div>
-                    </div>
-                    <div class="stat-icon bg-primary-subtle text-primary">
-                        <i class="bi bi-people"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Total Staff Accounts</span>
+                    <i class="bi bi-people text-muted"></i>
                 </div>
-                <div class="small text-success mt-2">
-                    <i class="bi bi-check2"></i> {{ active_users }} Active & Verified
+                <div class="mf-stat-value">{{ total_users }}</div>
+                <div class="mf-stat-meta text-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>{{ active_users }} Active &amp; Verified</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Database Backend</div>
-                        <div class="stat-value text-dark fs-4 text-truncate">{{ db_engine|upper }}</div>
-                    </div>
-                    <div class="stat-icon bg-success-subtle text-success">
-                        <i class="bi bi-database-check"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Database Backend</span>
+                    <i class="bi bi-database text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">
-                    <i class="bi bi-cpu"></i> 12-Factor Env Configured
+                <div class="mf-stat-value font-mono" style="font-size: 1.35rem;">{{ db_engine|upper }}</div>
+                <div class="mf-stat-meta text-muted">
+                    <span class="mf-db-dot"></span>
+                    <span>{{ SYSTEM_STATUS }}</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Role Segregation</div>
-                        <div class="stat-value text-dark">5 Roles</div>
-                    </div>
-                    <div class="stat-icon bg-warning-subtle text-warning">
-                        <i class="bi bi-diagram-3"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Role Segregation</span>
+                    <i class="bi bi-diagram-3 text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">
-                    <i class="bi bi-shield-check"></i> Strict RBAC Active
+                <div class="mf-stat-value">6 Roles</div>
+                <div class="mf-stat-meta text-info">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>Strict RBAC Active</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Environment Mode</div>
-                        <div class="stat-value text-dark fs-4">{% if debug_mode %}DEV (DEBUG){% else %}PRODUCTION{% endif %}</div>
-                    </div>
-                    <div class="stat-icon bg-info-subtle text-info">
-                        <i class="bi bi-terminal"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Security Posture</span>
+                    <i class="bi bi-lock text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">
-                    <i class="bi bi-shield"></i> Security Headers Enforced
+                <div class="mf-stat-value" style="font-size: 1.35rem;">
+                    {% if debug_mode %}DEV (DEBUG){% else %}PRODUCTION{% endif %}
+                </div>
+                <div class="mf-stat-meta text-muted">
+                    <i class="bi bi-shield-check"></i>
+                    <span>CSRF &amp; Sessions Enforced</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Role Distribution & User Listing -->
-    <div class="row g-4 mb-4">
-        <!-- Role Counts breakdown -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="p-3 border-bottom">
-                    <h5 class="fw-bold mb-0">Role Distribution</h5>
+    <!-- Main Console Grid -->
+    <div class="row g-3">
+        <!-- Left Column: Role Matrix & Module Directory -->
+        <div class="col-lg-7">
+            <!-- Role Segregation Matrix -->
+            <div class="mf-card mb-3">
+                <div class="mf-card-header">
+                    <div>
+                        <h6 class="mf-card-title"><i class="bi bi-shield-lock me-1 text-primary"></i> Role Segregation &amp; Boundary Enforcement</h6>
+                        <span class="mf-card-subtitle">Operational duties isolated per institutional governance standards</span>
+                    </div>
+                    <span class="badge bg-light text-secondary border font-mono small">6 Personas</span>
                 </div>
-                <div class="card-body p-3">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                            <span class="d-flex align-items-center">
-                                <span class="badge badge-role-admin me-2 px-2 py-1">Admin</span>
-                                System Administrators
-                            </span>
-                            <span class="badge bg-secondary rounded-pill">{{ role_counts.admin }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                            <span class="d-flex align-items-center">
-                                <span class="badge badge-role-salesman me-2 px-2 py-1">Salesman</span>
-                                Sales & Orders Team
-                            </span>
-                            <span class="badge bg-secondary rounded-pill">{{ role_counts.salesman }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                            <span class="d-flex align-items-center">
-                                <span class="badge badge-role-production me-2 px-2 py-1">Production</span>
-                                Manufacturing & Floor
-                            </span>
-                            <span class="badge bg-secondary rounded-pill">{{ role_counts.production }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                            <span class="d-flex align-items-center">
-                                <span class="badge badge-role-auditor me-2 px-2 py-1">Auditor</span>
-                                Quality & Financial Audit
-                            </span>
-                            <span class="badge bg-secondary rounded-pill">{{ role_counts.auditor }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                            <span class="d-flex align-items-center">
-                                <span class="badge badge-role-owner me-2 px-2 py-1">Owner</span>
-                                Executive Leadership
-                            </span>
-                            <span class="badge bg-secondary rounded-pill">{{ role_counts.owner }}</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Registered Accounts -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">Recently Created Staff Accounts</h5>
-                    <a href="{% url 'user_list' %}" class="small fw-semibold text-primary text-decoration-none">View All &rarr;</a>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover table-custom mb-0 align-middle">
+                <div class="table-responsive border-0">
+                    <table class="mf-table">
                         <thead>
                             <tr>
-                                <th>Name / Email</th>
                                 <th>Role</th>
-                                <th>Emp ID</th>
-                                <th>Joined</th>
+                                <th>Assigned Staff Persona</th>
+                                <th>Functional Domain</th>
+                                <th class="numeric">Accounts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="mf-badge badge-role-admin font-mono">ADMIN</span></td>
+                                <td class="font-mono small">admin@nit.edu</td>
+                                <td class="small text-muted">Security governance, user provisioning, system configuration</td>
+                                <td class="numeric">{{ role_counts.admin }}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mf-badge badge-role-salesman font-mono">SALESMAN</span></td>
+                                <td class="font-mono small">salesman@nit.edu</td>
+                                <td class="small text-muted">Customer quotations, sales orders, stock checks, dispatch</td>
+                                <td class="numeric">{{ role_counts.salesman }}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mf-badge badge-role-production font-mono">PRODUCTION</span></td>
+                                <td class="font-mono small">production@nit.edu</td>
+                                <td class="small text-muted">Batch runs, BOM recipe issuance, yield variance alerts</td>
+                                <td class="numeric">{{ role_counts.production }}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mf-badge badge-role-auditor font-mono">AUDITOR</span></td>
+                                <td class="font-mono small">auditor@nit.edu</td>
+                                <td class="small text-muted">Read-only observatory, immutable event logs, compliance checks</td>
+                                <td class="numeric">{{ role_counts.auditor }}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mf-badge badge-role-owner font-mono">OWNER</span></td>
+                                <td class="font-mono small">owner@nit.edu</td>
+                                <td class="small text-muted">Executive oversight, financial KPIs, inventory valuation</td>
+                                <td class="numeric">{{ role_counts.owner }}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="mf-badge badge-role-accountant font-mono">ACCOUNTANT</span></td>
+                                <td class="font-mono small">accountant@nit.edu</td>
+                                <td class="small text-muted">Receivables, customer payments, Section 31 GST sales register</td>
+                                <td class="numeric">{{ role_counts.accountant }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recently Provisioned Staff Accounts -->
+            <div class="mf-card">
+                <div class="mf-card-header">
+                    <div>
+                        <h6 class="mf-card-title"><i class="bi bi-person-check me-1 text-primary"></i> Active Staff Accounts Directory</h6>
+                        <span class="mf-card-subtitle">Verified institutional credentials</span>
+                    </div>
+                    <a href="{% url 'user_list' %}" class="small text-decoration-none">Manage Directory &rarr;</a>
+                </div>
+                <div class="table-responsive border-0">
+                    <table class="mf-table">
+                        <thead>
+                            <tr>
+                                <th>Staff Member</th>
+                                <th>Role</th>
+                                <th>Employee ID</th>
+                                <th>Account Created</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -166,33 +185,109 @@
                             <tr>
                                 <td>
                                     <div class="fw-semibold text-dark">{{ u.get_full_name|default:u.username }}</div>
-                                    <small class="text-muted">{{ u.email }}</small>
+                                    <div class="text-muted font-mono" style="font-size: 0.72rem;">{{ u.email }}</div>
                                 </td>
                                 <td>
-                                    <span class="badge 
-                                        {% if u.role == 'ADMIN' or u.is_superuser %}badge-role-admin
+                                    <span class="mf-badge 
+                                        {% if u.role == 'ADMIN' %}badge-role-admin
                                         {% elif u.role == 'SALESMAN' %}badge-role-salesman
                                         {% elif u.role == 'PRODUCTION' %}badge-role-production
                                         {% elif u.role == 'AUDITOR' %}badge-role-auditor
                                         {% elif u.role == 'OWNER' %}badge-role-owner
-                                        {% else %}bg-secondary{% endif %} px-2.5 py-1 rounded-pill font-monospace">
+                                        {% elif u.role == 'ACCOUNTANT' %}badge-role-accountant
+                                        {% else %}mf-badge-neutral{% endif %} font-mono">
                                         {{ u.get_role_display }}
                                     </span>
                                 </td>
-                                <td>
-                                    <span class="font-monospace small text-muted">{{ u.employee_id|default:"NIT-STAFF" }}</span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">{{ u.date_joined|date:"M d, Y" }}</small>
-                                </td>
+                                <td class="font-mono small text-muted">{{ u.employee_id|default:"-" }}</td>
+                                <td class="small text-muted">{{ u.date_joined|date:"M d, Y" }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center py-3 text-muted">No accounts created yet.</td>
+                                <td colspan="4" class="text-center text-muted py-3">No staff accounts registered.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Audit Stream & Runtime Health -->
+        <div class="col-lg-5">
+            <!-- Live Security & Audit Trail Stream -->
+            <div class="mf-card mb-3">
+                <div class="mf-card-header">
+                    <div>
+                        <h6 class="mf-card-title"><i class="bi bi-activity me-1 text-primary"></i> Recent Audit Log Stream</h6>
+                        <span class="mf-card-subtitle">Immutable chronological operational records</span>
+                    </div>
+                    <a href="{% url 'audit_trail' %}" class="small text-decoration-none">View Full Log &rarr;</a>
+                </div>
+                <div class="p-0">
+                    <div class="table-responsive border-0">
+                        <table class="mf-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Actor</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in recent_audits %}
+                                <tr>
+                                    <td class="font-mono text-muted" style="font-size: 0.72rem;">
+                                        {{ a.timestamp|date:"H:i:s" }}
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark small">{{ a.user.username|default:"System" }}</div>
+                                        <div class="text-muted font-mono" style="font-size: 0.68rem;">{{ a.ip_address|default:"127.0.0.1" }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="mf-badge mf-badge-neutral font-mono" style="font-size: 0.68rem;">{{ a.action }}</span>
+                                        <div class="text-muted small text-truncate" style="max-width: 140px; font-size: 0.72rem;">{{ a.object_repr|default:a.module }}</div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">No audit activity logged.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direct Module Navigation Shortcuts -->
+            <div class="mf-card">
+                <div class="mf-card-header">
+                    <h6 class="mf-card-title"><i class="bi bi-grid-3x3-gap me-1 text-primary"></i> Operational Subsystems</h6>
+                </div>
+                <div class="p-3">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'master_data_hub' %}" class="btn btn-outline-secondary btn-sm text-start d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-database me-2 text-primary"></i> Master Data Hub &amp; BOM</span>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'inventory_dashboard' %}" class="btn btn-outline-secondary btn-sm text-start d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-box-seam me-2 text-success"></i> Inventory &amp; Stock Ledger</span>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'production_hub' %}" class="btn btn-outline-secondary btn-sm text-start d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-gear-wide-connected me-2 text-warning"></i> Production Floor &amp; Runs</span>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'sales_hub' %}" class="btn btn-outline-secondary btn-sm text-start d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-cart-check me-2 text-info"></i> Sales Operations &amp; Invoices</span>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </a>
+                        <a href="{% url 'finance:dashboard' %}" class="btn btn-outline-secondary btn-sm text-start d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-bank me-2 text-secondary"></i> Finance &amp; GST Registers</span>
+                            <i class="bi bi-arrow-right text-muted"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,20 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Monthly GST Tax Summary - ManuFlow{% endblock %}
+{% block title %}Monthly GST Summary | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'finance:gst_sales_register' %}">GST Register</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Monthly Summary</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-4 py-4">
-    <!-- Breadcrumb & Header -->
+    <!-- Header -->
     <div class="row align-items-center mb-4">
         <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'finance:gst_sales_register' %}">GST Register</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Monthly Summary</li>
-                </ol>
-            </nav>
             <h2 class="h3 fw-bold mb-0 text-dark">
                 <i class="bi bi-calendar3 text-primary me-2"></i>{{ year }} Monthly GST Tax Collection Summary
             </h2>
@@ -36,61 +41,63 @@
     <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4 py-2 px-3" role="alert">
         <i class="bi bi-info-circle-fill fs-5 me-2 text-info"></i>
         <div class="small">
-            <strong>NIT Trichy Academic / Demonstration Notice:</strong> This monthly summary is computed for academic auditing analysis and ERP software simulation. Not for official statutory submission.
+            <strong>ManuFlow Academic Notice:</strong> This monthly summary is computed for academic auditing analysis and ERP software simulation. Not for official statutory submission.
         </div>
     </div>
 
     <!-- Annual Aggregation Table -->
     <div class="card border-0 shadow-sm rounded-3">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-uppercase text-muted">
-                    <tr>
-                        <th>#</th>
-                        <th>Month</th>
-                        <th class="text-center">Tax Invoices</th>
-                        <th class="text-end">Taxable Turnover (₹)</th>
-                        <th class="text-end">CGST 2.5% (₹)</th>
-                        <th class="text-end">SGST 2.5% (₹)</th>
-                        <th class="text-end">IGST 5% (₹)</th>
-                        <th class="text-end">Total GST (₹)</th>
-                        <th class="text-end">Gross Invoiced (₹)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for m in months_data %}
-                    <tr class="{% if m.invoices_count > 0 %}table-light-subtle{% endif %}">
-                        <td class="text-muted small">{{ m.month_num }}</td>
-                        <td class="fw-bold text-dark">{{ m.month_name }}</td>
-                        <td class="text-center">
-                            {% if m.invoices_count > 0 %}
-                            <span class="badge bg-primary">{{ m.invoices_count }}</span>
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end font-monospace">₹{{ m.taxable_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-primary">₹{{ m.cgst_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-primary">₹{{ m.sgst_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace text-info">₹{{ m.igst_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-semibold text-danger">₹{{ m.total_tax|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-bold text-dark">₹{{ m.grand_total|floatformat:2 }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot class="table-dark fw-bold">
-                    <tr>
-                        <td colspan="2" class="text-uppercase">Total Year {{ year }}</td>
-                        <td class="text-center">{{ year_totals.invoices_count }}</td>
-                        <td class="text-end font-monospace">₹{{ year_totals.taxable_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace">₹{{ year_totals.cgst_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace">₹{{ year_totals.sgst_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace">₹{{ year_totals.igst_amount|floatformat:2 }}</td>
-                        <td class="text-end font-monospace">₹{{ year_totals.total_tax|floatformat:2 }}</td>
-                        <td class="text-end font-monospace">₹{{ year_totals.grand_total|floatformat:2 }}</td>
-                    </tr>
-                </tfoot>
-            </table>
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase text-muted">
+                        <tr>
+                            <th>#</th>
+                            <th>Month</th>
+                            <th class="text-center">Tax Invoices</th>
+                            <th class="text-end">Taxable Turnover (₹)</th>
+                            <th class="text-end">CGST 2.5% (₹)</th>
+                            <th class="text-end">SGST 2.5% (₹)</th>
+                            <th class="text-end">IGST 5% (₹)</th>
+                            <th class="text-end">Total GST (₹)</th>
+                            <th class="text-end">Gross Invoiced (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in months_data %}
+                        <tr class="{% if m.invoices_count > 0 %}table-light-subtle{% endif %}">
+                            <td class="text-muted small">{{ m.month_num }}</td>
+                            <td class="fw-bold text-dark">{{ m.month_name }}</td>
+                            <td class="text-center">
+                                {% if m.invoices_count > 0 %}
+                                <span class="badge bg-primary">{{ m.invoices_count }}</span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end font-monospace">₹{{ m.taxable_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-primary">₹{{ m.cgst_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-primary">₹{{ m.sgst_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace text-info">₹{{ m.igst_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-semibold text-danger">₹{{ m.total_tax|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-bold text-dark">₹{{ m.grand_total|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-dark fw-bold">
+                        <tr>
+                            <td colspan="2" class="text-uppercase">Total Year {{ year }}</td>
+                            <td class="text-center">{{ year_totals.invoices_count }}</td>
+                            <td class="text-end font-monospace">₹{{ year_totals.taxable_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace">₹{{ year_totals.cgst_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace">₹{{ year_totals.sgst_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace">₹{{ year_totals.igst_amount|floatformat:2 }}</td>
+                            <td class="text-end font-monospace">₹{{ year_totals.total_tax|floatformat:2 }}</td>
+                            <td class="text-end font-monospace">₹{{ year_totals.grand_total|floatformat:2 }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
 </div>

@@ -52,7 +52,7 @@ def master_data_hub_view(request):
     Central hub presenting metrics, stats, and shortcuts to all 7 master data modules.
     """
     context = {
-        'page_title': 'Master Data Hub | NIT O2A Management',
+        'page_title': 'Master Data Hub | ManuFlow',
         'counts': {
             'products': Product.objects.count(),
             'pack_sizes': ProductPackSize.objects.count(),

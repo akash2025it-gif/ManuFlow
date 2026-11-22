@@ -1,20 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Record Customer Payment - ManuFlow{% endblock %}
+{% block title %}Record Customer Payment | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'finance:payments_list' %}">Payment Vouchers</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Record Payment</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-4 py-4">
-    <!-- Breadcrumb & Header -->
+    <!-- Header -->
     <div class="row align-items-center mb-4">
         <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'finance:payments_list' %}">Payments</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Record Payment</li>
-                </ol>
-            </nav>
             <h2 class="h3 fw-bold mb-0 text-dark">
                 <i class="bi bi-wallet2 text-success me-2"></i>Record Customer Payment Voucher
             </h2>
@@ -47,7 +52,7 @@
                     </h5>
                 </div>
                 <div class="card-body p-4">
-                    <form method="post" id="payment-form">
+                    <form method="post" id="payment-form" data-submit-once>
                         {% csrf_token %}
 
                         <!-- Invoice Select -->

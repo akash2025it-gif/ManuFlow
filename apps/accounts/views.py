@@ -2,7 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from .forms import LoginForm, UserProfileUpdateForm
 from .models import CustomUser
 from .decorators import admin_required
@@ -11,11 +13,40 @@ from .decorators import admin_required
 def login_view(request):
     """
     Handles user login. If authenticated, redirects to the role-based dashboard.
+    Supports 1-click role demo authentication during DEMO_MODE.
     """
     if request.user.is_authenticated:
         return redirect('dashboard_home')
 
     next_url = request.GET.get('next', '')
+
+    # 1-Click Role Demo Authentication in Academic DEMO_MODE
+    # Strictly prohibited in production: requires both DEBUG=True and DEMO_MODE=True.
+    demo_role = request.GET.get('demo') or request.GET.get('role')
+    demo_allowed = settings.DEBUG and getattr(settings, 'DEMO_MODE', False)
+    if demo_allowed and demo_role:
+        role_email_map = {
+            'admin': 'admin@nit.edu',
+            'salesman': 'salesman@nit.edu',
+            'production': 'production@nit.edu',
+            'auditor': 'auditor@nit.edu',
+            'owner': 'owner@nit.edu',
+            'accountant': 'accountant@nit.edu',
+        }
+        target_email = role_email_map.get(demo_role.lower())
+        if target_email:
+            try:
+                demo_user = CustomUser.objects.get(email=target_email, is_active=True)
+                login(request, demo_user, backend='apps.accounts.backends.EmailOrUsernameBackend')
+                messages.success(
+                    request,
+                    f"Authenticated as {demo_user.get_full_name() or demo_user.username} ({demo_user.get_role_display()})."
+                )
+                if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                    return redirect(next_url)
+                return redirect(demo_user.get_dashboard_name())
+            except CustomUser.DoesNotExist:
+                pass
 
     if request.method == 'POST':
         form = LoginForm(request=request, data=request.POST)
@@ -50,15 +81,16 @@ def login_view(request):
     context = {
         'form': form,
         'next': next_url,
-        'page_title': 'Sign In | NIT Trichy Order-to-Audit',
+        'page_title': 'Sign In | ManuFlow',
     }
     return render(request, 'accounts/login.html', context)
 
 
+@require_POST
 def logout_view(request):
     """
     Logs out the current user and redirects to login with confirmation message.
-    Supports both POST (Django security recommendation) and GET.
+    Accepts POST only, preventing cross-site requests from logging a user out.
     """
     if request.user.is_authenticated:
         user_name = request.user.get_full_name() or request.user.username
@@ -85,7 +117,7 @@ def profile_view(request):
     context = {
         'form': form,
         'user_obj': user,
-        'page_title': 'My Profile | NIT Trichy Order-to-Audit',
+        'page_title': 'My Profile | ManuFlow',
     }
     return render(request, 'accounts/profile.html', context)
 

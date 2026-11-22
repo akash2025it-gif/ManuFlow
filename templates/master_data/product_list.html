@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
 
+{% block title %}Finished Products Catalog | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'master_data_hub' %}">Master Data</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Finished Products</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-4">
     <!-- Header -->
@@ -52,76 +66,87 @@
 
     <!-- Products Table -->
     <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
-        <div class="table-responsive">
-            <table class="table table-hover table-custom mb-0 align-middle">
-                <thead>
-                    <tr>
-                        <th>Product Code & Name</th>
-                        <th>Category</th>
-                        <th>Bulk Base UOM</th>
-                        <th>Pack Sizes (SKUs)</th>
-                        <th>BOM Status</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in page_obj %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'product_detail' product.pk %}" class="fw-bold text-dark text-decoration-none">
-                                {{ product.name }}
-                            </a>
-                            <div class="small text-muted font-monospace">{{ product.code }}</div>
-                        </td>
-                        <td><span class="badge bg-light text-secondary border">{{ product.category }}</span></td>
-                        <td><span class="font-monospace text-primary fw-medium">{{ product.base_uom.code }}</span></td>
-                        <td>
-                            <span class="badge bg-primary-subtle text-primary rounded-pill">
-                                {{ product.pack_sizes.count }} SKU{{ product.pack_sizes.count|pluralize }}
-                            </span>
-                        </td>
-                        <td>
-                            {% if product.boms.exists %}
-                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
-                                    <i class="bi bi-check2"></i> BOM Configured
-                                </span>
-                            {% else %}
-                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">
-                                    <i class="bi bi-exclamation-circle"></i> No BOM
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if product.is_active %}
-                                <span class="badge bg-success-subtle text-success">Active</span>
-                            {% else %}
-                                <span class="badge bg-danger-subtle text-danger">Inactive</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end">
-                            <a href="{% url 'product_detail' product.pk %}" class="btn btn-sm btn-outline-primary me-1">
-                                <i class="bi bi-eye"></i> Specs
-                            </a>
-                            {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
-                                <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-secondary me-1">
-                                    <i class="bi bi-pencil"></i>
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover table-custom mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>Product Code & Name</th>
+                            <th>Category</th>
+                            <th>Bulk Base UOM</th>
+                            <th>Pack Sizes (SKUs)</th>
+                            <th>BOM Status</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in page_obj %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'product_detail' product.pk %}" class="fw-bold text-dark text-decoration-none">
+                                    {{ product.name }}
                                 </a>
-                                <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash3"></i>
+                                <div class="small text-muted font-monospace">{{ product.code }}</div>
+                            </td>
+                            <td><span class="badge bg-light text-secondary border">{{ product.category }}</span></td>
+                            <td><span class="font-monospace text-primary fw-medium">{{ product.base_uom.code }}</span></td>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary rounded-pill">
+                                    {{ product.pack_sizes.count }} SKU{{ product.pack_sizes.count|pluralize }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if product.boms.exists %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                        <i class="bi bi-check2"></i> BOM Configured
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">
+                                        <i class="bi bi-exclamation-circle"></i> No BOM
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if product.is_active %}
+                                    <span class="badge bg-success-subtle text-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'product_detail' product.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="bi bi-eye"></i> Specs
                                 </a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
-                            No finished products matched your filter query.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                                    <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'product_delete' product.pk %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash3"></i>
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="p-0 border-0">
+                                <div class="mf-empty-state py-5">
+                                    <i class="bi bi-boxes mf-empty-state-icon"></i>
+                                    <div class="mf-empty-state-title">No Finished Products Found</div>
+                                    <p class="mf-empty-state-text">No products match your search or no finished products have been created yet.</p>
+                                    {% if user.role != 'AUDITOR' and user.role != 'SALESMAN' %}
+                                    <a href="{% url 'product_create' %}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-plus-circle me-1"></i> Add Finished Product
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Pagination -->

@@ -1,176 +1,172 @@
 {% extends 'base.html' %}
 
+{% block title %}System Audit Trail | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 py-0 small">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Audit Trail</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid px-lg-4 py-3">
-    <!-- Header -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+<div class="py-2">
+    <!-- Page Header -->
+    <div class="mf-page-header">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-dark px-3 py-1.5 rounded-pill font-monospace">
-                    <i class="bi bi-shield-lock-fill me-1 text-warning"></i> COMPLIANCE & SECURITY
-                </span>
-                <span class="text-muted small">Cryptographically Traceable & Immutable Activity Log</span>
+                <span class="mf-badge badge-role-auditor font-mono">TAMPER-EVIDENT LEDGER</span>
+                <span class="text-muted small">Cryptographically Traceable &amp; Immutable Activity Log</span>
             </div>
-            <h2 class="fw-bold mb-0">System Audit Trail</h2>
+            <h1 class="mf-page-header-title">System Audit Trail Observatory</h1>
+            <p class="mf-page-header-subtitle">Chronological record of every operational mutation, role state transition, stock posting, and authorization event.</p>
         </div>
-        <div class="d-flex gap-2 mt-3 mt-md-0">
-            <a href="{% url 'auditor_dashboard' %}" class="btn btn-outline-secondary">
+        <div class="mf-page-header-actions">
+            <a href="{% url 'auditor_dashboard' %}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i> Auditor Dashboard
             </a>
-            <a href="{% url 'owner_dashboard' %}" class="btn btn-outline-primary">
+            <a href="{% url 'owner_dashboard' %}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-briefcase me-1"></i> Owner Dashboard
             </a>
         </div>
     </div>
 
-    <!-- Summary KPI Cards -->
+    <!-- Audit Metrics Strip -->
     <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Total Audit Events</div>
-                        <div class="stat-value text-dark fs-3">{{ total_count }}</div>
-                    </div>
-                    <div class="stat-icon bg-primary-subtle text-primary">
-                        <i class="bi bi-journal-check"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Total Audit Events</span>
+                    <i class="bi bi-journal-check text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">
-                    <i class="bi bi-database"></i> Complete system lifecycle
+                <div class="mf-stat-value font-mono">{{ total_count }}</div>
+                <div class="mf-stat-meta text-muted">
+                    <span>Complete system lifecycle</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Events Logged Today</div>
-                        <div class="stat-value text-success fs-3">{{ today_count }}</div>
-                    </div>
-                    <div class="stat-icon bg-success-subtle text-success">
-                        <i class="bi bi-calendar-event"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Events Today</span>
+                    <i class="bi bi-calendar-event text-muted"></i>
                 </div>
-                <div class="small text-success mt-2">
-                    <i class="bi bi-clock-history"></i> Real-time capture
+                <div class="mf-stat-value text-primary font-mono">{{ today_count }}</div>
+                <div class="mf-stat-meta text-success">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Real-time capture</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Audit Log Integrity</div>
-                        <div class="stat-value text-primary fs-3">Immutable</div>
-                    </div>
-                    <div class="stat-icon bg-info-subtle text-info">
-                        <i class="bi bi-lock-fill"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Log Integrity</span>
+                    <i class="bi bi-shield-lock text-muted"></i>
                 </div>
-                <div class="small text-info mt-2">
-                    <i class="bi bi-check-circle-fill"></i> Deletions & updates prohibited
+                <div class="mf-stat-value text-success" style="font-size: 1.35rem;">Immutable</div>
+                <div class="mf-stat-meta text-muted">
+                    <i class="bi bi-check2"></i>
+                    <span>Deletes &amp; edits prohibited</span>
                 </div>
             </div>
         </div>
-
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Monitored Modules</div>
-                        <div class="stat-value text-dark fs-3">{{ modules|length }}</div>
-                    </div>
-                    <div class="stat-icon bg-warning-subtle text-warning">
-                        <i class="bi bi-diagram-3"></i>
-                    </div>
+        <div class="col-6 col-lg-3">
+            <div class="mf-stat-box">
+                <div class="mf-stat-label">
+                    <span>Monitored Domains</span>
+                    <i class="bi bi-diagram-3 text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">
-                    Auth, Master Data, Stock, Prod, Sales, Fin
+                <div class="mf-stat-value font-mono">{{ modules|length }} Subsystems</div>
+                <div class="mf-stat-meta text-muted">
+                    <span>Auth, Master, Stock, Prod, Sales, Fin</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Filter Bar Card -->
-    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
-        <div class="card-body p-3">
-            <form method="get" class="row g-2 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label small text-muted mb-1">Search Keywords</label>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
-                        <input type="text" name="q" class="form-control border-start-0" placeholder="Reference, Object, Email..." value="{{ query }}">
-                    </div>
+    <div class="mf-card mb-4 p-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Search Keywords</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Reference, Object, Email..." value="{{ query }}">
                 </div>
+            </div>
 
-                <div class="col-sm-6 col-md-2">
-                    <label class="form-label small text-muted mb-1">Module</label>
-                    <select name="module" class="form-select form-select-sm">
-                        <option value="">All Modules</option>
-                        {% for code, label in modules %}
-                        <option value="{{ code }}" {% if selected_module == code %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+            <div class="col-sm-6 col-md-2">
+                <label class="form-label">Module</label>
+                <select name="module" class="form-select form-select-sm">
+                    <option value="">All Modules</option>
+                    {% for code, label in modules %}
+                    <option value="{{ code }}" {% if selected_module == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-                <div class="col-sm-6 col-md-2">
-                    <label class="form-label small text-muted mb-1">Action Type</label>
-                    <select name="action" class="form-select form-select-sm">
-                        <option value="">All Actions</option>
-                        {% for code, label in actions %}
-                        <option value="{{ code }}" {% if selected_action == code %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+            <div class="col-sm-6 col-md-2">
+                <label class="form-label">Action</label>
+                <select name="action" class="form-select form-select-sm">
+                    <option value="">All Actions</option>
+                    {% for code, label in actions %}
+                    <option value="{{ code }}" {% if selected_action == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-                <div class="col-sm-6 col-md-2">
-                    <label class="form-label small text-muted mb-1">Operator User</label>
-                    <select name="user" class="form-select form-select-sm">
-                        <option value="">All Users</option>
-                        {% for u in users_list %}
-                        <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>
-                            {{ u.get_full_name|default:u.email }} ({{ u.role }})
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
+            <div class="col-sm-6 col-md-2">
+                <label class="form-label">Operator</label>
+                <select name="user" class="form-select form-select-sm">
+                    <option value="">All Users</option>
+                    {% for u in users_list %}
+                    <option value="{{ u.id }}" {% if selected_user == u.id|stringformat:"s" %}selected{% endif %}>
+                        {{ u.get_full_name|default:u.email }} ({{ u.role }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-                <div class="col-sm-3 col-md-1">
-                    <label class="form-label small text-muted mb-1">Date From</label>
-                    <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
-                </div>
+            <div class="col-sm-3 col-md-1">
+                <label class="form-label">Date From</label>
+                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+            </div>
 
-                <div class="col-sm-3 col-md-1">
-                    <label class="form-label small text-muted mb-1">Date To</label>
-                    <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
-                </div>
+            <div class="col-sm-3 col-md-1">
+                <label class="form-label">Date To</label>
+                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+            </div>
 
-                <div class="col-md-1 d-flex gap-1">
-                    <button type="submit" class="btn btn-sm btn-primary flex-grow-1" title="Apply Filters">
-                        <i class="bi bi-funnel"></i>
-                    </button>
-                    <a href="{% url 'audit_trail' %}" class="btn btn-sm btn-outline-secondary" title="Reset Filters">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </a>
-                </div>
-            </form>
-        </div>
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1" title="Apply Filter">
+                    <i class="bi bi-funnel"></i>
+                </button>
+                <a href="{% url 'audit_trail' %}" class="btn btn-sm btn-outline-secondary" title="Reset">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
     </div>
 
     <!-- Audit Log Records Table -->
-    <div class="card border-0 shadow-sm rounded-4 bg-white">
-        <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0">Activity Records</h5>
-            <span class="badge bg-light text-dark border font-monospace">{{ page_obj.paginator.count }} Total Entries</span>
+    <div class="mf-card">
+        <div class="mf-card-header">
+            <div>
+                <h6 class="mf-card-title"><i class="bi bi-shield-check me-1 text-primary"></i> Tamper-Evident Event Records</h6>
+                <span class="mf-card-subtitle">Showing {{ page_obj.paginator.count }} verified chronological records</span>
+            </div>
+            <span class="badge bg-light text-secondary border font-mono small">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover table-custom mb-0 align-middle">
+        <div class="table-responsive border-0">
+            <table class="mf-table">
                 <thead>
                     <tr>
-                        <th style="width: 170px;">Timestamp</th>
+                        <th style="width: 160px;">Timestamp</th>
                         <th>User / Operator</th>
                         <th>Module</th>
                         <th>Action</th>
@@ -182,156 +178,56 @@
                 <tbody>
                     {% for entry in page_obj %}
                     <tr>
-                        <td class="small font-monospace text-muted">
+                        <td class="font-mono text-muted small" style="white-space: nowrap;">
                             {{ entry.timestamp|date:"Y-m-d H:i:s" }}
                         </td>
                         <td>
                             {% if entry.user %}
-                            <div class="fw-semibold text-dark">{{ entry.user.get_full_name|default:entry.user.email }}</div>
-                            <span class="badge bg-light text-dark border rounded-pill small" style="font-size: 0.72rem;">{{ entry.user_role }}</span>
+                            <div class="fw-semibold text-dark small">{{ entry.user.get_full_name|default:entry.user.email }}</div>
+                            <span class="mf-badge mf-badge-neutral font-mono" style="font-size: 0.65rem;">{{ entry.user_role }}</span>
                             {% elif entry.user_email %}
-                            <div class="fw-semibold text-dark">{{ entry.user_email }}</div>
-                            <span class="badge bg-light text-dark border rounded-pill small" style="font-size: 0.72rem;">{{ entry.user_role }}</span>
+                            <div class="fw-semibold text-dark small">{{ entry.user_email }}</div>
+                            <span class="mf-badge mf-badge-neutral font-mono" style="font-size: 0.65rem;">{{ entry.user_role }}</span>
                             {% else %}
-                            <span class="badge bg-secondary-subtle text-secondary rounded-pill font-monospace">SYSTEM TASK</span>
+                            <span class="mf-badge mf-badge-neutral font-mono">SYSTEM TASK</span>
                             {% endif %}
                         </td>
                         <td>
-                            {% if entry.module == 'AUTH' %}
-                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">AUTH</span>
-                            {% elif entry.module == 'MASTER_DATA' %}
-                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">MASTER DATA</span>
-                            {% elif entry.module == 'INVENTORY' %}
-                            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">INVENTORY</span>
-                            {% elif entry.module == 'PRODUCTION' %}
-                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">PRODUCTION</span>
-                            {% elif entry.module == 'SALES' %}
-                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">SALES</span>
-                            {% elif entry.module == 'FINANCE' %}
-                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">FINANCE</span>
-                            {% else %}
-                            <span class="badge bg-light text-dark border rounded-pill">{{ entry.module }}</span>
-                            {% endif %}
+                            <span class="mf-badge mf-badge-info font-mono" style="font-size: 0.68rem;">{{ entry.module }}</span>
                         </td>
                         <td>
-                            <span class="fw-medium font-monospace small">{{ entry.get_action_display }}</span>
+                            <span class="mf-badge mf-badge-neutral font-mono" style="font-size: 0.68rem;">{{ entry.action }}</span>
                         </td>
-                        <td>
-                            <div class="fw-semibold text-dark">{{ entry.object_repr }}</div>
-                            {% if entry.reference_number %}
-                            <span class="font-monospace text-muted small"><i class="bi bi-tag me-1"></i>{{ entry.reference_number }}</span>
-                            {% endif %}
+                        <td class="small text-muted text-truncate" style="max-width: 180px;">
+                            {{ entry.object_repr|default:"-" }}
                         </td>
-                        <td class="font-monospace small text-muted">
-                            {{ entry.ip_address|default:"127.0.0.1" }}
-                        </td>
+                        <td class="font-mono text-muted small" style="font-size: 0.72rem;">{{ entry.ip_address|default:"127.0.0.1" }}</td>
                         <td class="text-end">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#auditModal{{ entry.id }}">
-                                <i class="bi bi-eye me-1"></i> View
-                            </button>
-
-                            <!-- Detail Modal -->
-                            <div class="modal fade text-start" id="auditModal{{ entry.id }}" tabindex="-1" aria-labelledby="modalLabel{{ entry.id }}" aria-hidden="true">
-                                <div class="modal-dialog modal-lg modal-dialog-centered">
-                                    <div class="modal-content rounded-4 border-0 shadow">
-                                        <div class="modal-header border-bottom pb-3">
-                                            <h5 class="modal-title fw-bold" id="modalLabel{{ entry.id }}">
-                                                <i class="bi bi-shield-check text-primary me-2"></i> Audit Record #{{ entry.id }}
-                                            </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body p-4">
-                                            <div class="row g-3 mb-3">
-                                                <div class="col-sm-6">
-                                                    <span class="text-muted small d-block">Timestamp</span>
-                                                    <strong class="font-monospace">{{ entry.timestamp|date:"Y-m-d H:i:s" }}</strong>
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <span class="text-muted small d-block">Operator User</span>
-                                                    <strong>{{ entry.user_email|default:"System" }} ({{ entry.user_role|default:"N/A" }})</strong>
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <span class="text-muted small d-block">Module & Action</span>
-                                                    <span class="badge bg-primary-subtle text-primary">{{ entry.get_module_display }}</span>
-                                                    <span class="badge bg-light text-dark border">{{ entry.get_action_display }}</span>
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <span class="text-muted small d-block">Target Object</span>
-                                                    <strong>{{ entry.object_repr }}</strong>
-                                                </div>
-                                                {% if entry.reference_number %}
-                                                <div class="col-sm-6">
-                                                    <span class="text-muted small d-block">Reference Document</span>
-                                                    <span class="badge bg-dark font-monospace">{{ entry.reference_number }}</span>
-                                                </div>
-                                                {% endif %}
-                                                <div class="col-sm-6">
-                                                    <span class="text-muted small d-block">IP Address</span>
-                                                    <span class="font-monospace text-secondary">{{ entry.ip_address|default:"127.0.0.1" }}</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="mt-4">
-                                                <h6 class="fw-bold mb-2"><i class="bi bi-braces me-1 text-primary"></i> Structured Audit Payload / Changes</h6>
-                                                {% if entry.details %}
-                                                <div class="bg-light p-3 rounded-3 border">
-                                                    <pre class="mb-0 font-monospace small" style="white-space: pre-wrap; word-break: break-all;">{{ entry.details }}</pre>
-                                                </div>
-                                                {% else %}
-                                                <p class="text-muted small fst-italic mb-0">No additional payload attributes recorded.</p>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer border-0 pt-0">
-                                            <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <a href="{% url 'audit_trail_detail' entry.id %}" class="btn btn-outline-secondary btn-sm py-0.5 px-2" style="font-size: 0.72rem;">
+                                <i class="bi bi-eye me-1"></i> Details
+                            </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center py-5">
-                            <div class="text-muted">
-                                <i class="bi bi-journal-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                                <h6 class="fw-bold">No Audit Records Found</h6>
-                                <p class="small text-muted mb-0">No activity matches the selected filter criteria.</p>
-                            </div>
-                        </td>
+                        <td colspan="7" class="text-center text-muted py-4">No audit entries matching filter criteria.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-
-        <!-- Pagination -->
         {% if page_obj.has_other_pages %}
-        <div class="card-footer bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
-            <span class="small text-muted">
-                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} events
-            </span>
-            <nav aria-label="Audit log pagination">
-                <ul class="pagination pagination-sm mb-0">
-                    {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_module %}&module={{ selected_module }}{% endif %}{% if selected_action %}&action={{ selected_action }}{% endif %}">
-                            <i class="bi bi-chevron-left"></i>
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li class="page-item active">
-                        <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-                    </li>
-                    {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_module %}&module={{ selected_module }}{% endif %}{% if selected_action %}&action={{ selected_action }}{% endif %}">
-                            <i class="bi bi-chevron-right"></i>
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <span class="small text-muted font-mono">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">&laquo;</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">&raquo;</a></li>
+                {% endif %}
+            </ul>
         </div>
         {% endif %}
     </div>

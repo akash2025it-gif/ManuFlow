@@ -6,281 +6,584 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ page_title|default:"ManuFlow | Manufacturing ERP" }}{% endblock %}</title>
 
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Custom CSS -->
+    <!-- Custom Enterprise ERP CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% if not user.is_authenticated %}mf-public-body{% endif %}">
 
-    <!-- Header / Navbar -->
-    <nav class="navbar navbar-expand-lg main-navbar sticky-top">
-        <div class="container-fluid px-lg-4">
-            <a class="navbar-brand navbar-brand-nit text-dark" href="{% url 'home' %}">
-                <span class="brand-badge"><i class="bi bi-gear-wide-connected me-1"></i>MF</span>
-                <span>{{ SYSTEM_NAME }}</span>
-            </a>
+<div class="{% if user.is_authenticated %}mf-app-layout{% else %}mf-public-layout d-flex flex-column min-vh-100{% endif %}">
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    {% if user.is_authenticated %}
+        <!-- =========================================================================
+             1. Left Desktop Persistent Sidebar
+             ========================================================================= -->
+        <aside class="mf-sidebar" id="mfSidebar" aria-label="Main Navigation">
+            <!-- Sidebar Header / Brand Logo -->
+            <div class="mf-sidebar-header">
+                <a href="{% url 'dashboard_home' %}" class="mf-sidebar-brand" title="ManuFlow ERP Home">
+                    <div class="mf-sidebar-logo-badge">
+                        <i class="bi bi-gear-wide-connected"></i>
+                    </div>
+                    <div class="mf-sidebar-brand-text">
+                        <span class="mf-sidebar-brand-title">ManuFlow</span>
+                        <span class="mf-sidebar-brand-subtitle">Enterprise ERP</span>
+                    </div>
+                </a>
+            </div>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active fw-semibold{% endif %}" href="{% url 'home' %}">
-                            <i class="bi bi-house-door me-1"></i> Home
+            <!-- Sidebar Navigation Body -->
+            <div class="mf-sidebar-body">
+                <!-- WORKSPACE GROUP -->
+                <div class="mf-nav-group-title">WORKSPACE</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'dashboard_home' %}" class="mf-nav-link {% if request.path|slice:':11' == '/dashboard/' or request.path == '/dashboard' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="My Role Dashboard">
+                            <i class="bi bi-grid-1x2-fill mf-nav-icon"></i>
+                            <span class="mf-nav-label">My Dashboard</span>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle mf-nav-badge">{{ user.role|slice:":3" }}</span>
                         </a>
                     </li>
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'dashboard' in request.resolver_match.url_name %}active fw-semibold text-primary{% endif %}" href="{% url 'dashboard_home' %}">
-                            <i class="bi bi-speedometer2 me-1"></i> My Dashboard
+                </ul>
+
+                <!-- MASTER DATA GROUP -->
+                <div class="mf-nav-group-title">MASTER DATA</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'master_data_hub' %}" class="mf-nav-link {% if request.path == '/master-data/' or request.path == '/master-data' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Master Data Central Hub">
+                            <i class="bi bi-database mf-nav-icon"></i>
+                            <span class="mf-nav-label">Master Data Hub</span>
                         </a>
                     </li>
-
-                    {# Master Data: Accessible to all operational and supervisory roles #}
-                    {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'PRODUCTION' or user.role == 'SALESMAN' or user.role == 'ACCOUNTANT' or user.is_superuser %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if 'master_data' in request.resolver_match.view_name or 'product' in request.resolver_match.url_name or 'customer' in request.resolver_match.url_name or 'supplier' in request.resolver_match.url_name or 'material' in request.resolver_match.url_name or 'uom' in request.resolver_match.url_name or 'bom' in request.resolver_match.url_name %}active fw-semibold text-primary{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-database me-1"></i> Master Data
+                    <li>
+                        <a href="{% url 'product_list' %}" class="mf-nav-link {% if '/master-data/products/' in request.path or '/master-data/pack-sizes/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Products &amp; Commercial Pack Sizes">
+                            <i class="bi bi-boxes mf-nav-icon"></i>
+                            <span class="mf-nav-label">Products &amp; Packs</span>
                         </a>
-                        <ul class="dropdown-menu shadow-sm border-0">
-                            <li><a class="dropdown-item py-2" href="{% url 'master_data_hub' %}"><i class="bi bi-grid-fill me-2 text-primary"></i> Master Data Hub</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'product_list' %}"><i class="bi bi-boxes me-2 text-primary"></i> Products & Pack Sizes</a></li>
-                            {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'SALESMAN' or user.role == 'ACCOUNTANT' or user.is_superuser %}
-                            <li><a class="dropdown-item py-2" href="{% url 'customer_list' %}"><i class="bi bi-people me-2 text-info"></i> Customers (Retail/Dist)</a></li>
-                            {% endif %}
-                            {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'PRODUCTION' or user.role == 'ACCOUNTANT' or user.is_superuser %}
-                            <li><a class="dropdown-item py-2" href="{% url 'supplier_list' %}"><i class="bi bi-truck me-2 text-success"></i> Suppliers</a></li>
-                            {% endif %}
-                            {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'PRODUCTION' or user.is_superuser %}
-                            <li><a class="dropdown-item py-2" href="{% url 'raw_material_list' %}"><i class="bi bi-droplet-half me-2 text-warning"></i> Raw Materials</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'packaging_material_list' %}"><i class="bi bi-box-seam me-2 text-secondary"></i> Packaging Materials</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'uom_list' %}"><i class="bi bi-rulers me-2 text-danger"></i> Units & Conversions</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'bom_list' %}"><i class="bi bi-diagram-3 me-2 text-dark"></i> Bill of Materials (BOM)</a></li>
-                            {% endif %}
-                        </ul>
                     </li>
-                    {% endif %}
-
-                    {# Inventory & PO: Restricted to Admin, Owner, Auditor, Production #}
-                    {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'PRODUCTION' or user.is_superuser %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if 'inventory' in request.resolver_match.view_name or 'po' in request.resolver_match.url_name or 'grn' in request.resolver_match.url_name or 'stock' in request.resolver_match.url_name or 'ledger' in request.resolver_match.url_name %}active fw-semibold text-primary{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-box-seam me-1"></i> Inventory & PO
-                        </a>
-                        <ul class="dropdown-menu shadow-sm border-0">
-                            <li><a class="dropdown-item py-2" href="{% url 'inventory_dashboard' %}"><i class="bi bi-speedometer me-2 text-primary"></i> Inventory Overview</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'purchase_order_list' %}"><i class="bi bi-cart-plus me-2 text-primary"></i> Purchase Orders (PO)</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'grn_list' %}"><i class="bi bi-box-arrow-in-down me-2 text-success"></i> Material Receipts (GRN)</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'stock_summary' %}"><i class="bi bi-boxes me-2 text-info"></i> Stock Balances & Valuation</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'stock_ledger_list' %}"><i class="bi bi-journal-text me-2 text-dark"></i> Traceable Movement Ledger</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'stock_adjustment_list' %}"><i class="bi bi-sliders2 me-2 text-warning"></i> Stock Adjustments & Audit</a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
-
-                    {# Production: Restricted to Admin, Owner, Auditor, Production #}
-                    {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'PRODUCTION' or user.is_superuser %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if 'production' in request.resolver_match.view_name or 'production_run' in request.resolver_match.url_name %}active fw-semibold text-primary{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-gear-wide-connected me-1"></i> Production
-                        </a>
-                        <ul class="dropdown-menu shadow-sm border-0">
-                            <li><a class="dropdown-item py-2" href="{% url 'production_hub' %}"><i class="bi bi-speedometer2 me-2 text-warning"></i> Production Hub & Observatory</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'production_run_list' %}"><i class="bi bi-kanban me-2 text-primary"></i> Work Orders & Runs</a></li>
-                            {% if user.role == 'PRODUCTION' or user.role == 'ADMIN' or user.is_superuser %}
-                            <li><a class="dropdown-item py-2" href="{% url 'production_run_create' %}"><i class="bi bi-plus-circle me-2 text-success"></i> New Production Run</a></li>
-                            {% endif %}
-                            <li><a class="dropdown-item py-2" href="{% url 'production_reports' %}"><i class="bi bi-graph-up-arrow me-2 text-info"></i> Variance Intelligence & Reports</a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
-
-                    {# Sales & GST: Restricted to Admin, Owner, Auditor, Salesman, Accountant #}
-                    {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'SALESMAN' or user.role == 'ACCOUNTANT' or user.is_superuser %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if 'sales' in request.resolver_match.view_name or 'sales_order' in request.resolver_match.url_name or 'invoice' in request.resolver_match.url_name or 'dispatch' in request.resolver_match.url_name %}active fw-semibold text-primary{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-receipt me-1"></i> Sales & GST
-                        </a>
-                        <ul class="dropdown-menu shadow-sm border-0">
-                            <li><a class="dropdown-item py-2" href="{% url 'sales_hub' %}"><i class="bi bi-speedometer2 me-2 text-primary"></i> Sales Hub & Receivables</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'sales_order_list' %}"><i class="bi bi-bag-check me-2 text-primary"></i> Sales Orders</a></li>
-                            {% if user.role == 'SALESMAN' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
-                            <li><a class="dropdown-item py-2" href="{% url 'sales_order_create' %}"><i class="bi bi-plus-circle me-2 text-success"></i> New Sales Order</a></li>
-                            {% endif %}
-                            <li><a class="dropdown-item py-2" href="{% url 'invoice_list' %}"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i> GST Tax Invoices</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'dispatch_list' %}"><i class="bi bi-truck me-2 text-info"></i> Dispatch Challans</a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
-
-                    {# Finance & Reports: Visible to permitted roles #}
-                    {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'ACCOUNTANT' or user.role == 'SALESMAN' or user.role == 'PRODUCTION' or user.is_superuser %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if 'finance' in request.resolver_match.app_name or 'finance' in request.resolver_match.view_name or 'receivables' in request.resolver_match.url_name or 'gst' in request.resolver_match.url_name %}active fw-semibold text-primary{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-bank me-1"></i> Finance & Reports
-                        </a>
-                        <ul class="dropdown-menu shadow-sm border-0">
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:dashboard' %}"><i class="bi bi-speedometer2 me-2 text-primary"></i> Finance Control Hub</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'ACCOUNTANT' or user.is_superuser %}
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:receivables_summary' %}"><i class="bi bi-cash-coin me-2 text-success"></i> Customer Receivables & Overdue</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:payments_list' %}"><i class="bi bi-wallet2 me-2 text-info"></i> Payment Vouchers & Ledger</a></li>
-                            {% endif %}
-                            {% if user.role == 'ACCOUNTANT' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:payment_create' %}"><i class="bi bi-plus-circle me-2 text-success"></i> Record Customer Payment</a></li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header text-uppercase small text-muted">Auditable Reports & Exports</h6></li>
-                            {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'ACCOUNTANT' or user.role == 'SALESMAN' or user.is_superuser %}
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:gst_sales_register' %}"><i class="bi bi-receipt-cutoff me-2 text-danger"></i> GST Sales Register (Intra/Inter)</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:gst_monthly_summary' %}"><i class="bi bi-calendar3 me-2 text-warning"></i> Monthly GST Summary</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:sales_dispatch_report' %}"><i class="bi bi-truck me-2 text-secondary"></i> Sales Dispatch Audit</a></li>
-                            {% endif %}
-                            {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.role == 'ACCOUNTANT' or user.role == 'PRODUCTION' or user.is_superuser %}
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:stock_report' %}"><i class="bi bi-boxes me-2 text-primary"></i> Stock Balances & Valuation</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:stock_ledger_report' %}"><i class="bi bi-journal-text me-2 text-dark"></i> Stock Ledger Movements</a></li>
-                            <li><a class="dropdown-item py-2" href="{% url 'finance:production_variance_report' %}"><i class="bi bi-graph-up me-2 text-info"></i> Production BOM Variance</a></li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                    {% endif %}
-
-                    {# Audit Trail: Restricted to Auditor, Owner, Admin #}
-                    {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.is_superuser %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'audit' in request.resolver_match.url_name %}active fw-semibold text-primary{% endif %}" href="{% url 'audit_trail' %}">
-                            <i class="bi bi-shield-check me-1"></i> Audit Trail
+                    {% if user.role != 'PRODUCTION' %}
+                    <li>
+                        <a href="{% url 'customer_list' %}" class="mf-nav-link {% if '/master-data/customers/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Customers Directory (Retail &amp; Distributors)">
+                            <i class="bi bi-people mf-nav-icon"></i>
+                            <span class="mf-nav-label">Customers Directory</span>
                         </a>
                     </li>
                     {% endif %}
+                    {% if user.role != 'SALESMAN' %}
+                    <li>
+                        <a href="{% url 'supplier_list' %}" class="mf-nav-link {% if '/master-data/suppliers/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Approved Vendors &amp; Suppliers">
+                            <i class="bi bi-truck mf-nav-icon"></i>
+                            <span class="mf-nav-label">Approved Suppliers</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'raw_material_list' %}" class="mf-nav-link {% if '/master-data/raw-materials/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Raw Materials Catalog">
+                            <i class="bi bi-droplet-half mf-nav-icon"></i>
+                            <span class="mf-nav-label">Raw Materials</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'packaging_material_list' %}" class="mf-nav-link {% if '/master-data/packaging-materials/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Packaging Materials Catalog">
+                            <i class="bi bi-box-seam mf-nav-icon"></i>
+                            <span class="mf-nav-label">Packaging Items</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'uom_list' %}" class="mf-nav-link {% if '/master-data/uom/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Units of Measure &amp; Conversions">
+                            <i class="bi bi-rulers mf-nav-icon"></i>
+                            <span class="mf-nav-label">Units of Measure</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'bom_list' %}" class="mf-nav-link {% if '/master-data/bom/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Bill of Materials (BOM Formulations)">
+                            <i class="bi bi-diagram-3 mf-nav-icon"></i>
+                            <span class="mf-nav-label">Bill of Materials</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
 
+                <!-- INVENTORY & PROCUREMENT GROUP -->
+                <div class="mf-nav-group-title">INVENTORY &amp; PROCUREMENT</div>
+                <ul class="mf-sidebar-nav">
+                    {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                    <li>
+                        <a href="{% url 'inventory_dashboard' %}" class="mf-nav-link {% if request.path == '/inventory/' or request.path == '/inventory' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Inventory Command Center">
+                            <i class="bi bi-speedometer2 mf-nav-icon"></i>
+                            <span class="mf-nav-label">Inventory Control Hub</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <a href="{% url 'stock_summary' %}" class="mf-nav-link {% if '/inventory/stock-summary/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Real-Time Stock Balances &amp; Low Stock Alerts">
+                            <i class="bi bi-box-seam-fill mf-nav-icon"></i>
+                            <span class="mf-nav-label">Stock Balances &amp; Value</span>
+                        </a>
+                    </li>
+                    {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                    <li>
+                        <a href="{% url 'purchase_order_list' %}" class="mf-nav-link {% if '/inventory/purchase-orders/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Procurement Purchase Orders">
+                            <i class="bi bi-cart-plus mf-nav-icon"></i>
+                            <span class="mf-nav-label">Purchase Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'grn_list' %}" class="mf-nav-link {% if '/inventory/grn/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Goods Receipt Notes (Inbound Invoices)">
+                            <i class="bi bi-box-arrow-in-down mf-nav-icon"></i>
+                            <span class="mf-nav-label">Material Receipts (GRN)</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if user.role != 'SALESMAN' %}
+                    <li>
+                        <a href="{% url 'stock_ledger_list' %}" class="mf-nav-link {% if '/inventory/ledger/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Traceable Stock Movement Ledger">
+                            <i class="bi bi-journal-text mf-nav-icon"></i>
+                            <span class="mf-nav-label">Stock Movement Ledger</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                    <li>
+                        <a href="{% url 'stock_adjustment_list' %}" class="mf-nav-link {% if '/inventory/adjustments/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Physical Inventory Adjustments &amp; Audits">
+                            <i class="bi bi-sliders2 mf-nav-icon"></i>
+                            <span class="mf-nav-label">Stock Adjustments</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <!-- MANUFACTURING GROUP -->
+                {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                <div class="mf-nav-group-title">MANUFACTURING &amp; BOM</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'production_hub' %}" class="mf-nav-link {% if request.path == '/production/' or request.path == '/production' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Production Planning &amp; Operations Floor">
+                            <i class="bi bi-gear-wide-connected mf-nav-icon"></i>
+                            <span class="mf-nav-label">Production Floor Hub</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'production_run_list' %}" class="mf-nav-link {% if '/production/runs/' in request.path and '/create/' not in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Work Orders &amp; Batch Production Runs">
+                            <i class="bi bi-kanban mf-nav-icon"></i>
+                            <span class="mf-nav-label">Work Orders &amp; Runs</span>
+                        </a>
+                    </li>
+                    {% if user.role == 'PRODUCTION' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
+                    <li>
+                        <a href="{% url 'production_run_create' %}" class="mf-nav-link {% if '/production/runs/create/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Schedule New Batch Production Run">
+                            <i class="bi bi-plus-circle mf-nav-icon"></i>
+                            <span class="mf-nav-label">New Production Run</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <a href="{% url 'production_reports' %}" class="mf-nav-link {% if '/production/reports/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Yield &amp; Consumption Variance Intelligence">
+                            <i class="bi bi-graph-up-arrow mf-nav-icon"></i>
+                            <span class="mf-nav-label">Yield Intelligence</span>
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+
+                <!-- COMMERCIAL & SALES GROUP -->
+                {% if user.role != 'PRODUCTION' %}
+                <div class="mf-nav-group-title">COMMERCE &amp; SALES</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'sales_hub' %}" class="mf-nav-link {% if request.path == '/sales/' or request.path == '/sales' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Sales Operations &amp; Order Pipeline Hub">
+                            <i class="bi bi-receipt mf-nav-icon"></i>
+                            <span class="mf-nav-label">Sales Operations Hub</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'sales_order_list' %}" class="mf-nav-link {% if '/sales/orders/' in request.path and '/create/' not in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Customer Sales Orders">
+                            <i class="bi bi-bag-check mf-nav-icon"></i>
+                            <span class="mf-nav-label">Sales Orders</span>
+                        </a>
+                    </li>
+                    {% if user.role == 'SALESMAN' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
+                    <li>
+                        <a href="{% url 'sales_order_create' %}" class="mf-nav-link {% if '/sales/orders/create/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Create Customer Sales Order">
+                            <i class="bi bi-plus-circle mf-nav-icon"></i>
+                            <span class="mf-nav-label">New Sales Order</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <a href="{% url 'invoice_list' %}" class="mf-nav-link {% if '/sales/invoices/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="GST Tax Invoices &amp; PDF Downloads">
+                            <i class="bi bi-file-earmark-pdf mf-nav-icon"></i>
+                            <span class="mf-nav-label">GST Tax Invoices</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dispatch_list' %}" class="mf-nav-link {% if '/sales/dispatches/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Goods Outward Dispatch Challans">
+                            <i class="bi bi-truck-flatbed mf-nav-icon"></i>
+                            <span class="mf-nav-label">Dispatch Challans</span>
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+
+                <!-- FINANCIALS & REPORTS GROUP -->
+                {% if user.role != 'SALESMAN' and user.role != 'PRODUCTION' %}
+                <div class="mf-nav-group-title">FINANCIAL CONTROL</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'finance:dashboard' %}" class="mf-nav-link {% if request.path == '/finance/' or request.path == '/finance' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Accounts Receivable &amp; Financial Control Hub">
+                            <i class="bi bi-bank mf-nav-icon"></i>
+                            <span class="mf-nav-label">Finance Control Hub</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance:receivables_summary' %}" class="mf-nav-link {% if '/finance/receivables/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Customer Receivables Aging &amp; Overdue Tracking">
+                            <i class="bi bi-cash-coin mf-nav-icon"></i>
+                            <span class="mf-nav-label">Receivables &amp; Aging</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance:payments_list' %}" class="mf-nav-link {% if '/finance/payments/' in request.path and '/record/' not in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Customer Payment Vouchers Ledger">
+                            <i class="bi bi-wallet2 mf-nav-icon"></i>
+                            <span class="mf-nav-label">Payment Vouchers</span>
+                        </a>
+                    </li>
+                    {% if user.role == 'ACCOUNTANT' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
+                    <li>
+                        <a href="{% url 'finance:payment_create' %}" class="mf-nav-link {% if '/finance/payments/record/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Record Inward Customer Remittance">
+                            <i class="bi bi-plus-circle mf-nav-icon"></i>
+                            <span class="mf-nav-label">Record Payment</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <a href="{% url 'finance:gst_sales_register' %}" class="mf-nav-link {% if '/finance/reports/gst-sales-register/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Section 31 Dual GST Sales Register (CGST/SGST/IGST)">
+                            <i class="bi bi-receipt-cutoff mf-nav-icon"></i>
+                            <span class="mf-nav-label">GST Sales Register</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance:stock_report' %}" class="mf-nav-link {% if '/finance/reports/stock-inventory/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Stock Balances &amp; FIFO Cost Valuation Report">
+                            <i class="bi bi-boxes mf-nav-icon"></i>
+                            <span class="mf-nav-label">Stock Valuation Report</span>
+                        </a>
+                    </li>
+                </ul>
+                {% elif user.role == 'SALESMAN' %}
+                <!-- Restricted Salesman Finance Links -->
+                <div class="mf-nav-group-title">SALES ACCOUNTING</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'finance:gst_sales_register' %}" class="mf-nav-link {% if '/finance/reports/gst-sales-register/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Section 31 Dual GST Sales Register">
+                            <i class="bi bi-receipt-cutoff mf-nav-icon"></i>
+                            <span class="mf-nav-label">GST Sales Register</span>
+                        </a>
+                    </li>
+                </ul>
+                {% elif user.role == 'PRODUCTION' %}
+                <!-- Restricted Production Costing Reports -->
+                <div class="mf-nav-group-title">COSTING &amp; VALUATION</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'finance:production_variance_report' %}" class="mf-nav-link {% if '/finance/reports/production-variance/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="BOM Yield Variance &amp; Finished Unit Costing">
+                            <i class="bi bi-graph-down mf-nav-icon"></i>
+                            <span class="mf-nav-label">Production Variance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance:stock_report' %}" class="mf-nav-link {% if '/finance/reports/stock-inventory/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Stock Balances &amp; FIFO Valuation">
+                            <i class="bi bi-boxes mf-nav-icon"></i>
+                            <span class="mf-nav-label">Stock Valuation Report</span>
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+
+                <!-- GOVERNANCE & AUDIT GROUP -->
+                {% if user.role == 'AUDITOR' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
+                <div class="mf-nav-group-title">GOVERNANCE &amp; AUDIT</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'audit_trail' %}" class="mf-nav-link {% if request.path|slice:':7' == '/audit/' or request.path == '/audit' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Immutable System Audit Trail Observatory">
+                            <i class="bi bi-shield-check mf-nav-icon"></i>
+                            <span class="mf-nav-label">System Audit Trail</span>
+                        </a>
+                    </li>
                     {% if user.is_admin or user.role == 'ADMIN' or user.is_superuser %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active fw-semibold{% endif %}" href="{% url 'user_list' %}">
-                            <i class="bi bi-people me-1"></i> Staff Directory
+                    <li>
+                        <a href="{% url 'user_list' %}" class="mf-nav-link {% if '/accounts/users/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Staff Accounts Directory &amp; RBAC Control">
+                            <i class="bi bi-people mf-nav-icon"></i>
+                            <span class="mf-nav-label">Staff Directory</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}" target="_blank">
-                            <i class="bi bi-gear me-1"></i> Django Admin
+                    <li>
+                        <a href="{% url 'admin:index' %}" class="mf-nav-link" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" title="Django Administrator Site">
+                            <i class="bi bi-sliders mf-nav-icon"></i>
+                            <span class="mf-nav-label">Django Admin</span>
+                            <i class="bi bi-box-arrow-up-right ms-auto text-muted small"></i>
                         </a>
                     </li>
-                    {% endif %}
                     {% endif %}
                 </ul>
+                {% endif %}
 
-                <!-- User Profile & Authentication Controls -->
-                <ul class="navbar-nav ms-auto align-items-center">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item me-3">
-                            <span class="badge 
-                                {% if user.role == 'ADMIN' or user.is_superuser %}badge-role-admin
-                                {% elif user.role == 'SALESMAN' %}badge-role-salesman
-                                {% elif user.role == 'PRODUCTION' %}badge-role-production
-                                {% elif user.role == 'AUDITOR' %}badge-role-auditor
-                                {% elif user.role == 'OWNER' %}badge-role-owner
-                                {% else %}bg-secondary{% endif %} px-2.5 py-1.5 rounded-pill font-monospace">
-                                <i class="bi bi-person-badge me-1"></i>{{ user.get_role_display }}
-                            </span>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 fw-medium" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-weight: 600;">
-                                    {{ user.username|make_list|first|upper }}
-                                </span>
-                                <span>{{ user.get_full_name|default:user.username }}</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li>
-                                    <div class="px-3 py-2 border-bottom">
-                                        <p class="mb-0 fw-semibold text-truncate" style="max-width: 200px;">{{ user.get_full_name|default:user.username }}</p>
-                                        <small class="text-muted d-block text-truncate" style="max-width: 200px;">{{ user.email }}</small>
-                                        <small class="text-secondary font-monospace">{{ user.employee_id|default:"ManuFlow Staff" }}</small>
-                                    </div>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item py-2" href="{% url 'profile' %}">
-                                        <i class="bi bi-person me-2 text-muted"></i> Account Profile
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item py-2" href="{% url 'dashboard_home' %}">
-                                        <i class="bi bi-layout-text-window-reverse me-2 text-muted"></i> Role Dashboard
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="post" action="{% url 'logout' %}" class="px-2">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item text-danger rounded py-2">
-                                            <i class="bi bi-box-arrow-right me-2"></i> Sign Out
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm px-3 fw-medium" href="{% url 'login' %}">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
-                            </a>
-                        </li>
-                    {% endif %}
+                <!-- USER ACCOUNT & SIGN OUT -->
+                <div class="mf-nav-group-title">ACCOUNT</div>
+                <ul class="mf-sidebar-nav mb-4">
+                    <li>
+                        <a href="{% url 'profile' %}" class="mf-nav-link {% if '/accounts/profile/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Manage User Profile &amp; Contact">
+                            <i class="bi bi-person-circle mf-nav-icon"></i>
+                            <span class="mf-nav-label">User Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <form method="post" action="{% url 'logout' %}" class="m-0 p-0">
+                            {% csrf_token %}
+                            <button type="submit" class="mf-nav-link text-danger border-0 bg-transparent w-100 text-start" data-bs-toggle="tooltip" data-bs-placement="right" title="Sign Out of Session">
+                                <i class="bi bi-box-arrow-right mf-nav-icon text-danger"></i>
+                                <span class="mf-nav-label">Sign Out</span>
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </div>
-        </div>
-    </nav>
 
-    <!-- Global Alert Messages -->
-    <div class="container-fluid px-lg-4 mt-3">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
-                    {% if message.tags == 'success' %}
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                    {% elif message.tags == 'error' or message.tags == 'danger' %}
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    {% else %}
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                    {% endif %}
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Sidebar Footer -->
+            <div class="mf-sidebar-footer">
+                <div class="d-flex align-items-center gap-2 mf-sidebar-footer-text">
+                    <span class="mf-status-dot mf-status-dot-active"></span>
+                    <span>ManuFlow ERP</span>
                 </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-
-    <!-- Main Page Content -->
-    <main class="flex-grow-1 py-4">
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Enterprise Footer -->
-    <footer class="py-3 mt-auto">
-        <div class="container-fluid px-lg-4 d-flex flex-column flex-sm-row justify-content-between align-items-center">
-            <div class="mb-2 mb-sm-0 text-center text-sm-start">
-                <span class="fw-semibold text-dark">{{ SYSTEM_NAME }}</span>
-                <span class="mx-2 text-muted">|</span>
-                <span>{{ SYSTEM_SUBTITLE }}</span>
+                <span class="badge bg-secondary bg-opacity-25 text-light font-monospace small">{{ DB_BADGE }}</span>
             </div>
-            <div class="text-muted small">
-                <span>&copy; {{ CURRENT_YEAR }} ManuFlow. All rights reserved.</span>
+        </aside>
+
+        <!-- 2. Mobile Offcanvas Sidebar Drawer -->
+        <div class="offcanvas offcanvas-start mf-offcanvas-sidebar text-bg-dark" data-bs-theme="dark" tabindex="-1" id="mfSidebarMobile" aria-labelledby="mfSidebarMobileLabel">
+            <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+                <h5 class="offcanvas-title text-white d-flex align-items-center gap-2" id="mfSidebarMobileLabel">
+                    <div class="mf-sidebar-logo-badge">
+                        <i class="bi bi-gear-wide-connected"></i>
+                    </div>
+                    <span>ManuFlow ERP</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body p-0">
+                <div class="p-3">
+                    <div class="text-white-50 small mb-2 text-uppercase fw-bold">Active User</div>
+                    <div class="d-flex align-items-center gap-2 p-2 bg-dark rounded-3 mb-3 border border-secondary border-opacity-25">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-weight: bold;">
+                            {{ user.username|make_list|first|upper }}
+                        </div>
+                        <div>
+                            <div class="text-white fw-bold small">{{ user.get_full_name|default:user.username }}</div>
+                            <span class="badge bg-primary bg-opacity-25 text-info" style="font-size: 0.7rem;">{{ user.get_role_display }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mf-nav-group-title text-white-50">NAVIGATION</div>
+                    <ul class="mf-sidebar-nav">
+                        <li><a href="{% url 'dashboard_home' %}" class="mf-nav-link text-white"><i class="bi bi-grid-1x2-fill mf-nav-icon"></i> My Dashboard</a></li>
+                        <li><a href="{% url 'master_data_hub' %}" class="mf-nav-link text-white"><i class="bi bi-database mf-nav-icon"></i> Master Data Hub</a></li>
+                        <li><a href="{% url 'product_list' %}" class="mf-nav-link text-white"><i class="bi bi-boxes mf-nav-icon"></i> Products &amp; Packs</a></li>
+                        <li><a href="{% url 'stock_summary' %}" class="mf-nav-link text-white"><i class="bi bi-box-seam mf-nav-icon"></i> Stock Balances</a></li>
+                        {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                        <li><a href="{% url 'production_hub' %}" class="mf-nav-link text-white"><i class="bi bi-gear-wide-connected mf-nav-icon"></i> Production Floor</a></li>
+                        {% endif %}
+                        {% if user.role != 'PRODUCTION' %}
+                        <li><a href="{% url 'sales_hub' %}" class="mf-nav-link text-white"><i class="bi bi-receipt mf-nav-icon"></i> Sales Operations</a></li>
+                        <li><a href="{% url 'invoice_list' %}" class="mf-nav-link text-white"><i class="bi bi-file-earmark-pdf mf-nav-icon"></i> GST Invoices</a></li>
+                        {% endif %}
+                        {% if user.role == 'ACCOUNTANT' or user.role == 'AUDITOR' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
+                        <li><a href="{% url 'finance:dashboard' %}" class="mf-nav-link text-white"><i class="bi bi-bank mf-nav-icon"></i> Finance Hub</a></li>
+                        {% endif %}
+                        {% if user.role == 'AUDITOR' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
+                        <li><a href="{% url 'audit_trail' %}" class="mf-nav-link text-white"><i class="bi bi-shield-check mf-nav-icon"></i> Audit Trail</a></li>
+                        {% endif %}
+                    </ul>
+
+                    <hr class="border-secondary opacity-25">
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                            <i class="bi bi-box-arrow-right me-1"></i> Sign Out
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    </footer>
+
+    {% else %}
+        <!-- =========================================================================
+             Clean Public Navbar (Un-authenticated)
+             ========================================================================= -->
+        <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2.5 shadow-sm">
+            <div class="container-fluid px-lg-5">
+                <a class="navbar-brand navbar-brand-mf text-dark" href="{% url 'home' %}">
+                    <div class="brand-badge">
+                        <i class="bi bi-gear-wide-connected me-1"></i>MF
+                    </div>
+                    <span>{{ SYSTEM_NAME }}</span>
+                </a>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'home' %}" class="btn btn-sm btn-link text-decoration-none text-muted d-none d-sm-inline-block">
+                        <i class="bi bi-house me-1"></i> Overview
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm px-3 shadow-sm fw-medium">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In / Access Portal
+                    </a>
+                </div>
+            </div>
+        </nav>
+    {% endif %}
+
+    <!-- =========================================================================
+         Main Wrapper (Authenticated ERP vs Public View)
+         ========================================================================= -->
+    <div class="{% if user.is_authenticated %}mf-main-wrapper{% else %}flex-grow-1 d-flex flex-column{% endif %}" id="mfMainWrapper">
+
+        {% if user.is_authenticated %}
+            <!-- Topbar Header -->
+            <header class="mf-topbar">
+                <div class="mf-topbar-left">
+                    <button class="mf-sidebar-toggle-btn d-none d-lg-inline-flex" id="sidebarToggleBtn" aria-label="Toggle Sidebar" title="Collapse / Expand Sidebar">
+                        <i class="bi bi-layout-sidebar-inset"></i>
+                    </button>
+                    <button class="mf-sidebar-toggle-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mfSidebarMobile" aria-controls="mfSidebarMobile" aria-label="Open Mobile Menu">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div class="mf-topbar-breadcrumb d-none d-sm-flex">
+                        <a href="{% url 'dashboard_home' %}"><i class="bi bi-house me-1"></i>ManuFlow</a>
+                        <span class="separator"><i class="bi bi-chevron-right"></i></span>
+                        <span class="current text-truncate" style="max-width: 280px;">{{ page_title|default:"Enterprise Workspace" }}</span>
+                    </div>
+                </div>
+
+                <div class="mf-topbar-right">
+                    <!-- Environment / Database Status Indicator (Honest, Dynamic Engine Inspection) -->
+                    <div class="mf-db-indicator d-none d-md-inline-flex" title="Configured Database Backend & Environment Mode">
+                        <span class="mf-db-dot"></span>
+                        <span>{{ SYSTEM_STATUS }}</span>
+                    </div>
+
+                    <!-- Role Badge -->
+                    <span class="mf-badge 
+                        {% if user.role == 'ADMIN' or user.is_superuser %}badge-role-admin
+                        {% elif user.role == 'SALESMAN' %}badge-role-salesman
+                        {% elif user.role == 'PRODUCTION' %}badge-role-production
+                        {% elif user.role == 'AUDITOR' %}badge-role-auditor
+                        {% elif user.role == 'OWNER' %}badge-role-owner
+                        {% elif user.role == 'ACCOUNTANT' %}badge-role-accountant
+                        {% else %}mf-badge-neutral{% endif %} font-mono">
+                        <i class="bi bi-shield-check"></i>{{ user.get_role_display }}
+                    </span>
+
+                    <!-- User Account Dropdown -->
+                    <div class="dropdown">
+                        <button class="mf-user-trigger" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="mf-user-avatar">
+                                {{ user.username|make_list|first|upper }}
+                            </div>
+                            <span class="mf-user-name d-none d-xl-inline">{{ user.get_full_name|default:user.username }}</span>
+                            <i class="bi bi-chevron-down text-muted small ms-1"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border mt-1 py-1" style="min-width: 220px; font-size: 0.825rem;">
+                            <li class="px-3 py-2 border-bottom bg-light">
+                                <div class="fw-semibold text-dark text-truncate">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="text-muted small text-truncate">{{ user.email }}</div>
+                                <span class="badge bg-secondary-subtle text-secondary font-mono mt-1" style="font-size: 0.68rem;">{{ user.employee_id|default:"Staff ID: MF-001" }}</span>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-1.5" href="{% url 'profile' %}">
+                                    <i class="bi bi-person me-2 text-primary"></i> Account Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-1.5" href="{% url 'dashboard_home' %}">
+                                    <i class="bi bi-grid-1x2 me-2 text-info"></i> Role Dashboard
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <form method="post" action="{% url 'logout' %}" class="px-2 py-1">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger rounded py-1">
+                                        <i class="bi bi-box-arrow-right me-2"></i> Sign Out
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Contextual Breadcrumbs Section -->
+            {% block breadcrumb_section %}
+            <div class="mf-breadcrumb-wrapper">
+                {% block breadcrumbs %}
+                <div class="container-fluid px-lg-4">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 py-0 small">
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ page_title|default:"Workspace" }}</li>
+                        </ol>
+                    </nav>
+                </div>
+                {% endblock %}
+            </div>
+            {% endblock %}
+        {% endif %}
+
+        <!-- Global Alert Messages -->
+        <div class="container-fluid {% if user.is_authenticated %}px-lg-4 mt-3{% else %}px-lg-5 mt-3{% endif %}">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                        {% if message.tags == 'success' %}
+                            <i class="bi bi-check-circle-fill me-2 text-success"></i>
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}
+                            <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Page Main Content Canvas -->
+        <main class="{% if user.is_authenticated %}mf-content-canvas{% else %}flex-grow-1{% endif %}">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="py-3 mt-auto bg-white border-top">
+            <div class="container-fluid {% if user.is_authenticated %}px-lg-4{% else %}px-lg-5{% endif %} d-flex flex-column flex-sm-row justify-content-between align-items-center">
+                <div class="mb-2 mb-sm-0 text-center text-sm-start small">
+                    <span class="fw-bold text-dark">{{ SYSTEM_NAME }}</span>
+                    <span class="mx-2 text-muted">|</span>
+                    <span class="text-muted">{{ SYSTEM_SUBTITLE }}</span>
+                </div>
+                <div class="text-muted small">
+                    <span>&copy; {{ CURRENT_YEAR }} ManuFlow ERP. All rights reserved.</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
 
     <!-- Bootstrap 5.3 Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

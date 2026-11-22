@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
 
+{% block title %}Production Variance Intelligence Report | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'production_hub' %}">Production</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Variance Intelligence Report</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-lg-4">
     <!-- Header -->
@@ -75,8 +89,9 @@
             <span class="badge bg-danger text-white">{{ alert_runs|length }} Flagged Runs</span>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+            <div class="table-responsive-wrapper">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Run Number</th>
@@ -134,6 +149,7 @@
             </div>
         </div>
     </div>
+</div>
 
     <!-- Completed Batches Ledger Summary -->
     <div class="card shadow-sm border-0 mb-4">
@@ -141,8 +157,9 @@
             <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history text-primary me-2"></i>Batch Production History & Cost Absorptions</h5>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+            <div class="table-responsive-wrapper">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Run #</th>
@@ -194,5 +211,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

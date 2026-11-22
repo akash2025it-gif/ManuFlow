@@ -5,6 +5,7 @@ Django settings for nit_system (NIT Trichy Order-to-Audit Management System).
 import os
 import sys
 from pathlib import Path
+from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,18 +23,22 @@ if env_file.exists():
                 key, val = line.split('=', 1)
                 os.environ.setdefault(key.strip(), val.strip().strip("'\""))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    'django-insecure-nit-trichy-order-to-audit-foundation-key-2026'
-)
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't', 'yes')
 
+# A deployment must provide its own persistent key.  Local development remains
+# zero-configuration, while avoiding a committed fallback that could otherwise
+# be accidentally used to sign production sessions and CSRF tokens.
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    if not DEBUG:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured('SECRET_KEY environment variable is mandatory when DEBUG=False.')
+    SECRET_KEY = get_random_secret_key()
+
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+    for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver,.onrender.com').split(',')
     if host.strip()
 ]
 
@@ -54,10 +59,11 @@ if RENDER_EXTERNAL_HOSTNAME:
         CSRF_TRUSTED_ORIGINS.append(render_origin)
 
 # Academic Demo Mode Configuration
-# Enabled by default during local development (DEBUG=True) for evaluator convenience.
-# In production (DEBUG=False and DEMO_MODE=False), demo login autofill buttons are removed
-# and the shared demo password (nit@12345) is rejected by authentication backends.
-DEMO_MODE = os.environ.get('DEMO_MODE', str(DEBUG)).lower() in ('true', '1', 't', 'yes')
+# Defaults to False. Only active during local development when DEBUG=True.
+# In production (DEBUG=False), demo mode and 1-click demo logins are hard-disabled.
+DEMO_MODE = (
+    DEBUG and os.environ.get('DEMO_MODE', 'True').lower() in ('true', '1', 't', 'yes')
+) if DEBUG else False
 
 # Application definition
 INSTALLED_APPS = [
@@ -117,12 +123,23 @@ ASGI_APPLICATION = 'nit_system.asgi.application'
 import urllib.parse
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-USE_SQLITE = os.environ.get('USE_SQLITE', 'True').lower() in ('true', '1', 't', 'yes')
+
+# Production Database Integrity Guard:
+# In production (DEBUG=False), DATABASE_URL is strictly mandatory to prevent silent SQLite
+# fallback on ephemeral container filesystems (e.g. Render Free Web Services).
+if not DEBUG and not DATABASE_URL:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured(
+        "DATABASE_URL environment variable is mandatory in production (DEBUG=False). "
+        "SQLite cannot be used as a production database on ephemeral cloud hosting."
+    )
+
+USE_SQLITE = os.environ.get('USE_SQLITE', str(DEBUG)).lower() in ('true', '1', 't', 'yes')
 
 if DATABASE_URL:
     try:
         import dj_database_url
-        DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
+        DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)}
     except ImportError:
         parsed_db = urllib.parse.urlparse(DATABASE_URL)
         if parsed_db.scheme in ('postgres', 'postgresql', 'pgsql'):
@@ -143,6 +160,10 @@ if DATABASE_URL:
                 }
             }
         else:
+            db_options = {}
+            if 'sslmode=' in parsed_db.query or 'neon.tech' in (parsed_db.hostname or ''):
+                db_options['sslmode'] = 'require'
+
             DATABASES = {
                 'default': {
                     'ENGINE': db_engine,
@@ -152,8 +173,15 @@ if DATABASE_URL:
                     'HOST': parsed_db.hostname or 'localhost',
                     'PORT': str(parsed_db.port) if parsed_db.port else default_port,
                     'CONN_MAX_AGE': 600,
+                    'CONN_HEALTH_CHECKS': True,
+                    'OPTIONS': db_options,
                 }
             }
+
+    # Neon Serverless PostgreSQL & Cloud SSL Compatibility Guard
+    DATABASES['default'].setdefault('CONN_HEALTH_CHECKS', True)
+    if 'sslmode=require' in DATABASE_URL or 'neon.tech' in DATABASE_URL:
+        DATABASES['default'].setdefault('OPTIONS', {})['sslmode'] = 'require'
 elif USE_SQLITE:
     DATABASES = {
         'default': {

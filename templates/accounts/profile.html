@@ -1,5 +1,18 @@
 {% extends 'base.html' %}
 
+{% block title %}User Profile | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Account Profile</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row justify-content-center">
@@ -8,7 +21,7 @@
                 <div class="p-4 bg-light border-bottom d-flex align-items-center justify-content-between">
                     <div>
                         <h4 class="fw-bold mb-1">User Account Profile</h4>
-                        <p class="text-muted small mb-0">Role assignment and contact credentials</p>
+                        <p class="text-muted small mb-0">Role assignment, contact credentials, and department settings</p>
                     </div>
                     <span class="badge 
                         {% if user_obj.role == 'ADMIN' or user_obj.is_superuser %}badge-role-admin
@@ -16,6 +29,7 @@
                         {% elif user_obj.role == 'PRODUCTION' %}badge-role-production
                         {% elif user_obj.role == 'AUDITOR' %}badge-role-auditor
                         {% elif user_obj.role == 'OWNER' %}badge-role-owner
+                        {% elif user_obj.role == 'ACCOUNTANT' %}badge-role-accountant
                         {% else %}bg-secondary{% endif %} fs-6 px-3 py-2 rounded-pill font-monospace">
                         <i class="bi bi-shield-check me-1"></i> {{ user_obj.get_role_display }}
                     </span>
@@ -33,8 +47,8 @@
                             <span class="fw-bold text-dark">{{ user_obj.username }}</span>
                         </div>
                         <div class="col-sm-6">
-                            <label class="small text-muted fw-semibold d-block">NIT EMPLOYEE ID</label>
-                            <span class="font-monospace fw-bold text-primary">{{ user_obj.employee_id|default:"Not Assigned" }}</span>
+                            <label class="small text-muted fw-semibold d-block">STAFF EMPLOYEE ID</label>
+                            <span class="font-monospace fw-bold text-primary">{{ user_obj.employee_id|default:"MF-STAFF" }}</span>
                         </div>
                         <div class="col-sm-6">
                             <label class="small text-muted fw-semibold d-block">ACCOUNT CREATION DATE</label>
@@ -44,7 +58,7 @@
 
                     <!-- Editable Details -->
                     <h5 class="fw-bold mb-3">Update Personal Details</h5>
-                    <form method="post">
+                    <form method="post" data-submit-once>
                         {% csrf_token %}
                         <div class="row g-3">
                             <div class="col-sm-6">

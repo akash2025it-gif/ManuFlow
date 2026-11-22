@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Stock Ledger Audit Report - ManuFlow{% endblock %}
+{% block title %}Financial Stock Ledger | ManuFlow{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Stock Movement Ledger</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-lg-4 py-4">
-    <!-- Breadcrumb & Header -->
+    <!-- Header -->
     <div class="row align-items-center mb-4">
         <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'finance:dashboard' %}">Finance Hub</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Stock Movement Ledger</li>
-                </ol>
-            </nav>
             <h2 class="h3 fw-bold mb-0 text-dark">
                 <i class="bi bi-journal-text text-dark me-2"></i>Traceable Stock Movement Ledger Report
             </h2>
@@ -74,59 +79,65 @@
             </h5>
             <span class="badge bg-light text-muted border">FIFO / Chronological Movement</span>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-uppercase text-muted">
-                    <tr>
-                        <th>#</th>
-                        <th>Date</th>
-                        <th>Movement Type</th>
-                        <th>Category</th>
-                        <th>Item Description</th>
-                        <th>Batch #</th>
-                        <th class="text-end">Qty Change</th>
-                        <th>UOM</th>
-                        <th class="text-end">Unit Cost (₹)</th>
-                        <th class="text-end">Balance After</th>
-                        <th>Source Ref</th>
-                        <th>Logged By</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for e in ledger_entries %}
-                    <tr>
-                        <td class="font-monospace small text-muted">{{ e.entry_number|default:e.id }}</td>
-                        <td class="font-monospace small text-nowrap">{{ e.timestamp|date:"d M Y H:i" }}</td>
-                        <td>
-                            <span class="badge {% if 'RECEIPT' in e.movement_type or 'OUTPUT' in e.movement_type or 'OPENING' in e.movement_type %}bg-success bg-opacity-10 text-success border border-success{% elif 'DISPATCH' in e.movement_type or 'ISSUE' in e.movement_type %}bg-danger bg-opacity-10 text-danger border border-danger{% else %}bg-warning bg-opacity-10 text-warning border border-warning{% endif %}">
-                                {{ e.get_movement_type_display }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge bg-light text-dark border small">{{ e.get_item_type_display }}</span>
-                        </td>
-                        <td class="fw-medium text-dark">{{ e.item_name }}</td>
-                        <td class="font-monospace small">{{ e.batch_number|default:"-" }}</td>
-                        <td class="text-end font-monospace fw-bold {% if e.quantity_change > 0 %}text-success{% else %}text-danger{% endif %}">
-                            {% if e.quantity_change > 0 %}+{% endif %}{{ e.quantity_change|floatformat:2 }}
-                        </td>
-                        <td class="small">{{ e.uom.code }}</td>
-                        <td class="text-end font-monospace">₹{{ e.unit_cost|floatformat:2 }}</td>
-                        <td class="text-end font-monospace fw-bold text-dark">{{ e.closing_quantity|floatformat:2 }}</td>
-                        <td class="font-monospace small text-muted">{{ e.reference_type }}{% if e.reference_id %}: {{ e.reference_id }}{% endif %}</td>
-                        <td class="small text-muted">{{ e.performed_by.username|default:"System" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="12" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                            <h6 class="fw-bold">No Movement Entries Found</h6>
-                            <p class="small text-muted mb-0">Try adjusting the date range or filters above.</p>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="table-responsive-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase text-muted">
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Movement Type</th>
+                            <th>Category</th>
+                            <th>Item Description</th>
+                            <th>Batch #</th>
+                            <th class="text-end">Qty Change</th>
+                            <th>UOM</th>
+                            <th class="text-end">Unit Cost (₹)</th>
+                            <th class="text-end">Balance After</th>
+                            <th>Source Ref</th>
+                            <th>Logged By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in ledger_entries %}
+                        <tr>
+                            <td class="font-monospace small text-muted">{{ e.entry_number|default:e.id }}</td>
+                            <td class="font-monospace small text-nowrap">{{ e.timestamp|date:"d M Y H:i" }}</td>
+                            <td>
+                                <span class="badge {% if 'RECEIPT' in e.movement_type or 'OUTPUT' in e.movement_type or 'OPENING' in e.movement_type %}bg-success bg-opacity-10 text-success border border-success{% elif 'DISPATCH' in e.movement_type or 'ISSUE' in e.movement_type %}bg-danger bg-opacity-10 text-danger border border-danger{% else %}bg-warning bg-opacity-10 text-warning border border-warning{% endif %}">
+                                    {{ e.get_movement_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border small">{{ e.get_item_type_display }}</span>
+                            </td>
+                            <td class="fw-medium text-dark">{{ e.item_name }}</td>
+                            <td class="font-monospace small">{{ e.batch_number|default:"-" }}</td>
+                            <td class="text-end font-monospace fw-bold {% if e.quantity_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if e.quantity_change > 0 %}+{% endif %}{{ e.quantity_change|floatformat:2 }}
+                            </td>
+                            <td class="small">{{ e.uom.code }}</td>
+                            <td class="text-end font-monospace">₹{{ e.unit_cost|floatformat:2 }}</td>
+                            <td class="text-end font-monospace fw-bold text-dark">{{ e.closing_quantity|floatformat:2 }}</td>
+                            <td class="font-monospace small text-muted">{{ e.reference_type }}{% if e.reference_id %}: {{ e.reference_id }}{% endif %}</td>
+                            <td class="small text-muted">{{ e.performed_by.username|default:"System" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="12">
+                                <div class="mf-empty-state py-5">
+                                    <div class="mf-empty-state-icon">
+                                        <i class="bi bi-journal-text"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-1">No Movement Entries Found</h6>
+                                    <p class="text-muted small mb-0">Try adjusting the date range or filters above.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
