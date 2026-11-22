@@ -127,10 +127,63 @@
             <div class="col-sm-6 col-lg-3">
                 <div class="p-2.5 rounded bg-light border">
                     <div class="text-muted small">Overall Process Yield</div>
-                    <div class="fw-bold fs-6 font-mono {% if overall_yield_pct >= 95 %}text-success{% else %}text-warning{% endif %}">
+                    <div class="fw-bold fs-6 font-mono {% if overall_yield_pct >= 95 %}text-success{% else %}text-info{% endif %}">
                         {{ overall_yield_pct }}%
                     </div>
                     <div class="small text-muted font-mono" style="font-size: 0.72rem;">{{ total_production_output|floatformat:0 }} pkts Produced</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Blue Interactive Visual Analytics -->
+    <div class="row g-3 mb-4">
+        <!-- Monthly Revenue vs Collections Bar/Line Chart -->
+        <div class="col-lg-8">
+            <div class="mf-card h-100">
+                <div class="mf-card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mf-card-title"><i class="bi bi-bar-chart-line-fill me-1 text-primary"></i> Revenue &amp; Collections Velocity</h6>
+                        <span class="mf-card-subtitle">Calendar year commercial invoiced turnover vs realized customer remittances</span>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-mono small">Live Aggregation</span>
+                </div>
+                <div class="p-3">
+                    <div style="position: relative; height: 260px; width: 100%;">
+                        <canvas id="revenueTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Valuation Breakdown Doughnut Chart -->
+        <div class="col-lg-4">
+            <div class="mf-card h-100">
+                <div class="mf-card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mf-card-title"><i class="bi bi-pie-chart-fill me-1 text-primary"></i> Working Capital Allocation</h6>
+                        <span class="mf-card-subtitle">Inventory asset distribution across tiers</span>
+                    </div>
+                    <span class="badge bg-secondary-subtle text-secondary font-mono small">FIFO</span>
+                </div>
+                <div class="p-3 d-flex flex-column align-items-center justify-content-center">
+                    <div style="position: relative; height: 210px; width: 100%;">
+                        <canvas id="inventoryDistributionChart"></canvas>
+                    </div>
+                    <div class="d-flex justify-content-around w-100 mt-2 pt-2 border-top small font-mono text-center">
+                        <div>
+                            <span class="d-inline-block rounded-circle me-1" style="width: 8px; height: 8px; background: #1d4ed8;"></span>
+                            <span class="text-muted">FG</span>
+                        </div>
+                        <div>
+                            <span class="d-inline-block rounded-circle me-1" style="width: 8px; height: 8px; background: #0ea5e9;"></span>
+                            <span class="text-muted">RM</span>
+                        </div>
+                        <div>
+                            <span class="d-inline-block rounded-circle me-1" style="width: 8px; height: 8px; background: #64748b;"></span>
+                            <span class="text-muted">PKG</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -232,4 +285,118 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Revenue & Collections Velocity Chart (Modern Blue Theme)
+    const revCtx = document.getElementById('revenueTrendChart');
+    if (revCtx) {
+        const trendLabels = [
+            {% for m in monthly_trend %}"{{ m.month_abbr }}"{% if not forloop.last %}, {% endif %}{% empty %}"No Data"{% endfor %}
+        ];
+        const invoicedData = [
+            {% for m in monthly_trend %}{{ m.total|floatformat:2 }}{% if not forloop.last %}, {% endif %}{% empty %}0{% endfor %}
+        ];
+        const collectedData = [
+            {% for m in monthly_trend %}{{ m.collected|floatformat:2 }}{% if not forloop.last %}, {% endif %}{% empty %}0{% endfor %}
+        ];
+
+        new Chart(revCtx, {
+            type: 'bar',
+            data: {
+                labels: trendLabels,
+                datasets: [
+                    {
+                        label: 'Invoiced Sales (₹)',
+                        data: invoicedData,
+                        backgroundColor: '#1d4ed8',
+                        borderRadius: 4,
+                        barPercentage: 0.55
+                    },
+                    {
+                        label: 'Collected Remittances (₹)',
+                        data: collectedData,
+                        backgroundColor: '#0ea5e9',
+                        borderRadius: 4,
+                        barPercentage: 0.55
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 12,
+                            font: { family: "'IBM Plex Sans', sans-serif", size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + Number(context.raw).toLocaleString('en-IN', {minimumFractionDigits: 2});
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return '₹' + Number(value).toLocaleString('en-IN'); },
+                            font: { family: "'IBM Plex Mono', monospace", size: 11 }
+                        },
+                        grid: { color: 'rgba(226, 232, 240, 0.6)' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: "'IBM Plex Sans', sans-serif", size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Working Capital & Inventory Distribution Doughnut Chart
+    const invCtx = document.getElementById('inventoryDistributionChart');
+    if (invCtx) {
+        const fgVal = {{ total_fg_valuation|default:0|floatformat:2 }};
+        const rmVal = {{ total_raw_valuation|default:0|floatformat:2 }};
+        const pkgVal = {{ total_pkg_valuation|default:0|floatformat:2 }};
+
+        new Chart(invCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Finished Goods (FG)', 'Raw Materials (RM)', 'Packaging (PKG)'],
+                datasets: [{
+                    data: [fgVal, rmVal, pkgVal],
+                    backgroundColor: ['#1d4ed8', '#0ea5e9', '#64748b'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ₹' + Number(context.raw).toLocaleString('en-IN', {minimumFractionDigits: 2});
+                            }
+                        }
+                    }
+                },
+                cutout: '72%'
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

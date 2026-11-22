@@ -45,296 +45,328 @@
 
             <!-- Sidebar Navigation Body -->
             <div class="mf-sidebar-body">
-                <!-- WORKSPACE GROUP -->
-                <div class="mf-nav-group-title">WORKSPACE</div>
+                <!-- =========================================================================
+                     1. COMMAND CENTER
+                     ========================================================================= -->
+                <div class="mf-nav-group-title">1. COMMAND CENTER</div>
                 <ul class="mf-sidebar-nav">
                     <li>
-                        <a href="{% url 'dashboard_home' %}" class="mf-nav-link {% if request.path|slice:':11' == '/dashboard/' or request.path == '/dashboard' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="My Role Dashboard">
+                        <a href="{% url 'dashboard_home' %}" class="mf-nav-link {% if request.path|slice:':11' == '/dashboard/' or request.path == '/dashboard' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="My Role Command Center">
                             <i class="bi bi-grid-1x2-fill mf-nav-icon"></i>
-                            <span class="mf-nav-label">My Dashboard</span>
+                            <span class="mf-nav-label">Dashboard</span>
                             <span class="badge bg-primary-subtle text-primary border border-primary-subtle mf-nav-badge">{{ user.role|slice:":3" }}</span>
                         </a>
                     </li>
                 </ul>
 
-                <!-- MASTER DATA GROUP -->
-                <div class="mf-nav-group-title">MASTER DATA</div>
+                <!-- =========================================================================
+                     2. SALES & ORDERS
+                     ========================================================================= -->
+                {% if user.role != 'PRODUCTION' %}
+                <div class="mf-nav-group-title">2. SALES &amp; ORDERS</div>
                 <ul class="mf-sidebar-nav">
                     <li>
-                        <a href="{% url 'master_data_hub' %}" class="mf-nav-link {% if request.path == '/master-data/' or request.path == '/master-data' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Master Data Central Hub">
-                            <i class="bi bi-database mf-nav-icon"></i>
-                            <span class="mf-nav-label">Master Data Hub</span>
+                        <a href="{% url 'sales_order_list' %}" class="mf-nav-link {% if request.path == '/sales/orders/' and not request.GET.status %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Orders Overview &amp; Commercial Pipeline">
+                            <i class="bi bi-bag-check mf-nav-icon"></i>
+                            <span class="mf-nav-label">Orders Overview</span>
                         </a>
                     </li>
+                    {% if user.role == 'SALESMAN' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
                     <li>
-                        <a href="{% url 'product_list' %}" class="mf-nav-link {% if '/master-data/products/' in request.path or '/master-data/pack-sizes/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Products &amp; Commercial Pack Sizes">
-                            <i class="bi bi-boxes mf-nav-icon"></i>
-                            <span class="mf-nav-label">Products &amp; Packs</span>
-                        </a>
-                    </li>
-                    {% if user.role != 'PRODUCTION' %}
-                    <li>
-                        <a href="{% url 'customer_list' %}" class="mf-nav-link {% if '/master-data/customers/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Customers Directory (Retail &amp; Distributors)">
-                            <i class="bi bi-people mf-nav-icon"></i>
-                            <span class="mf-nav-label">Customers Directory</span>
+                        <a href="{% url 'sales_order_create' %}" class="mf-nav-link {% if '/sales/orders/create/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Ingest New Customer Sales Order">
+                            <i class="bi bi-plus-circle mf-nav-icon"></i>
+                            <span class="mf-nav-label">Create Order</span>
                         </a>
                     </li>
                     {% endif %}
-                    {% if user.role != 'SALESMAN' %}
                     <li>
-                        <a href="{% url 'supplier_list' %}" class="mf-nav-link {% if '/master-data/suppliers/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Approved Vendors &amp; Suppliers">
-                            <i class="bi bi-truck mf-nav-icon"></i>
-                            <span class="mf-nav-label">Approved Suppliers</span>
+                        <a href="{% url 'customer_list' %}" class="mf-nav-link {% if '/master-data/customers/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Retailers &amp; Wholesale Distributors Directory">
+                            <i class="bi bi-people mf-nav-icon"></i>
+                            <span class="mf-nav-label">Customers &amp; Retailers</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'raw_material_list' %}" class="mf-nav-link {% if '/master-data/raw-materials/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Raw Materials Catalog">
+                        <a href="{% url 'product_list' %}" class="mf-nav-link {% if '/master-data/products/' in request.path or '/master-data/pack-sizes/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Finished Products &amp; Pack Size Price Lists">
+                            <i class="bi bi-boxes mf-nav-icon"></i>
+                            <span class="mf-nav-label">Products &amp; Price Lists</span>
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+
+                <!-- =========================================================================
+                     3. ADMIN & BILLING
+                     ========================================================================= -->
+                {% if user.role != 'PRODUCTION' %}
+                <div class="mf-nav-group-title">3. ADMIN &amp; BILLING</div>
+                <ul class="mf-sidebar-nav">
+                    {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.role == 'AUDITOR' or user.is_superuser %}
+                    <li>
+                        <a href="{% url 'sales_order_list' %}?status=SUBMITTED" class="mf-nav-link {% if request.GET.status == 'SUBMITTED' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Orders Pending Factory Approval">
+                            <i class="bi bi-clock-history mf-nav-icon"></i>
+                            <span class="mf-nav-label">Approval Queue</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <a href="{% url 'sales_order_list' %}?status=APPROVED" class="mf-nav-link {% if request.GET.status == 'APPROVED' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Approved &amp; Executable Orders">
+                            <i class="bi bi-check2-circle mf-nav-icon"></i>
+                            <span class="mf-nav-label">Approved Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'invoice_list' %}" class="mf-nav-link {% if '/sales/invoices/' in request.path and not request.GET.status %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Section 31 Dual GST Tax Invoices">
+                            <i class="bi bi-receipt-cutoff mf-nav-icon"></i>
+                            <span class="mf-nav-label">GST Invoices</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'invoice_list' %}?status=PAID" class="mf-nav-link {% if request.GET.status == 'PAID' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Historical Settled Tax Invoices">
+                            <i class="bi bi-journal-check mf-nav-icon"></i>
+                            <span class="mf-nav-label">Invoice History</span>
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+
+                <!-- =========================================================================
+                     4. PRODUCTION & BOM
+                     ========================================================================= -->
+                {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                <div class="mf-nav-group-title">4. PRODUCTION &amp; BOM</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'production_hub' %}" class="mf-nav-link {% if request.path == '/production/' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Production Planning &amp; Operations Floor">
+                            <i class="bi bi-gear-wide-connected mf-nav-icon"></i>
+                            <span class="mf-nav-label">Production Overview</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'production_run_list' %}?status=PLANNED" class="mf-nav-link {% if request.GET.status == 'PLANNED' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Scheduled Production Batches">
+                            <i class="bi bi-calendar-check mf-nav-icon"></i>
+                            <span class="mf-nav-label">Production Planning</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'bom_list' %}" class="mf-nav-link {% if '/master-data/bom/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Standard Recipe Formulations &amp; BOMs">
+                            <i class="bi bi-diagram-3 mf-nav-icon"></i>
+                            <span class="mf-nav-label">BOM &amp; Recipes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'production_run_list' %}" class="mf-nav-link {% if '/production/runs/' in request.path and not request.GET.status and '/create/' not in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Work Orders &amp; Batch Runs">
+                            <i class="bi bi-kanban mf-nav-icon"></i>
+                            <span class="mf-nav-label">Production Runs</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'production_reports' %}" class="mf-nav-link {% if '/production/reports/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Yield &amp; Wastage Intelligence">
+                            <i class="bi bi-graph-up-arrow mf-nav-icon"></i>
+                            <span class="mf-nav-label">Yield &amp; Wastage Analysis</span>
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+
+                <!-- =========================================================================
+                     5. INVENTORY & PROCUREMENT
+                     ========================================================================= -->
+                {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                <div class="mf-nav-group-title">5. INVENTORY &amp; PROCUREMENT</div>
+                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'raw_material_list' %}" class="mf-nav-link {% if '/master-data/raw-materials/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Raw Materials Catalog &amp; Reorder Levels">
                             <i class="bi bi-droplet-half mf-nav-icon"></i>
                             <span class="mf-nav-label">Raw Materials</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'packaging_material_list' %}" class="mf-nav-link {% if '/master-data/packaging-materials/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Packaging Materials Catalog">
+                        <a href="{% url 'packaging_material_list' %}" class="mf-nav-link {% if '/master-data/packaging-materials/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Pouches, Cartons &amp; Shippers">
                             <i class="bi bi-box-seam mf-nav-icon"></i>
-                            <span class="mf-nav-label">Packaging Items</span>
+                            <span class="mf-nav-label">Packaging Materials</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'uom_list' %}" class="mf-nav-link {% if '/master-data/uom/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Units of Measure &amp; Conversions">
-                            <i class="bi bi-rulers mf-nav-icon"></i>
-                            <span class="mf-nav-label">Units of Measure</span>
+                        <a href="{% url 'stock_summary' %}?type=FG" class="mf-nav-link {% if request.GET.type == 'FG' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Finished Goods Packets on Hand">
+                            <i class="bi bi-box2-heart mf-nav-icon"></i>
+                            <span class="mf-nav-label">Finished Goods</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'bom_list' %}" class="mf-nav-link {% if '/master-data/bom/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Bill of Materials (BOM Formulations)">
-                            <i class="bi bi-diagram-3 mf-nav-icon"></i>
-                            <span class="mf-nav-label">Bill of Materials</span>
+                        <a href="{% url 'stock_ledger_list' %}" class="mf-nav-link {% if '/inventory/ledger/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Immutable Stock Movement Ledger">
+                            <i class="bi bi-journal-text mf-nav-icon"></i>
+                            <span class="mf-nav-label">Stock Ledger</span>
                         </a>
                     </li>
-                    {% endif %}
-                </ul>
-
-                <!-- INVENTORY & PROCUREMENT GROUP -->
-                <div class="mf-nav-group-title">INVENTORY &amp; PROCUREMENT</div>
-                <ul class="mf-sidebar-nav">
-                    {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
                     <li>
-                        <a href="{% url 'inventory_dashboard' %}" class="mf-nav-link {% if request.path == '/inventory/' or request.path == '/inventory' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Inventory Command Center">
-                            <i class="bi bi-speedometer2 mf-nav-icon"></i>
-                            <span class="mf-nav-label">Inventory Control Hub</span>
+                        <a href="{% url 'supplier_list' %}" class="mf-nav-link {% if '/master-data/suppliers/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Approved Vendors &amp; Suppliers">
+                            <i class="bi bi-truck mf-nav-icon"></i>
+                            <span class="mf-nav-label">Suppliers</span>
                         </a>
                     </li>
-                    {% endif %}
                     <li>
-                        <a href="{% url 'stock_summary' %}" class="mf-nav-link {% if '/inventory/stock-summary/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Real-Time Stock Balances &amp; Low Stock Alerts">
-                            <i class="bi bi-box-seam-fill mf-nav-icon"></i>
-                            <span class="mf-nav-label">Stock Balances &amp; Value</span>
-                        </a>
-                    </li>
-                    {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
-                    <li>
-                        <a href="{% url 'purchase_order_list' %}" class="mf-nav-link {% if '/inventory/purchase-orders/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Procurement Purchase Orders">
+                        <a href="{% url 'purchase_order_list' %}" class="mf-nav-link {% if '/inventory/purchase-orders/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Inbound Purchase Orders">
                             <i class="bi bi-cart-plus mf-nav-icon"></i>
                             <span class="mf-nav-label">Purchase Orders</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'grn_list' %}" class="mf-nav-link {% if '/inventory/grn/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Goods Receipt Notes (Inbound Invoices)">
+                        <a href="{% url 'grn_list' %}" class="mf-nav-link {% if '/inventory/grn/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Goods Receipt Notes (Inward Delivery)">
                             <i class="bi bi-box-arrow-in-down mf-nav-icon"></i>
-                            <span class="mf-nav-label">Material Receipts (GRN)</span>
+                            <span class="mf-nav-label">Goods Receipts</span>
                         </a>
                     </li>
-                    {% endif %}
+                </ul>
+                {% endif %}
+
+                <!-- =========================================================================
+                     6. QUALITY & COSTING
+                     ========================================================================= -->
+                <div class="mf-nav-group-title">6. QUALITY &amp; COSTING</div>
+                <ul class="mf-sidebar-nav">
                     {% if user.role != 'SALESMAN' %}
                     <li>
-                        <a href="{% url 'stock_ledger_list' %}" class="mf-nav-link {% if '/inventory/ledger/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Traceable Stock Movement Ledger">
-                            <i class="bi bi-journal-text mf-nav-icon"></i>
-                            <span class="mf-nav-label">Stock Movement Ledger</span>
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
-                    <li>
-                        <a href="{% url 'stock_adjustment_list' %}" class="mf-nav-link {% if '/inventory/adjustments/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Physical Inventory Adjustments &amp; Audits">
-                            <i class="bi bi-sliders2 mf-nav-icon"></i>
-                            <span class="mf-nav-label">Stock Adjustments</span>
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-
-                <!-- MANUFACTURING GROUP -->
-                {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
-                <div class="mf-nav-group-title">MANUFACTURING &amp; BOM</div>
-                <ul class="mf-sidebar-nav">
-                    <li>
-                        <a href="{% url 'production_hub' %}" class="mf-nav-link {% if request.path == '/production/' or request.path == '/production' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Production Planning &amp; Operations Floor">
-                            <i class="bi bi-gear-wide-connected mf-nav-icon"></i>
-                            <span class="mf-nav-label">Production Floor Hub</span>
+                        <a href="{% url 'stock_adjustment_list' %}" class="mf-nav-link {% if '/inventory/adjustments/' in request.path and not request.GET.reason %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Physical Count Audits &amp; Inspections">
+                            <i class="bi bi-patch-check mf-nav-icon"></i>
+                            <span class="mf-nav-label">Quality Inspections</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'production_run_list' %}" class="mf-nav-link {% if '/production/runs/' in request.path and '/create/' not in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Work Orders &amp; Batch Production Runs">
-                            <i class="bi bi-kanban mf-nav-icon"></i>
-                            <span class="mf-nav-label">Work Orders &amp; Runs</span>
-                        </a>
-                    </li>
-                    {% if user.role == 'PRODUCTION' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
-                    <li>
-                        <a href="{% url 'production_run_create' %}" class="mf-nav-link {% if '/production/runs/create/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Schedule New Batch Production Run">
-                            <i class="bi bi-plus-circle mf-nav-icon"></i>
-                            <span class="mf-nav-label">New Production Run</span>
+                        <a href="{% url 'stock_adjustment_list' %}?reason=DAMAGED" class="mf-nav-link {% if request.GET.reason == 'DAMAGED' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Damaged Goods &amp; Scrap Write-Offs">
+                            <i class="bi bi-shield-exclamation mf-nav-icon"></i>
+                            <span class="mf-nav-label">Damaged Goods</span>
                         </a>
                     </li>
                     {% endif %}
                     <li>
-                        <a href="{% url 'production_reports' %}" class="mf-nav-link {% if '/production/reports/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Yield &amp; Consumption Variance Intelligence">
-                            <i class="bi bi-graph-up-arrow mf-nav-icon"></i>
-                            <span class="mf-nav-label">Yield Intelligence</span>
+                        <a href="{% url 'finance:production_variance_report' %}" class="mf-nav-link {% if '/finance/reports/production-variance/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Consumption Variance vs Standard Recipe">
+                            <i class="bi bi-graph-down mf-nav-icon"></i>
+                            <span class="mf-nav-label">Consumption Variance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance:production_variance_report' %}" class="mf-nav-link" data-bs-toggle="tooltip" data-bs-placement="right" title="Direct Finished Unit Cost Analysis">
+                            <i class="bi bi-tag mf-nav-icon"></i>
+                            <span class="mf-nav-label">Cost per Packet</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance:stock_report' %}" class="mf-nav-link {% if '/finance/reports/stock-inventory/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="FIFO Asset Valuation &amp; Margins">
+                            <i class="bi bi-pie-chart mf-nav-icon"></i>
+                            <span class="mf-nav-label">Product Margins</span>
                         </a>
                     </li>
                 </ul>
-                {% endif %}
 
-                <!-- COMMERCIAL & SALES GROUP -->
-                {% if user.role != 'PRODUCTION' %}
-                <div class="mf-nav-group-title">COMMERCE &amp; SALES</div>
+                <!-- =========================================================================
+                     7. DISPATCH & FINANCE
+                     ========================================================================= -->
+                <div class="mf-nav-group-title">7. DISPATCH &amp; FINANCE</div>
                 <ul class="mf-sidebar-nav">
                     <li>
-                        <a href="{% url 'sales_hub' %}" class="mf-nav-link {% if request.path == '/sales/' or request.path == '/sales' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Sales Operations &amp; Order Pipeline Hub">
-                            <i class="bi bi-receipt mf-nav-icon"></i>
-                            <span class="mf-nav-label">Sales Operations Hub</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'sales_order_list' %}" class="mf-nav-link {% if '/sales/orders/' in request.path and '/create/' not in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Customer Sales Orders">
-                            <i class="bi bi-bag-check mf-nav-icon"></i>
-                            <span class="mf-nav-label">Sales Orders</span>
-                        </a>
-                    </li>
-                    {% if user.role == 'SALESMAN' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
-                    <li>
-                        <a href="{% url 'sales_order_create' %}" class="mf-nav-link {% if '/sales/orders/create/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Create Customer Sales Order">
-                            <i class="bi bi-plus-circle mf-nav-icon"></i>
-                            <span class="mf-nav-label">New Sales Order</span>
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li>
-                        <a href="{% url 'invoice_list' %}" class="mf-nav-link {% if '/sales/invoices/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="GST Tax Invoices &amp; PDF Downloads">
-                            <i class="bi bi-file-earmark-pdf mf-nav-icon"></i>
-                            <span class="mf-nav-label">GST Tax Invoices</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'dispatch_list' %}" class="mf-nav-link {% if '/sales/dispatches/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Goods Outward Dispatch Challans">
+                        <a href="{% url 'dispatch_list' %}" class="mf-nav-link {% if '/sales/dispatches/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Outward Dispatch Delivery Challans">
                             <i class="bi bi-truck-flatbed mf-nav-icon"></i>
-                            <span class="mf-nav-label">Dispatch Challans</span>
-                        </a>
-                    </li>
-                </ul>
-                {% endif %}
-
-                <!-- FINANCIALS & REPORTS GROUP -->
-                {% if user.role != 'SALESMAN' and user.role != 'PRODUCTION' %}
-                <div class="mf-nav-group-title">FINANCIAL CONTROL</div>
-                <ul class="mf-sidebar-nav">
-                    <li>
-                        <a href="{% url 'finance:dashboard' %}" class="mf-nav-link {% if request.path == '/finance/' or request.path == '/finance' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Accounts Receivable &amp; Financial Control Hub">
-                            <i class="bi bi-bank mf-nav-icon"></i>
-                            <span class="mf-nav-label">Finance Control Hub</span>
+                            <span class="mf-nav-label">Dispatch Orders</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'finance:receivables_summary' %}" class="mf-nav-link {% if '/finance/receivables/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Customer Receivables Aging &amp; Overdue Tracking">
-                            <i class="bi bi-cash-coin mf-nav-icon"></i>
-                            <span class="mf-nav-label">Receivables &amp; Aging</span>
+                        <a href="{% url 'finance:sales_dispatch_report' %}" class="mf-nav-link {% if '/finance/reports/sales-dispatch/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Shortage &amp; Delivery Reconciliation">
+                            <i class="bi bi-exclamation-triangle mf-nav-icon"></i>
+                            <span class="mf-nav-label">Deliveries &amp; Shortages</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'finance:payments_list' %}" class="mf-nav-link {% if '/finance/payments/' in request.path and '/record/' not in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Customer Payment Vouchers Ledger">
+                        <a href="{% url 'finance:payments_list' %}" class="mf-nav-link {% if '/finance/payments/' in request.path and '/record/' not in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Customer Payment Receipts Vouchers">
                             <i class="bi bi-wallet2 mf-nav-icon"></i>
-                            <span class="mf-nav-label">Payment Vouchers</span>
-                        </a>
-                    </li>
-                    {% if user.role == 'ACCOUNTANT' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
-                    <li>
-                        <a href="{% url 'finance:payment_create' %}" class="mf-nav-link {% if '/finance/payments/record/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Record Inward Customer Remittance">
-                            <i class="bi bi-plus-circle mf-nav-icon"></i>
-                            <span class="mf-nav-label">Record Payment</span>
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li>
-                        <a href="{% url 'finance:gst_sales_register' %}" class="mf-nav-link {% if '/finance/reports/gst-sales-register/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Section 31 Dual GST Sales Register (CGST/SGST/IGST)">
-                            <i class="bi bi-receipt-cutoff mf-nav-icon"></i>
-                            <span class="mf-nav-label">GST Sales Register</span>
+                            <span class="mf-nav-label">Payments &amp; Collections</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'finance:stock_report' %}" class="mf-nav-link {% if '/finance/reports/stock-inventory/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Stock Balances &amp; FIFO Cost Valuation Report">
-                            <i class="bi bi-boxes mf-nav-icon"></i>
-                            <span class="mf-nav-label">Stock Valuation Report</span>
+                        <a href="{% url 'finance:receivables_summary' %}" class="mf-nav-link {% if '/finance/receivables/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Receivables Aging &amp; Overdue Accounts">
+                            <i class="bi bi-cash-coin mf-nav-icon"></i>
+                            <span class="mf-nav-label">Outstanding Receivables</span>
                         </a>
                     </li>
                 </ul>
-                {% elif user.role == 'SALESMAN' %}
-                <!-- Restricted Salesman Finance Links -->
-                <div class="mf-nav-group-title">SALES ACCOUNTING</div>
+
+                <!-- =========================================================================
+                     8. REPORTS & AUDIT
+                     ========================================================================= -->
+                <div class="mf-nav-group-title">8. REPORTS &amp; AUDIT</div>
                 <ul class="mf-sidebar-nav">
                     <li>
                         <a href="{% url 'finance:gst_sales_register' %}" class="mf-nav-link {% if '/finance/reports/gst-sales-register/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Section 31 Dual GST Sales Register">
-                            <i class="bi bi-receipt-cutoff mf-nav-icon"></i>
-                            <span class="mf-nav-label">GST Sales Register</span>
-                        </a>
-                    </li>
-                </ul>
-                {% elif user.role == 'PRODUCTION' %}
-                <!-- Restricted Production Costing Reports -->
-                <div class="mf-nav-group-title">COSTING &amp; VALUATION</div>
-                <ul class="mf-sidebar-nav">
-                    <li>
-                        <a href="{% url 'finance:production_variance_report' %}" class="mf-nav-link {% if '/finance/reports/production-variance/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="BOM Yield Variance &amp; Finished Unit Costing">
-                            <i class="bi bi-graph-down mf-nav-icon"></i>
-                            <span class="mf-nav-label">Production Variance</span>
+                            <i class="bi bi-receipt mf-nav-icon"></i>
+                            <span class="mf-nav-label">Sales Register</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'finance:stock_report' %}" class="mf-nav-link {% if '/finance/reports/stock-inventory/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Stock Balances &amp; FIFO Valuation">
-                            <i class="bi bi-boxes mf-nav-icon"></i>
-                            <span class="mf-nav-label">Stock Valuation Report</span>
+                        <a href="{% url 'finance:gst_monthly_summary' %}" class="mf-nav-link {% if '/finance/reports/gst-monthly-summary/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Monthly Tax Return Summary">
+                            <i class="bi bi-calculator mf-nav-icon"></i>
+                            <span class="mf-nav-label">GST Summary</span>
                         </a>
                     </li>
-                </ul>
-                {% endif %}
-
-                <!-- GOVERNANCE & AUDIT GROUP -->
-                {% if user.role == 'AUDITOR' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
-                <div class="mf-nav-group-title">GOVERNANCE &amp; AUDIT</div>
-                <ul class="mf-sidebar-nav">
+                    <li>
+                        <a href="{% url 'finance:stock_ledger_report' %}" class="mf-nav-link {% if '/finance/reports/stock-ledger/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Inward Purchase Movement Register">
+                            <i class="bi bi-journal-arrow-down mf-nav-icon"></i>
+                            <span class="mf-nav-label">Purchase Register</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance:stock_report' %}" class="mf-nav-link {% if '/finance/reports/stock-inventory/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Stock Balances &amp; FIFO Costing">
+                            <i class="bi bi-bar-chart-line mf-nav-icon"></i>
+                            <span class="mf-nav-label">Stock Reports</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'production_reports' %}" class="mf-nav-link {% if '/production/reports/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Factory Throughput &amp; Wastage">
+                            <i class="bi bi-clipboard-data mf-nav-icon"></i>
+                            <span class="mf-nav-label">Production Reports</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance:production_variance_report' %}" class="mf-nav-link" data-bs-toggle="tooltip" data-bs-placement="right" title="BOM Costing &amp; Material Variance">
+                            <i class="bi bi-file-earmark-spreadsheet mf-nav-icon"></i>
+                            <span class="mf-nav-label">Costing Reports</span>
+                        </a>
+                    </li>
+                    {% if user.role == 'AUDITOR' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
                     <li>
                         <a href="{% url 'audit_trail' %}" class="mf-nav-link {% if request.path|slice:':7' == '/audit/' or request.path == '/audit' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Immutable System Audit Trail Observatory">
                             <i class="bi bi-shield-check mf-nav-icon"></i>
-                            <span class="mf-nav-label">System Audit Trail</span>
+                            <span class="mf-nav-label">Audit Trail</span>
                         </a>
                     </li>
+                    {% endif %}
+                </ul>
+
+                <!-- =========================================================================
+                     9. ADMINISTRATION / SETTINGS
+                     ========================================================================= -->
+                <div class="mf-nav-group-title">9. ADMINISTRATION / SETTINGS</div>
+                <ul class="mf-sidebar-nav">
                     {% if user.is_admin or user.role == 'ADMIN' or user.is_superuser %}
                     <li>
                         <a href="{% url 'user_list' %}" class="mf-nav-link {% if '/accounts/users/' in request.path %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="Staff Accounts Directory &amp; RBAC Control">
-                            <i class="bi bi-people mf-nav-icon"></i>
-                            <span class="mf-nav-label">Staff Directory</span>
+                            <i class="bi bi-people-fill mf-nav-icon"></i>
+                            <span class="mf-nav-label">Users &amp; Roles</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'admin:index' %}" class="mf-nav-link" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" title="Django Administrator Site">
-                            <i class="bi bi-sliders mf-nav-icon"></i>
-                            <span class="mf-nav-label">Django Admin</span>
+                        <a href="{% url 'admin:index' %}" class="mf-nav-link" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" title="Django Security &amp; Permissions Admin">
+                            <i class="bi bi-key mf-nav-icon"></i>
+                            <span class="mf-nav-label">Permissions</span>
                             <i class="bi bi-box-arrow-up-right ms-auto text-muted small"></i>
                         </a>
                     </li>
                     {% endif %}
+                    <li>
+                        <a href="{% url 'master_data_hub' %}" class="mf-nav-link {% if request.path == '/master-data/' %}active{% endif %}" data-bs-toggle="tooltip" data-bs-placement="right" title="System Parameters &amp; Configuration Hub">
+                            <i class="bi bi-sliders mf-nav-icon"></i>
+                            <span class="mf-nav-label">Business Settings</span>
+                        </a>
+                    </li>
                 </ul>
-                {% endif %}
 
                 <!-- USER ACCOUNT & SIGN OUT -->
                 <div class="mf-nav-group-title">ACCOUNT</div>
@@ -391,25 +423,105 @@
                         </div>
                     </div>
 
-                    <div class="mf-nav-group-title text-white-50">NAVIGATION</div>
-                    <ul class="mf-sidebar-nav">
-                        <li><a href="{% url 'dashboard_home' %}" class="mf-nav-link text-white"><i class="bi bi-grid-1x2-fill mf-nav-icon"></i> My Dashboard</a></li>
-                        <li><a href="{% url 'master_data_hub' %}" class="mf-nav-link text-white"><i class="bi bi-database mf-nav-icon"></i> Master Data Hub</a></li>
-                        <li><a href="{% url 'product_list' %}" class="mf-nav-link text-white"><i class="bi bi-boxes mf-nav-icon"></i> Products &amp; Packs</a></li>
-                        <li><a href="{% url 'stock_summary' %}" class="mf-nav-link text-white"><i class="bi bi-box-seam mf-nav-icon"></i> Stock Balances</a></li>
-                        {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
-                        <li><a href="{% url 'production_hub' %}" class="mf-nav-link text-white"><i class="bi bi-gear-wide-connected mf-nav-icon"></i> Production Floor</a></li>
+                    <!-- Mobile 9 PS-Aligned Navigation -->
+                    <div class="mf-nav-group-title text-white-50">1. COMMAND CENTER</div>
+                    <ul class="mf-sidebar-nav mb-3">
+                        <li><a href="{% url 'dashboard_home' %}" class="mf-nav-link text-white"><i class="bi bi-grid-1x2-fill mf-nav-icon"></i> Dashboard</a></li>
+                    </ul>
+
+                    {% if user.role != 'PRODUCTION' %}
+                    <div class="mf-nav-group-title text-white-50">2. SALES &amp; ORDERS</div>
+                    <ul class="mf-sidebar-nav mb-3">
+                        <li><a href="{% url 'sales_order_list' %}" class="mf-nav-link text-white"><i class="bi bi-bag-check mf-nav-icon"></i> Orders Overview</a></li>
+                        {% if user.role == 'SALESMAN' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
+                        <li><a href="{% url 'sales_order_create' %}" class="mf-nav-link text-white"><i class="bi bi-plus-circle mf-nav-icon"></i> Create Order</a></li>
                         {% endif %}
-                        {% if user.role != 'PRODUCTION' %}
-                        <li><a href="{% url 'sales_hub' %}" class="mf-nav-link text-white"><i class="bi bi-receipt mf-nav-icon"></i> Sales Operations</a></li>
+                        <li><a href="{% url 'customer_list' %}" class="mf-nav-link text-white"><i class="bi bi-people mf-nav-icon"></i> Customers &amp; Retailers</a></li>
+                        <li><a href="{% url 'product_list' %}" class="mf-nav-link text-white"><i class="bi bi-tags mf-nav-icon"></i> Products &amp; Price Lists</a></li>
+                    </ul>
+                    {% endif %}
+
+                    {% if user.role == 'ADMIN' or user.role == 'ACCOUNTANT' or user.role == 'OWNER' or user.is_superuser %}
+                    <div class="mf-nav-group-title text-white-50">3. ADMIN &amp; BILLING</div>
+                    <ul class="mf-sidebar-nav mb-3">
+                        {% if user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
+                        <li><a href="{% url 'sales_order_list' %}?status=SUBMITTED" class="mf-nav-link text-white"><i class="bi bi-clock-history mf-nav-icon"></i> Approval Queue</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'sales_order_list' %}?status=APPROVED" class="mf-nav-link text-white"><i class="bi bi-check2-circle mf-nav-icon"></i> Approved Orders</a></li>
                         <li><a href="{% url 'invoice_list' %}" class="mf-nav-link text-white"><i class="bi bi-file-earmark-pdf mf-nav-icon"></i> GST Invoices</a></li>
+                        <li><a href="{% url 'finance:gst_sales_register' %}" class="mf-nav-link text-white"><i class="bi bi-journal-text mf-nav-icon"></i> Invoice History</a></li>
+                    </ul>
+                    {% endif %}
+
+                    {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                    <div class="mf-nav-group-title text-white-50">4. PRODUCTION &amp; BOM</div>
+                    <ul class="mf-sidebar-nav mb-3">
+                        <li><a href="{% url 'production_hub' %}" class="mf-nav-link text-white"><i class="bi bi-gear-wide-connected mf-nav-icon"></i> Production Overview</a></li>
+                        <li><a href="{% url 'production_run_list' %}?status=PLANNED" class="mf-nav-link text-white"><i class="bi bi-calendar-check mf-nav-icon"></i> Production Planning</a></li>
+                        <li><a href="{% url 'bom_list' %}" class="mf-nav-link text-white"><i class="bi bi-diagram-3 mf-nav-icon"></i> BOM &amp; Recipes</a></li>
+                        <li><a href="{% url 'production_run_list' %}" class="mf-nav-link text-white"><i class="bi bi-kanban mf-nav-icon"></i> Production Runs</a></li>
+                        <li><a href="{% url 'production_reports' %}" class="mf-nav-link text-white"><i class="bi bi-graph-up-arrow mf-nav-icon"></i> Yield &amp; Wastage Analysis</a></li>
+                    </ul>
+                    {% endif %}
+
+                    {% if user.role != 'SALESMAN' and user.role != 'ACCOUNTANT' %}
+                    <div class="mf-nav-group-title text-white-50">5. INVENTORY &amp; PROCUREMENT</div>
+                    <ul class="mf-sidebar-nav mb-3">
+                        <li><a href="{% url 'raw_material_list' %}" class="mf-nav-link text-white"><i class="bi bi-droplet-half mf-nav-icon"></i> Raw Materials</a></li>
+                        <li><a href="{% url 'packaging_material_list' %}" class="mf-nav-link text-white"><i class="bi bi-box-seam mf-nav-icon"></i> Packaging Materials</a></li>
+                        <li><a href="{% url 'stock_summary' %}?type=FG" class="mf-nav-link text-white"><i class="bi bi-box2-heart mf-nav-icon"></i> Finished Goods</a></li>
+                        <li><a href="{% url 'stock_ledger_list' %}" class="mf-nav-link text-white"><i class="bi bi-journal-text mf-nav-icon"></i> Stock Ledger</a></li>
+                        <li><a href="{% url 'supplier_list' %}" class="mf-nav-link text-white"><i class="bi bi-truck mf-nav-icon"></i> Suppliers</a></li>
+                        <li><a href="{% url 'purchase_order_list' %}" class="mf-nav-link text-white"><i class="bi bi-cart-plus mf-nav-icon"></i> Purchase Orders</a></li>
+                        <li><a href="{% url 'grn_list' %}" class="mf-nav-link text-white"><i class="bi bi-box-arrow-in-down mf-nav-icon"></i> Goods Receipts</a></li>
+                    </ul>
+                    {% endif %}
+
+                    <div class="mf-nav-group-title text-white-50">6. QUALITY &amp; COSTING</div>
+                    <ul class="mf-sidebar-nav mb-3">
+                        {% if user.role != 'SALESMAN' %}
+                        <li><a href="{% url 'stock_adjustment_list' %}" class="mf-nav-link text-white"><i class="bi bi-patch-check mf-nav-icon"></i> Quality Inspections</a></li>
+                        <li><a href="{% url 'stock_adjustment_list' %}?reason=DAMAGED" class="mf-nav-link text-white"><i class="bi bi-shield-exclamation mf-nav-icon"></i> Damaged Goods</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'finance:production_variance_report' %}" class="mf-nav-link text-white"><i class="bi bi-graph-down mf-nav-icon"></i> Consumption Variance</a></li>
+                        <li><a href="{% url 'finance:production_variance_report' %}" class="mf-nav-link text-white"><i class="bi bi-tag mf-nav-icon"></i> Cost per Packet</a></li>
+                        <li><a href="{% url 'finance:stock_report' %}" class="mf-nav-link text-white"><i class="bi bi-pie-chart mf-nav-icon"></i> Product Margins</a></li>
+                    </ul>
+
+                    <div class="mf-nav-group-title text-white-50">7. DISPATCH &amp; FINANCE</div>
+                    <ul class="mf-sidebar-nav mb-3">
+                        {% if user.role != 'ACCOUNTANT' %}
+                        <li><a href="{% url 'dispatch_list' %}" class="mf-nav-link text-white"><i class="bi bi-send-check mf-nav-icon"></i> Dispatch Orders</a></li>
+                        <li><a href="{% url 'dispatch_list' %}?has_shortage=true" class="mf-nav-link text-white"><i class="bi bi-cone-striped mf-nav-icon"></i> Deliveries &amp; Shortages</a></li>
                         {% endif %}
                         {% if user.role == 'ACCOUNTANT' or user.role == 'AUDITOR' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
-                        <li><a href="{% url 'finance:dashboard' %}" class="mf-nav-link text-white"><i class="bi bi-bank mf-nav-icon"></i> Finance Hub</a></li>
+                        <li><a href="{% url 'finance:payments_list' %}" class="mf-nav-link text-white"><i class="bi bi-wallet2 mf-nav-icon"></i> Payments &amp; Collections</a></li>
+                        <li><a href="{% url 'finance:receivables_summary' %}" class="mf-nav-link text-white"><i class="bi bi-cash-coin mf-nav-icon"></i> Outstanding Receivables</a></li>
                         {% endif %}
+                    </ul>
+
+                    <div class="mf-nav-group-title text-white-50">8. REPORTS &amp; AUDIT</div>
+                    <ul class="mf-sidebar-nav mb-3">
+                        {% if user.role != 'PRODUCTION' %}
+                        <li><a href="{% url 'finance:gst_sales_register' %}" class="mf-nav-link text-white"><i class="bi bi-receipt mf-nav-icon"></i> Sales Register</a></li>
+                        <li><a href="{% url 'finance:dashboard' %}" class="mf-nav-link text-white"><i class="bi bi-bank mf-nav-icon"></i> GST Summary</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'grn_list' %}" class="mf-nav-link text-white"><i class="bi bi-receipt-cutoff mf-nav-icon"></i> Purchase Register</a></li>
+                        <li><a href="{% url 'stock_summary' %}" class="mf-nav-link text-white"><i class="bi bi-bar-chart-line mf-nav-icon"></i> Stock Reports</a></li>
+                        <li><a href="{% url 'production_run_list' %}" class="mf-nav-link text-white"><i class="bi bi-clipboard-data mf-nav-icon"></i> Production Reports</a></li>
+                        <li><a href="{% url 'finance:production_variance_report' %}" class="mf-nav-link text-white"><i class="bi bi-file-earmark-spreadsheet mf-nav-icon"></i> Costing Reports</a></li>
                         {% if user.role == 'AUDITOR' or user.role == 'ADMIN' or user.role == 'OWNER' or user.is_superuser %}
                         <li><a href="{% url 'audit_trail' %}" class="mf-nav-link text-white"><i class="bi bi-shield-check mf-nav-icon"></i> Audit Trail</a></li>
                         {% endif %}
+                    </ul>
+
+                    <div class="mf-nav-group-title text-white-50">9. ADMINISTRATION / SETTINGS</div>
+                    <ul class="mf-sidebar-nav mb-3">
+                        {% if user.is_admin or user.role == 'ADMIN' or user.is_superuser %}
+                        <li><a href="{% url 'user_list' %}" class="mf-nav-link text-white"><i class="bi bi-people-fill mf-nav-icon"></i> Users &amp; Roles</a></li>
+                        <li><a href="{% url 'admin:index' %}" class="mf-nav-link text-white" target="_blank"><i class="bi bi-key mf-nav-icon"></i> Permissions</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'master_data_hub' %}" class="mf-nav-link text-white"><i class="bi bi-sliders mf-nav-icon"></i> Business Settings</a></li>
                     </ul>
 
                     <hr class="border-secondary opacity-25">
@@ -589,6 +701,8 @@
 
     <!-- Bootstrap 5.3 Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Chart.js for Interactive Modern Blue Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>

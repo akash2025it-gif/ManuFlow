@@ -103,6 +103,47 @@
         </div>
     </div>
 
+    <!-- Receivables Settlement & Tax Breakdown Visual Analytics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="mf-card h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mf-card-title mb-0"><i class="bi bi-pie-chart-fill me-1 text-primary"></i> Receivables Settlement Velocity</h6>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-mono small">Live Balances</span>
+                </div>
+                <div style="position: relative; height: 180px; width: 100%;">
+                    <canvas id="receivablesDoughnutChart"></canvas>
+                </div>
+                <div class="d-flex justify-content-around w-100 mt-2 pt-2 border-top small font-mono text-center">
+                    <div>
+                        <span class="d-inline-block rounded-circle me-1" style="width: 8px; height: 8px; background: #0ea5e9;"></span>
+                        <span class="text-muted">Realized: ₹{{ kpis.total_received|floatformat:0 }}</span>
+                    </div>
+                    <div>
+                        <span class="d-inline-block rounded-circle me-1" style="width: 8px; height: 8px; background: #1d4ed8;"></span>
+                        <span class="text-muted">Outstanding: ₹{{ kpis.total_outstanding|floatformat:0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mf-card h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mf-card-title mb-0"><i class="bi bi-bar-chart-fill me-1 text-primary"></i> Statutory GST Split (CY {{ current_year }})</h6>
+                    <span class="badge bg-secondary-subtle text-secondary font-mono small">Section 31</span>
+                </div>
+                <div style="position: relative; height: 180px; width: 100%;">
+                    <canvas id="gstSplitBarChart"></canvas>
+                </div>
+                <div class="d-flex justify-content-around w-100 mt-2 pt-2 border-top small font-mono text-center">
+                    <div><span class="text-muted">CGST: ₹{{ year_totals.cgst|floatformat:0 }}</span></div>
+                    <div><span class="text-muted">SGST: ₹{{ year_totals.sgst|floatformat:0 }}</span></div>
+                    <div><span class="text-muted">IGST: ₹{{ year_totals.igst|floatformat:0 }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Section 31 Monthly GST Sales Register -->
     <div class="mf-card mb-4">
         <div class="mf-card-header">
@@ -234,4 +275,96 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Receivables Settlement Doughnut Chart
+    const recCtx = document.getElementById('receivablesDoughnutChart');
+    if (recCtx) {
+        const received = {{ kpis.total_received|default:0|floatformat:2 }};
+        const outstanding = {{ kpis.total_outstanding|default:0|floatformat:2 }};
+
+        new Chart(recCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Realized Remittances', 'Outstanding Receivables'],
+                datasets: [{
+                    data: [received, outstanding],
+                    backgroundColor: ['#0ea5e9', '#1d4ed8'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ₹' + Number(context.raw).toLocaleString('en-IN', {minimumFractionDigits: 2});
+                            }
+                        }
+                    }
+                },
+                cutout: '72%'
+            }
+        });
+    }
+
+    // 2. GST Statutory Split Bar Chart
+    const gstCtx = document.getElementById('gstSplitBarChart');
+    if (gstCtx) {
+        const cgst = {{ year_totals.cgst|default:0|floatformat:2 }};
+        const sgst = {{ year_totals.sgst|default:0|floatformat:2 }};
+        const igst = {{ year_totals.igst|default:0|floatformat:2 }};
+
+        new Chart(gstCtx, {
+            type: 'bar',
+            data: {
+                labels: ['CGST (2.5%)', 'SGST (2.5%)', 'IGST (5.0%)'],
+                datasets: [{
+                    label: 'Tax Amount (₹)',
+                    data: [cgst, sgst, igst],
+                    backgroundColor: ['#1d4ed8', '#2563eb', '#0ea5e9'],
+                    borderRadius: 4,
+                    barPercentage: 0.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Tax: ₹' + Number(context.raw).toLocaleString('en-IN', {minimumFractionDigits: 2});
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(v) { return '₹' + Number(v).toLocaleString('en-IN'); },
+                            font: { family: "'IBM Plex Mono', monospace", size: 10 }
+                        },
+                        grid: { color: 'rgba(226, 232, 240, 0.6)' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: "'IBM Plex Sans', sans-serif", size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

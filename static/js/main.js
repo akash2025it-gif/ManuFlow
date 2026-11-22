@@ -48,6 +48,32 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('mf_sidebar_collapsed', isCollapsed ? '1' : '0');
         });
     }
+
+    // 5. Client-Side Data Table Search / Quick Filter
+    document.querySelectorAll('[data-table-filter]').forEach(filterInput => {
+        const targetSelector = filterInput.getAttribute('data-table-filter');
+        const targetTable = document.querySelector(targetSelector);
+        if (!targetTable) return;
+
+        filterInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const rows = targetTable.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    });
+
+    // 6. Confirm Dialog Helper for Destructive Actions
+    document.querySelectorAll('[data-confirm]').forEach(el => {
+        el.addEventListener('click', function(e) {
+            const message = this.getAttribute('data-confirm') || 'Are you sure you want to proceed?';
+            if (!confirm(message)) {
+                e.preventDefault();
+            }
+        });
+    });
 });
 
 /**

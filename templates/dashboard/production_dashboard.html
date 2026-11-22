@@ -115,6 +115,32 @@
     </div>
     {% endif %}
 
+    <!-- Modern Blue Production Visual Analytics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-7">
+            <div class="mf-card h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mf-card-title mb-0"><i class="bi bi-bar-chart-fill me-1 text-primary"></i> Target vs Realized Throughput</h6>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-mono small">Shop Floor</span>
+                </div>
+                <div style="position: relative; height: 180px; width: 100%;">
+                    <canvas id="productionThroughputChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="mf-card h-100 p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mf-card-title mb-0"><i class="bi bi-pie-chart-fill me-1 text-primary"></i> Batch Work Order Status</h6>
+                    <span class="badge bg-secondary-subtle text-secondary font-mono small">WIP Tracking</span>
+                </div>
+                <div style="position: relative; height: 180px; width: 100%;">
+                    <canvas id="productionStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Production Runs & Work Orders Table -->
     <div class="mf-card">
         <div class="mf-card-header">
@@ -185,4 +211,87 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Throughput Target vs Actual Output Chart
+    const tpCtx = document.getElementById('productionThroughputChart');
+    if (tpCtx) {
+        const planned = {{ total_planned|default:0|floatformat:0 }};
+        const actual = {{ total_good_output|default:0|floatformat:0 }};
+
+        new Chart(tpCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Planned Target (pkts)', 'Actual Good Output (pkts)'],
+                datasets: [{
+                    label: 'Packets',
+                    data: [planned, actual],
+                    backgroundColor: ['#64748b', '#1d4ed8'],
+                    borderRadius: 4,
+                    barPercentage: 0.45
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) { return ctx.dataset.label + ': ' + ctx.raw.toLocaleString() + ' pkts'; }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { font: { family: "'IBM Plex Mono', monospace", size: 10 } },
+                        grid: { color: 'rgba(226, 232, 240, 0.6)' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: "'IBM Plex Sans', sans-serif", size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Production Batch Run Status Doughnut Chart
+    const stCtx = document.getElementById('productionStatusChart');
+    if (stCtx) {
+        const completed = {{ completed_runs_count|default:0 }};
+        const active = {{ active_runs_count|default:0 }};
+        const alerts = {{ yield_alerts_count|default:0 }};
+
+        new Chart(stCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Active WIP', 'Yield Alerts'],
+                datasets: [{
+                    data: [completed, active, alerts],
+                    backgroundColor: ['#1d4ed8', '#0ea5e9', '#ef4444'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 10, font: { family: "'IBM Plex Sans', sans-serif", size: 11 } }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
