@@ -38,7 +38,10 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver,.onrender.com').split(',')
+    for host in os.environ.get(
+        'ALLOWED_HOSTS',
+        'localhost,127.0.0.1,testserver,.onrender.com,.vercel.app',
+    ).split(',')
     if host.strip()
 ]
 
@@ -57,6 +60,17 @@ if RENDER_EXTERNAL_HOSTNAME:
     render_origin = f'https://{RENDER_EXTERNAL_HOSTNAME}'
     if render_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(render_origin)
+
+# Vercel exposes the current deployment hostname through VERCEL_URL.  Include
+# it explicitly for host validation and HTTPS form submissions on preview and
+# production deployments.
+VERCEL_URL = os.environ.get('VERCEL_URL')
+if VERCEL_URL:
+    if VERCEL_URL not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(VERCEL_URL)
+    vercel_origin = f'https://{VERCEL_URL}'
+    if vercel_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(vercel_origin)
 
 # Academic Demo Mode Configuration
 # Defaults to False. Only active during local development when DEBUG=True.
