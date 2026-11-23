@@ -1,24 +1,35 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
-from .forms import LoginForm, UserProfileUpdateForm
+from django.db.models import Q
+
+from .forms import (
+    LoginForm,
+    UserProfileUpdateForm,
+    StaffUserCreateForm,
+    StaffUserEditForm,
+)
 from .models import CustomUser
-from .decorators import admin_required
+from .decorators import admin_required, role_required
 
 
 def login_view(request):
     """
-    Handles user login. If authenticated, redirects to the role-based dashboard.
-    Supports 1-click role demo authentication during DEMO_MODE.
+    Handles user login.
+    - If user is already authenticated: directly redirects to requested 'next' URL (if safe) or their role dashboard.
+    - If credentials are valid: logs user in, handles remember_me session lifetime, and redirects to requested 'next' URL or role dashboard.
+    - Preserves 'next' across both GET and POST requests.
     """
-    if request.user.is_authenticated:
-        return redirect('dashboard_home')
+    next_url = request.POST.get('next') or request.GET.get('next', '').strip()
 
-    next_url = request.GET.get('next', '')
+    if request.user.is_authenticated:
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            return redirect(next_url)
+        return redirect(request.user.get_dashboard_name())
 
     # 1-Click Role Demo Authentication in DEMO_MODE
     # Strictly prohibited in production: requires both DEBUG=True and DEMO_MODE=True.
@@ -30,7 +41,7 @@ def login_view(request):
             'salesman': 'salesman@nit.edu',
             'production': 'production@nit.edu',
             'auditor': 'auditor@nit.edu',
-            'owner': 'owner@nit.edu',
+            'owner': 'demo@manuflow.app',
             'accountant': 'accountant@nit.edu',
         }
         target_email = role_email_map.get(demo_role.lower())
@@ -89,14 +100,21 @@ def login_view(request):
 @require_POST
 def logout_view(request):
     """
-    Logs out the current user and redirects to login with confirmation message.
-    Accepts POST only, preventing cross-site requests from logging a user out.
+    Logs out the current user, invalidates the server-side session,
+    clears authentication cookies, and sets strict cache-control headers.
     """
     if request.user.is_authenticated:
         user_name = request.user.get_full_name() or request.user.username
         logout(request)
         messages.info(request, f"You have been securely signed out, {user_name}.")
-    return redirect('login')
+
+    response = redirect('login')
+    response.delete_cookie(settings.SESSION_COOKIE_NAME)
+    response.delete_cookie('sessionid')
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
 @login_required
@@ -122,14 +140,136 @@ def profile_view(request):
     return render(request, 'accounts/profile.html', context)
 
 
-@admin_required
+@role_required(['ADMIN', 'OWNER'])
 def user_list_view(request):
     """
-    Admin-only view to inspect all system users, assigned roles, and access states.
+    Admin & Owner view to inspect all system staff accounts, filter by role/status,
+    search employees, and manage accounts.
     """
+    query = request.GET.get('q', '').strip()
+    role_filter = request.GET.get('role', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
     users = CustomUser.objects.all().order_by('-date_joined')
+
+    if query:
+        users = users.filter(
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(username__icontains=query) |
+            Q(email__icontains=query) |
+            Q(employee_id__icontains=query) |
+            Q(department__icontains=query)
+        )
+
+    if role_filter:
+        users = users.filter(role=role_filter)
+
+    if status_filter == 'active':
+        users = users.filter(is_active=True)
+    elif status_filter == 'inactive':
+        users = users.filter(is_active=False)
+
+    role_counts = {
+        'all': CustomUser.objects.count(),
+        'admin': CustomUser.objects.filter(role=CustomUser.Role.ADMIN).count(),
+        'salesman': CustomUser.objects.filter(role=CustomUser.Role.SALESMAN).count(),
+        'production': CustomUser.objects.filter(role=CustomUser.Role.PRODUCTION).count(),
+        'auditor': CustomUser.objects.filter(role=CustomUser.Role.AUDITOR).count(),
+        'owner': CustomUser.objects.filter(role=CustomUser.Role.OWNER).count(),
+        'accountant': CustomUser.objects.filter(role=CustomUser.Role.ACCOUNTANT).count(),
+    }
+
     context = {
         'users': users,
-        'page_title': 'User Management & Roles | Admin Portal',
+        'query': query,
+        'role_filter': role_filter,
+        'status_filter': status_filter,
+        'role_counts': role_counts,
+        'total_active': CustomUser.objects.filter(is_active=True).count(),
+        'roles': CustomUser.Role.choices,
+        'page_title': 'Staff Management & Role Directory | Admin Portal',
     }
     return render(request, 'accounts/user_list.html', context)
+
+
+@role_required(['ADMIN', 'OWNER'])
+def user_create_view(request):
+    """
+    Provision a new employee user account with assigned role and department.
+    """
+    if request.method == 'POST':
+        form = StaffUserCreateForm(request.POST)
+        if form.is_valid():
+            new_user = form.save()
+            messages.success(
+                request,
+                f"Employee account for {new_user.get_full_name() or new_user.username} "
+                f"({new_user.get_role_display()}) successfully created."
+            )
+            return redirect('user_list')
+    else:
+        form = StaffUserCreateForm()
+
+    context = {
+        'form': form,
+        'is_edit': False,
+        'page_title': 'Provision New Employee Account | ManuFlow',
+    }
+    return render(request, 'accounts/user_form.html', context)
+
+
+@role_required(['ADMIN', 'OWNER'])
+def user_edit_view(request, pk):
+    """
+    Edit existing employee account details, role assignment, and active status.
+    """
+    target_user = get_object_or_404(CustomUser, pk=pk)
+
+    if request.method == 'POST':
+        form = StaffUserEditForm(request.POST, instance=target_user)
+        if form.is_valid():
+            # Safeguard: prevent deactivating own active logged-in admin account
+            if target_user == request.user and not form.cleaned_data.get('is_active'):
+                messages.error(request, "Security guard: You cannot deactivate your own active session.")
+                return redirect('user_edit', pk=target_user.pk)
+
+            updated_user = form.save()
+            messages.success(
+                request,
+                f"Employee details for {updated_user.get_full_name() or updated_user.username} successfully updated."
+            )
+            return redirect('user_list')
+    else:
+        form = StaffUserEditForm(instance=target_user)
+
+    context = {
+        'form': form,
+        'target_user': target_user,
+        'is_edit': True,
+        'page_title': f'Edit Employee: {target_user.get_full_name() or target_user.username} | ManuFlow',
+    }
+    return render(request, 'accounts/user_form.html', context)
+
+
+@role_required(['ADMIN', 'OWNER'])
+@require_POST
+def user_toggle_status_view(request, pk):
+    """
+    Quickly toggle an employee's account between Active and Suspended states.
+    """
+    target_user = get_object_or_404(CustomUser, pk=pk)
+
+    if target_user == request.user:
+        messages.error(request, "Security guard: You cannot suspend your own account.")
+        return redirect('user_list')
+
+    target_user.is_active = not target_user.is_active
+    target_user.save(update_fields=['is_active'])
+
+    state_str = "activated" if target_user.is_active else "suspended"
+    messages.success(
+        request,
+        f"Employee account for {target_user.get_full_name() or target_user.username} has been {state_str}."
+    )
+    return redirect('user_list')

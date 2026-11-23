@@ -246,3 +246,89 @@ class DemoAccountTests(TestCase):
         self.assertIn('no-cache', response.headers.get('Cache-Control', ''))
         self.assertIn('no-store', response.headers.get('Cache-Control', ''))
 
+    def test_unauthenticated_protected_url_redirects_with_next(self):
+        target_url = reverse('sales_order_list')
+        response = self.client.get(target_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(f"/accounts/login/?next={target_url}", response.url)
+
+    def test_login_redirects_to_next_url(self):
+        user = CustomUser.objects.create_user(
+            username='sales_next_u',
+            email='sales_next@nit.edu',
+            password='Password123!',
+            role=CustomUser.Role.SALESMAN
+        )
+        target_url = reverse('sales_order_list')
+        response = self.client.post(f"{reverse('login')}?next={target_url}", {
+            'username': 'sales_next@nit.edu',
+            'password': 'Password123!',
+            'next': target_url,
+        })
+        self.assertRedirects(response, target_url)
+
+    def test_authenticated_user_accessing_login_page_redirects_to_dashboard(self):
+        user = CustomUser.objects.create_user(
+            username='auth_direct_u',
+            email='auth_direct@nit.edu',
+            password='Password123!',
+            role=CustomUser.Role.OWNER
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse('login'))
+        self.assertRedirects(response, reverse('owner_dashboard'))
+
+    def test_logout_clears_session_and_adds_cache_headers(self):
+        user = CustomUser.objects.create_user(
+            username='logout_u',
+            email='logout_u@nit.edu',
+            password='Password123!',
+            role=CustomUser.Role.PRODUCTION
+        )
+        self.client.force_login(user)
+        response = self.client.post(reverse('logout'))
+        self.assertRedirects(response, reverse('login'))
+        self.assertIn('no-cache', response.headers.get('Cache-Control', ''))
+        self.assertIn('no-store', response.headers.get('Cache-Control', ''))
+
+    def test_admin_user_provisioning_and_status_toggle(self):
+        admin = CustomUser.objects.create_user(
+            username='admin_prov_u',
+            email='admin_prov@nit.edu',
+            password='AdminPass123!',
+            role=CustomUser.Role.ADMIN
+        )
+        self.client.force_login(admin)
+
+        # 1. Provision new employee
+        create_resp = self.client.post(reverse('user_create'), {
+            'username': 'new_staff_01',
+            'email': 'new_staff_01@company.com',
+            'first_name': 'Aarav',
+            'last_name': 'Patel',
+            'role': CustomUser.Role.SALESMAN,
+            'employee_id': 'MF-EMP-999',
+            'department': 'Regional Sales',
+            'password': 'StaffPassword123!',
+            'confirm_password': 'StaffPassword123!',
+            'is_active': True,
+        })
+        self.assertRedirects(create_resp, reverse('user_list'))
+
+        new_user = CustomUser.objects.get(username='new_staff_01')
+        self.assertEqual(new_user.role, CustomUser.Role.SALESMAN)
+        self.assertTrue(new_user.is_active)
+        self.assertTrue(new_user.check_password('StaffPassword123!'))
+
+        # 2. Toggle status to suspend
+        toggle_resp = self.client.post(reverse('user_toggle_status', kwargs={'pk': new_user.pk}))
+        self.assertRedirects(toggle_resp, reverse('user_list'))
+        new_user.refresh_from_db()
+        self.assertFalse(new_user.is_active)
+
+        # 3. Toggle back to active
+        toggle_resp_2 = self.client.post(reverse('user_toggle_status', kwargs={'pk': new_user.pk}))
+        self.assertRedirects(toggle_resp_2, reverse('user_list'))
+        new_user.refresh_from_db()
+        self.assertTrue(new_user.is_active)
+

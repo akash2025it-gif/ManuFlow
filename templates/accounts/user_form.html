@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title|default:"Employee Account Management | ManuFlow" }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container-fluid px-lg-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Admin Portal</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'user_list' %}">Staff Directory</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% if is_edit %}Edit Employee{% else %}Provision New Account{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                {% if is_edit %}
+                    <i class="bi bi-person-gear me-2 text-primary"></i>Edit Employee Profile
+                {% else %}
+                    <i class="bi bi-person-plus-fill me-2 text-primary"></i>Provision New Employee Account
+                {% endif %}
+            </h2>
+            <p class="text-muted small mb-0">
+                {% if is_edit %}
+                    Update employee credentials, assigned functional domain, and active account status.
+                {% else %}
+                    Create a dedicated enterprise user account with role-based workspace permissions and secure password hashing.
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Return to Staff Directory
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="fw-bold text-dark fs-6">
+                            {% if is_edit %}Account Profile: {{ target_user.get_full_name|default:target_user.username }} ({{ target_user.get_role_display }}){% else %}New Employee Registration Form{% endif %}
+                        </span>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-mono">
+                            RBAC Security Enforced
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger py-2 px-3 small rounded-3 mb-4">
+                                {% for error in form.non_field_errors %}
+                                    <div><i class="bi bi-exclamation-triangle-fill me-1"></i> {{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Section 1: Identity & Credentials -->
+                        <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-lock text-primary"></i>
+                            <span>1. Account Identity &amp; Login Credentials</span>
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            {% if not is_edit %}
+                            <div class="col-md-6">
+                                <label for="{{ form.username.id_for_label }}" class="form-label small fw-semibold text-muted">
+                                    Username <span class="text-danger">*</span>
+                                </label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small text-muted">Unique corporate login identifier (letters, digits, @/./+/-/_ only).</div>
+                            </div>
+                            {% else %}
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Username</label>
+                                <input type="text" class="form-control bg-light" value="@{{ target_user.username }}" readonly disabled>
+                                <div class="form-text small text-muted">Username is immutable once provisioned.</div>
+                            </div>
+                            {% endif %}
+
+                            <div class="col-md-6">
+                                <label for="{{ form.email.id_for_label }}" class="form-label small fw-semibold text-muted">
+                                    Corporate Email Address <span class="text-danger">*</span>
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small text-muted">Used for login, system notifications, and password recovery.</div>
+                            </div>
+
+                            {% if not is_edit %}
+                            <div class="col-md-6">
+                                <label for="{{ form.password.id_for_label }}" class="form-label small fw-semibold text-muted">
+                                    Initial Password <span class="text-danger">*</span>
+                                </label>
+                                {{ form.password }}
+                                {% if form.password.errors %}
+                                    <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.confirm_password.id_for_label }}" class="form-label small fw-semibold text-muted">
+                                    Confirm Password <span class="text-danger">*</span>
+                                </label>
+                                {{ form.confirm_password }}
+                                {% if form.confirm_password.errors %}
+                                    <div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="col-12">
+                                <label for="{{ form.new_password.id_for_label }}" class="form-label small fw-semibold text-muted">
+                                    Reset Password (Optional)
+                                </label>
+                                {{ form.new_password }}
+                                {% if form.new_password.errors %}
+                                    <div class="text-danger small mt-1">{{ form.new_password.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small text-muted">Leave completely empty if you do not want to alter this employee's current password.</div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Section 2: Personal Profile -->
+                        <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
+                            <i class="bi bi-person-lines-fill text-primary"></i>
+                            <span>2. Employee Profile &amp; Department</span>
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label small fw-semibold text-muted">First Name</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label small fw-semibold text-muted">Last Name</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="{{ form.employee_id.id_for_label }}" class="form-label small fw-semibold text-muted">Employee / Staff ID</label>
+                                {{ form.employee_id }}
+                                {% if form.employee_id.errors %}
+                                    <div class="text-danger small mt-1">{{ form.employee_id.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="{{ form.department.id_for_label }}" class="form-label small fw-semibold text-muted">Department</label>
+                                {{ form.department }}
+                                {% if form.department.errors %}
+                                    <div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="{{ form.phone_number.id_for_label }}" class="form-label small fw-semibold text-muted">Contact Phone</label>
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                    <div class="text-danger small mt-1">{{ form.phone_number.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Role & Access Governance -->
+                        <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom d-flex align-items-center gap-2">
+                            <i class="bi bi-award text-primary"></i>
+                            <span>3. Functional Role &amp; Access Governance</span>
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-8">
+                                <label for="{{ form.role.id_for_label }}" class="form-label small fw-semibold text-muted">
+                                    Assigned System Persona <span class="text-danger">*</span>
+                                </label>
+                                {{ form.role }}
+                                {% if form.role.errors %}
+                                    <div class="text-danger small mt-1">{{ form.role.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small text-muted">
+                                    Controls workspace routing, feature permissions, and transaction authorization thresholds.
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-muted d-block">Account Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label fw-medium text-dark ms-2" for="{{ form.is_active.id_for_label }}">
+                                        Active Account
+                                    </label>
+                                </div>
+                                <div class="form-text small text-muted">Deactivating immediately prevents sign-in without deleting operational history.</div>
+                            </div>
+                        </div>
+
+                        <!-- Role Permissions Matrix Guide -->
+                        <div class="p-3 rounded-3 bg-light border small text-muted mb-4 font-mono" style="font-size: 0.78rem;">
+                            <div class="fw-bold text-dark font-sans mb-1"><i class="bi bi-info-circle me-1 text-primary"></i> Persona Permission Guide:</div>
+                            <ul class="mb-0 ps-3">
+                                <li><strong>OWNER</strong>: Full executive KPI oversight, turnover, inventory valuation, receivables aging.</li>
+                                <li><strong>ADMIN</strong>: User provisioning, role assignment, sales order approvals, system settings.</li>
+                                <li><strong>SALESMAN</strong>: Customer registry, quote generation, sales order intake, dispatch status.</li>
+                                <li><strong>PRODUCTION</strong>: Recipe BOM issuance, batch execution, material consumption, yield alerts.</li>
+                                <li><strong>ACCOUNTANT</strong>: Customer payment vouchers, receivables aging, Section 31 GST sales register.</li>
+                                <li><strong>AUDITOR</strong>: Read-only governance observatory, immutable audit logs, price/tax scrutiny.</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                            <a href="{% url 'user_list' %}" class="btn btn-outline-secondary px-3">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 fw-medium shadow-sm">
+                                <i class="bi bi-check2-circle me-1"></i> {% if is_edit %}Save Changes{% else %}Provision Employee Account{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

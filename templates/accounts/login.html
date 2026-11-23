@@ -46,8 +46,9 @@
                 </div>
             {% endif %}
 
-            <form method="post" action="{% url 'login' %}{% if next %}?next={{ next }}{% endif %}" data-submit-once>
+            <form method="post" action="{% url 'login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" data-submit-once>
                 {% csrf_token %}
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
 
                 <div class="mb-3">
                     <label for="{{ form.username.id_for_label }}" class="form-label">Email or username</label>
@@ -87,36 +88,85 @@
                 </button>
             </form>
 
-            <!-- Prominent Live Demo Account Access -->
+            <!-- Prominent Multi-Role Demo Access Console for Judges & Evaluators -->
             <div class="mf-login-demo-box mt-4 p-3 rounded border bg-light-subtle">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1">
-                        <i class="bi bi-stars me-1"></i> Live Demo Access
+                        <i class="bi bi-stars me-1"></i> Multi-Persona Demo Workstations
                     </span>
-                    <span class="text-muted small font-mono">Role: Owner / Exec</span>
+                    <span id="demoRoleBadge" class="text-muted small font-mono">Role: Owner / Exec</span>
                 </div>
+
+                <!-- Role Selector Tabs -->
+                <div class="d-flex flex-wrap gap-1 mb-2.5" role="tablist">
+                    <button type="button" class="btn btn-sm btn-outline-primary active py-0.5 px-2 text-nowrap demo-role-btn" 
+                            onclick="selectDemoPersona('demo@manuflow.app', 'Owner / Exec', 'Full executive visibility, working capital &amp; overall KPIs.', this)">
+                        Owner
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0.5 px-2 text-nowrap demo-role-btn" 
+                            onclick="selectDemoPersona('admin@nit.edu', 'Factory Admin', 'Staff provisioning, sales order approvals &amp; system config.', this)">
+                        Admin
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0.5 px-2 text-nowrap demo-role-btn" 
+                            onclick="selectDemoPersona('salesman@nit.edu', 'Sales Executive', 'Order creation, customer management &amp; dispatch tracking.', this)">
+                        Sales
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0.5 px-2 text-nowrap demo-role-btn" 
+                            onclick="selectDemoPersona('production@nit.edu', 'Production Supervisor', 'Batch work orders, BOM issuance &amp; yield variance.', this)">
+                        Production
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0.5 px-2 text-nowrap demo-role-btn" 
+                            onclick="selectDemoPersona('accountant@nit.edu', 'Financial Accountant', 'Receivables aging, payment vouchers &amp; GST registers.', this)">
+                        Finance
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0.5 px-2 text-nowrap demo-role-btn" 
+                            onclick="selectDemoPersona('auditor@nit.edu', 'Compliance Auditor', 'Read-only observatory &amp; immutable event audit trail.', this)">
+                        Auditor
+                    </button>
+                </div>
+
                 <div class="p-2 mb-2 rounded bg-white border small font-mono">
                     <div class="d-flex justify-content-between text-muted mb-1">
-                        <span>Email:</span>
-                        <strong class="text-dark select-all">demo@manuflow.app</strong>
+                        <span>Account:</span>
+                        <strong id="demoEmailDisplay" class="text-dark select-all">demo@manuflow.app</strong>
                     </div>
-                    <div class="d-flex justify-content-between text-muted">
+                    <div class="d-flex justify-content-between text-muted mb-1">
                         <span>Password:</span>
                         <strong class="text-dark select-all">ManuFlow@Demo2026!</strong>
                     </div>
+                    <div id="demoRoleDesc" class="text-muted small mt-1 pt-1 border-top" style="font-size: 0.72rem; font-family: sans-serif;">
+                        Full executive visibility, working capital &amp; overall KPIs.
+                    </div>
                 </div>
+
                 <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-sm btn-primary fw-medium" onclick="oneClickDemoLogin('demo@manuflow.app', 'ManuFlow@Demo2026!')">
-                        <i class="bi bi-lightning-charge-fill me-1"></i> One-Click Demo Sign In
+                    <button type="button" class="btn btn-sm btn-primary fw-medium" id="oneClickBtn" onclick="oneClickDemoLogin(currentDemoEmail, 'ManuFlow@Demo2026!')">
+                        <i class="bi bi-lightning-charge-fill me-1"></i> One-Click Sign In
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fillDemoCredentials('demo@manuflow.app', 'ManuFlow@Demo2026!')">
-                        <i class="bi bi-box-arrow-in-down-right me-1"></i> Autofill Credentials
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fillDemoCredentials(currentDemoEmail, 'ManuFlow@Demo2026!')">
+                        <i class="bi bi-box-arrow-in-down-right me-1"></i> Autofill Selected Credentials
                     </button>
-                </div>
-                <div class="text-muted mt-2 small text-center" style="font-size: 0.73rem;">
-                    <i class="bi bi-shield-check text-success me-1"></i> Full access to inventory, production, sales, finance & executive KPIs.
                 </div>
             </div>
+
+            <script>
+                let currentDemoEmail = 'demo@manuflow.app';
+                function selectDemoPersona(email, roleLabel, desc, btnEl) {
+                    currentDemoEmail = email;
+                    document.getElementById('demoEmailDisplay').textContent = email;
+                    document.getElementById('demoRoleBadge').textContent = 'Role: ' + roleLabel;
+                    document.getElementById('demoRoleDesc').innerHTML = desc;
+                    document.querySelectorAll('.demo-role-btn').forEach(b => {
+                        b.classList.remove('active', 'btn-outline-primary');
+                        b.classList.add('btn-outline-secondary');
+                    });
+                    if (btnEl) {
+                        btnEl.classList.add('active', 'btn-outline-primary');
+                        btnEl.classList.remove('btn-outline-secondary');
+                    }
+                    fillDemoCredentials(email, 'ManuFlow@Demo2026!');
+                }
+            </script>
 
             <div class="mf-login-provisioning mt-3">
                 <i class="bi bi-info-circle"></i>

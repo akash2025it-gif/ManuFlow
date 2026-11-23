@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-<body class="{% if not user.is_authenticated %}mf-public-body{% endif %}{% if request.resolver_match.url_name == 'login' %} mf-login-body{% endif %}">
+<body class="{% if not user.is_authenticated %}mf-public-body{% else %}mf-authenticated-body{% endif %}{% if request.resolver_match.url_name == 'login' %} mf-login-body{% endif %}">
 
 <div class="{% if user.is_authenticated %}mf-app-layout{% else %}mf-public-layout d-flex flex-column min-vh-100{% endif %}">
 

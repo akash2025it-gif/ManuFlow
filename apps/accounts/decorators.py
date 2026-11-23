@@ -19,7 +19,7 @@ def role_required(allowed_roles):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
             if not request.user.is_authenticated:
-                return redirect(f"/accounts/login/?next={request.path}")
+                return redirect(f"/accounts/login/?next={request.get_full_path()}")
 
             # Admin or Superuser bypass for administrative supervision if needed
             if request.user.is_superuser or request.user.role == 'OWNER':
