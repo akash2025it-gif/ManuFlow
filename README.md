@@ -211,6 +211,9 @@ python manage.py run_nit_production_benchmark
 
 # 4. Execute the sales benchmark (Retailer A invoice, Distributor B shortage)
 python manage.py run_nit_sales_benchmark
+
+# 5. Populate comprehensive enterprise demo data across all 8 modules
+python manage.py seed_enterprise_demo_data
 ```
 
 ### Step 6: Start the Development Server
@@ -223,7 +226,16 @@ Open your web browser and navigate to `http://127.0.0.1:8000/`.
 
 ## 8. Demonstration Credentials
 
-For local academic evaluation, all demonstration accounts share a common evaluation password:
+### Official Cloud & Live Demonstration Account
+ManuFlow includes a persistent, verified demonstration account configured for evaluation on both local and live deployments:
+
+* **Email:** `demo@manuflow.app`
+* **Password:** `ManuFlow@Demo2026!`
+* **Role:** Business Owner / Executive Command Center (`/dashboard/owner/`)
+* **Quick Login:** Use the **"Use Demo Account"** button on the login screen to autofill credentials instantly.
+
+### Institutional Role-Specific Accounts (Local Evaluation)
+For testing separation of duties across all 6 roles, use the following credentials with evaluation password `nit@12345`:
 
 | Role | Login Identifier (Email / Username) | Password | Direct Dashboard Route |
 | :--- | :--- | :--- | :--- |
@@ -234,7 +246,7 @@ For local academic evaluation, all demonstration accounts share a common evaluat
 | **Owner** | `owner@nit.edu` / `owner` | `nit@12345` | `/dashboard/owner/` |
 | **Accountant** | `accountant@nit.edu` / `accountant` | `nit@12345` | `/finance/` |
 
-*Security Guard*: In production (`DEBUG=False` and `DEMO_MODE=False`), one-click login helper buttons are hidden from the login screen and authentication using the shared `nit@12345` password is automatically rejected.
+*Security Guard*: In production (`DEBUG=False` and `DEMO_MODE=False`), one-click login helper buttons for institutional staff are hidden from the login screen and authentication using the shared `nit@12345` password is automatically rejected.
 
 ---
 
@@ -246,8 +258,8 @@ Configure these settings in a `.env` file (copied from `.env.example`) or in you
 | :--- | :--- | :--- | :--- |
 | `DEBUG` | `True` | `False` | Enables/disables debug mode and tracebacks |
 | `SECRET_KEY` | *(Development key)* | *(50+ char random string)* | Cryptographic key for session and CSRF security |
-| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | `.onrender.com,your-domain.com` | Whitelist of allowed HTTP Host headers |
-| `CSRF_TRUSTED_ORIGINS`| `http://127.0.0.1:8000` | `https://your-app.onrender.com` | Allowed origins for secure HTTPS form submissions |
+| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | `.onrender.com,.vercel.app` | Whitelist of allowed HTTP Host headers |
+| `CSRF_TRUSTED_ORIGINS`| `http://127.0.0.1:8000` | `https://manu-flow-ten.vercel.app` | Allowed origins for secure HTTPS form submissions |
 | `DATABASE_URL` | *(None / SQLite)* | `postgresql://user:pass@host/db?sslmode=require` | Connection URL for PostgreSQL |
 | `DEMO_MODE` | `True` | `False` | Controls demo login autofill and demo password validation |
 | `SECURE_SSL_REDIRECT`| `False` | `True` | Enforces HTTPS redirection behind reverse proxies |
@@ -256,20 +268,20 @@ Configure these settings in a `.env` file (copied from `.env.example`) or in you
 
 ## 10. Automated Testing
 
-ManuFlow includes a comprehensive automated test suite covering all 8 application modules:
+ManuFlow includes a comprehensive automated test suite covering all 8 application modules (96 tests total, 100% passing):
 
 ```bash
 python manage.py test apps.accounts apps.core apps.dashboard apps.master_data apps.inventory apps.production apps.sales apps.finance
 ```
 
-### Coverage Overview (89 Automated Tests)
-* **`accounts` (10 tests)**: User creation, dual email/username authentication, role permissions, and demo password production guard.
-* **`core` (13 tests)**: Context processors, custom 403/404/500 handlers, and audit trail immutability checks.
-* **`dashboard` (6 tests)**: Role dispatcher, persona dashboard routing, and permission isolation.
-* **`master_data` (11 tests)**: Validation for products, pack sizes, customers, suppliers, UOM conversions, and BOM recipes.
-* **`inventory` (14 tests)**: Purchase orders, GRN receipts, stock ledger invariants, adjustments, and low-stock alerts.
-* **`production` (6 tests)**: Batch execution, consumption calculation, yield variance alert triggers, and batch costing.
-* **`sales` (7 tests)**: Order creation, stock availability checks, negative inventory guards, PDF tax invoice generation, and dispatch posting.
+### Coverage Overview (96 Automated Tests)
+* **`accounts` (16 tests)**: User creation, dual email/username authentication, role permissions, session persistence, and password security guards.
+* **`core` (6 tests)**: Context processors, custom 403/404/500 handlers, and immutable audit trail verification.
+* **`dashboard` (6 tests)**: Role dispatcher, persona dashboard routing, KPI cards, and benchmark metrics calculation.
+* **`master_data` (14 tests)**: Validation for products, pack sizes, customers, suppliers, UOM conversions, and BOM recipes.
+* **`inventory` (18 tests)**: Purchase orders, GRN receipts, stock ledger invariants, adjustments, and low-stock alerts.
+* **`production` (8 tests)**: Batch execution, consumption calculation, -6% yield variance alert triggers, and batch costing.
+* **`sales` (6 tests)**: Order creation, stock availability checks, negative inventory guards, PDF tax invoice generation, and dispatch posting.
 * **`finance` (22 tests)**: Receivables aging, partial/full payment vouchers, overpayment rejection, GST sales registers, and CSV/Excel XML export validation.
 
 ---
