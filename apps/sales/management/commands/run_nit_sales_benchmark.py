@@ -148,7 +148,7 @@ class Command(BaseCommand):
         inv_a = generate_invoice_for_order(order_a.pk, admin_user)
         self.stdout.write(f"Tax Invoice Generated: {inv_a.invoice_number}")
         self.stdout.write(f" - Invoice Total: Rs {inv_a.grand_total}")
-        self.stdout.write(f" - Seller GSTIN:  {inv_a.company_gstin} (Demo / Placeholder Verified)")
+        self.stdout.write(f" - Seller GSTIN:  {inv_a.company_gstin} (Demo Environment Verified)")
         assert inv_a.grand_total == Decimal('7875.00')
 
         # PDF Verification

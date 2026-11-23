@@ -5,9 +5,9 @@ DEMO_USER_CONFIG = {
     CustomUser.Role.ADMIN: {
         'email': 'admin@nit.edu',
         'username': 'admin',
-        'first_name': 'NIT',
+        'first_name': 'System',
         'last_name': 'Administrator',
-        'employee_id': 'NIT-ADM-001',
+        'employee_id': 'MF-ADM-001',
         'department': 'Systems & IT Administration',
         'is_staff': True,
         'is_superuser': True,

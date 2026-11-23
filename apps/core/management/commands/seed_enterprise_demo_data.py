@@ -279,7 +279,7 @@ class Command(BaseCommand):
                 'grand_total': Decimal('2625.00'),
                 'amount_paid': Decimal('1000.00'),
                 'payment_status': Invoice.PaymentStatus.PARTIAL,
-                'company_gstin': '33NITTRICHY1Z5 (Demo Placeholder)',
+                'company_gstin': '33NITTRICHY1Z5 (Demo Environment)',
                 'place_of_supply': 'Tamil Nadu',
                 'created_by': admin_user,
             }

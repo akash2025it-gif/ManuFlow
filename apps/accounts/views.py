@@ -20,7 +20,7 @@ def login_view(request):
 
     next_url = request.GET.get('next', '')
 
-    # 1-Click Role Demo Authentication in Academic DEMO_MODE
+    # 1-Click Role Demo Authentication in DEMO_MODE
     # Strictly prohibited in production: requires both DEBUG=True and DEMO_MODE=True.
     demo_role = request.GET.get('demo') or request.GET.get('role')
     demo_allowed = settings.DEBUG and getattr(settings, 'DEMO_MODE', False)

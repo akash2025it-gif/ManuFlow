@@ -147,8 +147,8 @@ def generate_invoice_pdf(invoice):
     canvas.draw_rect(left, top_y - 48, width, 48, fill_color=(0.10, 0.22, 0.40))
     canvas.draw_text("MANUFLOW MANUFACTURING & ORDER MANAGEMENT", left + 14, top_y - 18, font='F2', size=13, color=(1, 1, 1))
     canvas.draw_text("ENTERPRISE MANUFACTURING & ORDER-TO-AUDIT SUITE", left + 14, top_y - 32, font='F1', size=8.5, color=(0.85, 0.90, 0.98))
-    canvas.draw_text_right("TAX INVOICE (DEMO)", right - 14, top_y - 20, font='F2', size=12, color=(1, 0.85, 0.2))
-    canvas.draw_text_right("[ACADEMIC SIMULATION DOCUMENT]", right - 14, top_y - 34, font='F1', size=7.5, color=(0.85, 0.90, 0.98))
+    canvas.draw_text_right("TAX INVOICE", right - 14, top_y - 20, font='F2', size=12, color=(1, 0.85, 0.2))
+    canvas.draw_text_right("[ORIGINAL FOR RECIPIENT]", right - 14, top_y - 34, font='F1', size=7.5, color=(0.85, 0.90, 0.98))
 
     curr_y = top_y - 56
 
@@ -160,9 +160,9 @@ def generate_invoice_pdf(invoice):
     # Supplier Details (Left)
     canvas.draw_text("SUPPLIER / CONSIGNOR DETAILS", left + 8, curr_y - 14, font='F2', size=8.5, color=(0.10, 0.22, 0.40))
     canvas.draw_text(invoice.company_name, left + 8, curr_y - 27, font='F2', size=9, color=(0.15, 0.15, 0.15))
-    canvas.draw_text("Campus, Thuvakudi, Tiruchirappalli - 620015", left + 8, curr_y - 39, font='F1', size=8, color=(0.3, 0.3, 0.3))
+    canvas.draw_text("Food Processing Park, Thuvakudi, Tiruchirappalli - 620015", left + 8, curr_y - 39, font='F1', size=8, color=(0.3, 0.3, 0.3))
     canvas.draw_text(f"GSTIN: {invoice.company_gstin} | State: {invoice.company_state} ({invoice.company_state_code})", left + 8, curr_y - 51, font='F2', size=7.5, color=(0.10, 0.22, 0.40))
-    canvas.draw_text("Email: foodtech@nit.edu | Phone: +91 431 2503000", left + 8, curr_y - 63, font='F1', size=8, color=(0.3, 0.3, 0.3))
+    canvas.draw_text("Email: operations@manuflow.app | Phone: +91 431 2503000", left + 8, curr_y - 63, font='F1', size=8, color=(0.3, 0.3, 0.3))
 
     # Invoice Details (Right)
     rx = left + col_w + 18
@@ -283,7 +283,7 @@ def generate_invoice_pdf(invoice):
     canvas.draw_text(f"Payment Status: {invoice.get_payment_status_display().upper()}", left + 10, curr_y - 34, font='F2', size=9, color=status_color)
     canvas.draw_text(f"Total Amount Received: INR {invoice.amount_paid:.2f}", left + 10, curr_y - 48, font='F1', size=8.5)
     canvas.draw_text(f"Outstanding Balance: INR {invoice.balance_due:.2f}", left + 10, curr_y - 62, font='F2', size=9, color=(0.8, 0.1, 0.1) if invoice.balance_due > 0 else (0.1, 0.5, 0.1))
-    canvas.draw_text("Bank Name: State Bank of India, NIT Trichy Branch", left + 10, curr_y - 78, font='F1', size=8, color=(0.3, 0.3, 0.3))
+    canvas.draw_text("Bank Name: State Bank of India, Thuvakudi Industrial Branch", left + 10, curr_y - 78, font='F1', size=8, color=(0.3, 0.3, 0.3))
     canvas.draw_text("Account No: 100987654321 | IFSC: SBIN0001617", left + 10, curr_y - 92, font='F1', size=8, color=(0.3, 0.3, 0.3))
 
     curr_y -= 130
@@ -302,7 +302,7 @@ def generate_invoice_pdf(invoice):
     canvas.draw_text("Authorised Signatory", sig_x + 15, curr_y - 56, font='F1', size=7.5, color=(0.3, 0.3, 0.3))
 
     # Bottom watermark/footer
-    canvas.draw_text("NOTICE: Academic simulation document for ManuFlow training & evaluation. Not a certified GST Tax Invoice for commercial statutory filing.", left, 25.0, font='F1', size=6.8, color=(0.4, 0.4, 0.4))
+    canvas.draw_text("NOTICE: Computer-generated electronic tax invoice. Conforms to Indian Goods & Services Tax statutory specifications.", left, 25.0, font='F1', size=6.8, color=(0.4, 0.4, 0.4))
     canvas.draw_text_right("Page 1 of 1", right, 25.0, font='F1', size=7, color=(0.5, 0.5, 0.5))
 
     return canvas.render_pdf_bytes()

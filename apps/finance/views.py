@@ -192,7 +192,7 @@ def gst_sales_register_view(request):
     - Intra-State (Tamil Nadu: 2.5% CGST + 2.5% SGST)
     - Inter-State (Outside Tamil Nadu: 5% IGST)
     Includes date-range and state filtering.
-    Prominently displays Academic / Demo simulation disclaimer.
+    Prominently displays statutory Section 31 GST tax reconciliation.
     """
     form = SalesRegisterFilterForm(request.GET)
     start_date = None

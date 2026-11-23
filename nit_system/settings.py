@@ -84,7 +84,7 @@ if VERCEL_URL:
     if vercel_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(vercel_origin)
 
-# Academic Demo Mode Configuration
+# Demonstration Mode Configuration
 # Defaults to False. Only active during local development when DEBUG=True.
 # In production (DEBUG=False), demo mode and 1-click demo logins are hard-disabled.
 DEMO_MODE = (

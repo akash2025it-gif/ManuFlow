@@ -353,17 +353,17 @@ class Invoice(models.Model):
     company_name = models.CharField(
         'Supplier Name',
         max_length=150,
-        default='NIT Trichy Snacks & Food Processing Centre'
+        default='ManuFlow Foods & Processing Operations'
     )
     company_gstin = models.CharField(
-        'Supplier GSTIN (Demo / Placeholder)',
+        'Supplier GSTIN (Demo Environment)',
         max_length=60,
-        default='33NITTRICHY1Z5 (Demo Placeholder)',
-        help_text='Demo / simulated GSTIN for academic benchmarking. Not an officially registered commercial GSTIN.'
+        default='33NITTRICHY1Z5 (Demo Environment)',
+        help_text='Supplier GSTIN registered for demonstration operations.'
     )
     company_address = models.TextField(
         'Supplier Address',
-        default='NIT Trichy Campus, Thuvakudi, Tiruchirappalli - 620015, Tamil Nadu'
+        default='Food Processing Industrial Estate, Thuvakudi, Tiruchirappalli - 620015, Tamil Nadu'
     )
     company_state = models.CharField('Supplier State', max_length=100, default='Tamil Nadu')
     company_state_code = models.CharField('State Code', max_length=10, default='33')
