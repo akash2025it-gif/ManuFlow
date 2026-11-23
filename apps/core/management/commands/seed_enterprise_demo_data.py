@@ -7,6 +7,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.accounts.models import CustomUser
+from apps.accounts.utils import get_or_create_demo_user, ensure_all_demo_users_exist
 from apps.master_data.models import (
     Customer,
     Supplier,
@@ -50,8 +51,9 @@ class Command(BaseCommand):
         # 1. Base users & demo account
         self.stdout.write("1. Verifying user accounts & demo credentials...")
         call_command('seed_demo_account')
+        ensure_all_demo_users_exist()
         try:
-            call_command('seed_users')
+            call_command('seed_users', force_production=True, password='ManuFlow@Demo2026!')
         except Exception:
             pass
 
@@ -75,11 +77,27 @@ class Command(BaseCommand):
         self.stdout.write("6. Populating operational sample records across all modules...")
         today = date.today()
         User = get_user_model()
-        admin_user = User.objects.filter(role=CustomUser.Role.ADMIN).first() or User.objects.first()
-        salesman_user = User.objects.filter(role=CustomUser.Role.SALESMAN).first() or admin_user
-        prod_user = User.objects.filter(role=CustomUser.Role.PRODUCTION).first() or admin_user
-        acct_user = User.objects.filter(role=CustomUser.Role.ACCOUNTANT).first() or admin_user
-        audit_user = User.objects.filter(role=CustomUser.Role.AUDITOR).first() or admin_user
+        admin_user = (
+            User.objects.filter(role=CustomUser.Role.ADMIN, is_active=True).first()
+            or User.objects.filter(is_superuser=True, is_active=True).first()
+            or get_or_create_demo_user(CustomUser.Role.ADMIN)
+        )
+        salesman_user = (
+            User.objects.filter(role=CustomUser.Role.SALESMAN, is_active=True).first()
+            or get_or_create_demo_user(CustomUser.Role.SALESMAN)
+        )
+        prod_user = (
+            User.objects.filter(role=CustomUser.Role.PRODUCTION, is_active=True).first()
+            or get_or_create_demo_user(CustomUser.Role.PRODUCTION)
+        )
+        acct_user = (
+            User.objects.filter(role=CustomUser.Role.ACCOUNTANT, is_active=True).first()
+            or get_or_create_demo_user(CustomUser.Role.ACCOUNTANT)
+        )
+        audit_user = (
+            User.objects.filter(role=CustomUser.Role.AUDITOR, is_active=True).first()
+            or get_or_create_demo_user(CustomUser.Role.AUDITOR)
+        )
 
         sku_mrk = ProductPackSize.objects.get(sku_code='SKU-MRK-200G')
         uom_pcs = UnitOfMeasurement.objects.get(code='PCS')

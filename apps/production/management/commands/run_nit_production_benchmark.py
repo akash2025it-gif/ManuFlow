@@ -5,6 +5,8 @@ from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
+from apps.accounts.models import CustomUser
+from apps.accounts.utils import get_or_create_demo_user
 from apps.master_data.models import BillOfMaterials, ProductPackSize, RawMaterial, PackagingMaterial
 from apps.inventory.models import StockItem, StockLedgerEntry
 from apps.production.models import ProductionRun, ProductionMaterialConsumption
@@ -33,7 +35,11 @@ class Command(BaseCommand):
         call_command('seed_snacks_benchmark')
 
         User = get_user_model()
-        user = User.objects.filter(role='PRODUCTION').first() or User.objects.filter(is_superuser=True).first() or User.objects.first()
+        user = (
+            User.objects.filter(role=CustomUser.Role.PRODUCTION, is_active=True).first()
+            or User.objects.filter(is_superuser=True, is_active=True).first()
+            or get_or_create_demo_user(CustomUser.Role.PRODUCTION)
+        )
 
         # 2. Retrieve Master Data
         bom = BillOfMaterials.objects.get(bom_code='BOM-MRK-200PKT')

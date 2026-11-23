@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
 from apps.accounts.models import CustomUser
+from apps.accounts.utils import get_or_create_demo_user
 from apps.master_data.models import Customer, ProductPackSize, UnitOfMeasurement
 from apps.inventory.models import StockItem, StockLedgerEntry, MovementType
 from apps.sales.models import SalesOrder, SalesOrderItem, Invoice, Dispatch, PaymentRecord
@@ -70,8 +71,15 @@ class Command(BaseCommand):
         call_command('run_nit_production_benchmark')
 
         User = get_user_model()
-        admin_user = User.objects.filter(role=CustomUser.Role.ADMIN).first() or User.objects.filter(is_superuser=True).first()
-        salesman_user = User.objects.filter(role=CustomUser.Role.SALESMAN).first() or admin_user
+        admin_user = (
+            User.objects.filter(role=CustomUser.Role.ADMIN, is_active=True).first()
+            or User.objects.filter(is_superuser=True, is_active=True).first()
+            or get_or_create_demo_user(CustomUser.Role.ADMIN)
+        )
+        salesman_user = (
+            User.objects.filter(role=CustomUser.Role.SALESMAN, is_active=True).first()
+            or get_or_create_demo_user(CustomUser.Role.SALESMAN)
+        )
 
         sku = ProductPackSize.objects.get(sku_code='SKU-MRK-200G')
         uom_pcs = UnitOfMeasurement.objects.get(code='PCS')

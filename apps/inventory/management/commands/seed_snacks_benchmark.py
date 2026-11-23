@@ -3,6 +3,8 @@ from datetime import date, timedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from apps.accounts.models import CustomUser
+from apps.accounts.utils import get_or_create_demo_user
 
 from apps.master_data.models import (
     UnitOfMeasurement,
@@ -55,21 +57,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE("Initializing NIT Trichy Exact Benchmark Seed Data..."))
 
         User = get_user_model()
-        admin_user = User.objects.filter(is_superuser=True).first()
-        if not admin_user:
-            admin_user = User.objects.filter(role='ADMIN').first()
-        if not admin_user:
-            admin_user = User.objects.first()
-        if not admin_user:
-            admin_user, _ = User.objects.get_or_create(
-                username='system_admin',
-                defaults={
-                    'email': 'sysadmin_seed@nit.edu',
-                    'role': 'ADMIN',
-                    'is_staff': True,
-                    'is_superuser': True,
-                }
-            )
+        admin_user = (
+            User.objects.filter(role=CustomUser.Role.ADMIN, is_active=True).first()
+            or User.objects.filter(is_superuser=True, is_active=True).first()
+            or get_or_create_demo_user(CustomUser.Role.ADMIN)
+        )
 
         today = date.today()
         should_reset = options.get('reset', False)

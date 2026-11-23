@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from apps.accounts.models import CustomUser
+from apps.accounts.utils import ensure_all_demo_users_exist
 
 
 class Command(BaseCommand):
@@ -79,3 +80,7 @@ class Command(BaseCommand):
                 ))
 
         self.stdout.write(self.style.SUCCESS("Demo credentials verified: demo@manuflow.app / ManuFlow@Demo2026!"))
+
+        # Idempotently ensure standard role demo accounts exist for database integrity
+        ensure_all_demo_users_exist()
+        self.stdout.write(self.style.SUCCESS("All institutional role demo accounts verified for database referential integrity."))
